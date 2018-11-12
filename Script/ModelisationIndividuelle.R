@@ -1,4 +1,4 @@
-setwd("~/Polytech/PFE")
+setwd("~/PFE_Time_Series")
 library(tseries)
 library(forecast)
 
@@ -33,7 +33,7 @@ plot(MSEAnnTest, type='l', ylim=c(5000000000,6000000000),
      réelles pour la masse salariale annuelle")
 lines(LEMSEAnnPred$mean, col="red")
 
-plot(MSETrimTest, type='l',
+plot(MSETrimTest, type='l', ylim=c(1350000000,1650000000),
      main="Comparaison entre la prédiction du modèle et les valeurs
      réelles pour la masse salariale trimestrielle")
 lines(LEMSETrimPred$mean, col='red')
@@ -62,14 +62,14 @@ plot(MSEAnnTrain, main="Comparaison entre le modèle et les données d'apprentis
 lines(ARIMAMSEAnnTrain$fitted, col="red")
 
 #Test
-ARIMAMSETrimTest <- forecast(ARIMAMSETrimTrain, h=7)
+ARIMAMSETrimTest <- forecast(ARIMAMSETrimTrain, h=18)
 plot(MSETrimTest, main="Comparaison entre le modèle et les données de validation
-     pour la masse salariale trimestrielle", ylim=c(1300000000,1570000000))
+     pour la masse salariale trimestrielle", ylim=c(1300000000,1700000000))
 lines(ARIMAMSETrimTest$mean, col="red")
 
-ARIMAMSEAnnTest <- forecast(ARIMAMSEAnnTrain, h = 2)
+ARIMAMSEAnnTest <- forecast(ARIMAMSEAnnTrain, h = 5)
 plot(MSEAnnTest, main="Comparaison entre le modèle et les données de validation
-     pour la masse salariale annuelle", ylim=c(5000000000,6000000000))
+     pour la masse salariale annuelle", ylim=c(5400000000,7200000000))
 lines(ARIMAMSEAnnTest$mean, col="red")
 
 ###SMIC
@@ -121,12 +121,12 @@ lines(ARIMASMICAnnTrain$fitted, col="red")
 #Test
 ARIMASMICTrimTest <- forecast(ARIMASMICTrimTrain, h = 20)
 plot(SMICTrimTest, main="Comparaison entre le modèle et les données de validation
-     pour la masse salariale trimestrielle", ylim = c(9.4,10.7))
+     pour le SMIC trimestriel", ylim = c(9.4,10.7))
 lines(ARIMASMICTrimTest$mean, col="red")
 
 ARIMASMICAnnTest <- forecast(ARIMASMICAnnTrain, h = 7)
 plot(SMICAnnTest, main="Comparaison entre le modèle et les données de validation
-     pour la masse salariale annuelle", ylim=c(9.4,11))
+     pour le SMIC annuel", ylim=c(9.4,11))
 lines(ARIMASMICAnnTest$mean, col="red")
 
 ###PIB
@@ -163,4 +163,60 @@ plot(PIBTrimTrain, type='l',
      réelles pour le PIB")
 lines(LEPIBTrim$fitted[,1], col='red')
 
+###Taux de chômage
 
+TCHOAnn <- ts(annuelle$TCHO, start = 1990, end = 2019)
+TCHOTrim <- ts(trim$TCHO, start=c(1990,1), end = c(2017,4), frequency = 4)
+plot(TCHOAnn, main="Evolution annuelle du taux de chômage")
+plot(TCHOTrim, main="Evolution trimestrielle du taux de chômage")
+acf(TCHOAnn, main="Auto-corrélation du taux de chômage", na.action=na.pass)
+pacf(TCHOAnn, main="Auto-corrélation partielle du taux de chômage", na.action=na.pass)
+acf(TCHOTrim, main="Auto-corrélation du taux de chômage", na.action=na.pass)
+pacf(TCHOTrim, main="Auto-corrélation partielle du taux de chômage", na.action=na.pass)
+
+#On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
+
+TCHOAnnTrain <- window(TCHOAnn, start=1990, end=2012)
+TCHOTrimTrain <- window(TCHOTrim, start=1990, end=c(2012,4))
+TCHOAnnTest <- window(TCHOAnn, start=2013)
+TCHOTrimTest <- window(TCHOTrim, start=2013)
+
+##Modélisation par Holt-Winter
+LETCHOAnn <- HoltWinters(TCHOAnnTrain,alpha=NULL,beta=NULL,gamma=FALSE)
+LETCHOTrim <- HoltWinters(TCHOTrimTrain,alpha=NULL,beta=NULL,gamma=FALSE)
+LETCHOAnnPred <- forecast(LESMICAnn, h = 7)
+LETCHOTrimPred <- forecast(LESMICTrim, h = 20)
+
+plot(TCHOAnnTest, type='l', ylim=c(8.7,11),
+     main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
+     réelles pour le taux de chômage annuel")
+lines(LETCHOAnnPred$mean, col="red")
+
+plot(TCHOTrimTest, type='l', ylim = c(8.8, 10.6),
+     main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
+     réelles pour le taux de chômage trimestrielle")
+lines(LETCHOTrimPred$mean, col='red')
+
+##Modèles SARIMA
+
+#Train
+ARIMATCHOTrimTrain <- auto.arima(TCHOTrimTrain, stationary = F)
+plot(TCHOTrimTrain, main="Comparaison entre le modèle et les données d'apprentissage
+     pour le taux de chômage trimestrielle")
+lines(ARIMATCHOTrimTrain$fitted, col="red")
+
+ARIMATCHOAnnTrain <- auto.arima(TCHOAnnTrain, stationary = F)
+plot(TCHOAnnTrain, main="Comparaison entre le modèle et les données d'apprentissage
+     pour le taux de chômage annuel")
+lines(ARIMATCHOAnnTrain$fitted, col="red")
+
+#Test
+ARIMATCHOTrimTest <- forecast(ARIMATCHOTrimTrain, h = 20)
+plot(TCHOTrimTest, main="Comparaison entre le modèle et les données de validation
+     pour le taux de chômage trimestrielle", ylim = c(9.4,10.7))
+lines(ARIMATCHOTrimTest$mean, col="red")
+
+ARIMATCHOAnnTest <- forecast(ARIMATCHOAnnTrain, h = 7)
+plot(TCHOAnnTest, main="Comparaison entre le modèle et les données de validation
+     pour le taux de chômage annuel")
+lines(ARIMATCHOAnnTest$mean, col="red")
