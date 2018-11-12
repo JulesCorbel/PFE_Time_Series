@@ -1,4 +1,4 @@
-setwd("/home/gis3/pguillot/PFE/PFE_Time_Series")
+setwd("~/Polytech/PFE")
 library(tseries)
 library(forecast)
 
@@ -71,3 +71,39 @@ ARIMAMSEAnnTest <- forecast(ARIMAMSEAnnTrain, h = 2)
 plot(MSEAnnTest, main="Comparaison entre le modèle et les données de validation
      pour la masse salariale annuelle", ylim=c(5000000000,6000000000))
 lines(ARIMAMSEAnnTest$mean, col="red")
+
+###PIB
+
+PIBAnn <- ts(annuelle$PIB, start = 1990, end = 2019)
+PIBTrim <- ts(trim$PIB, start=c(1990,1), end = c(2017,4), frequency = 4)
+plot(PIBAnn, main="Evolution annuelle du PIB")
+plot(PIBTrim, main="Evolution trimestrielle du PIB")
+acf(PIBAnn, main="Auto-corrélation du PIB", na.action=na.pass)
+pacf(PIBAnn, main="Auto-corrélation partielle du PIB", na.action=na.pass)
+acf(PIBTrim, main="Auto-corrélation du PIB", na.action=na.pass)
+pacf(PIBTrim, main="Auto-corrélation partielle du PIB", na.action=na.pass)
+
+#On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
+
+PIBAnnTrain <- window(PIBAnn, start=1990, end=2012)
+PIBTrimTrain <- window(PIBTrim, start=1990, end=c(2012,4))
+PIBAnnTest <- window(PIBAnn, start=2013)
+PIBTrimTest <- window(PIBTrim, start=2013)
+
+##Modélisation par Holt-Winter
+LEPIBAnn <- HoltWinters(PIBAnnTrain,alpha=NULL,beta=NULL,gamma=FALSE)
+LEPIBTrim <- HoltWinters(PIBTrimTrain,alpha=NULL,beta=NULL,gamma=NULL)
+LEPIBAnnPred <- forecast(LEPIBAnn, h = 7)
+LEPIBTrimPred <- forecast(LEPIBTrim, h = 17)
+
+plot(PIBAnnTest, type='l',
+     main="Comparaison entre la prédiction du modèle et les valeurs
+     réelles pour le PIB")
+lines(LEPIBAnnPred$mean, col="red")
+
+plot(PIBTrimTest, type='l', ylim=c(50000, 530000)
+     main="Comparaison entre la prédiction du modèle et les valeurs
+     réelles pour le PIB")
+lines(LEPIBTrimPred$mean, col='red')
+
+
