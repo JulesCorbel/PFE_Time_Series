@@ -1,3 +1,4 @@
+rm(list=ls())
 setwd("~/PFE_Time_Series")
 library(tseries)
 library(forecast)
@@ -163,6 +164,30 @@ plot(PIBTrimTrain, type='l',
      réelles pour le PIB")
 lines(LEPIBTrim$fitted[,1], col='red')
 
+##Modèles SARIMA
+
+#Train
+ARIMAPIBTrimTrain <- auto.arima(PIBTrimTrain, stationary = F)
+plot(PIBTrimTrain, main="Comparaison entre le modèle et les données d'apprentissage
+     pour le SMIC trimestrielle")
+lines(ARIMAPIBTrimTrain$fitted, col="red")
+
+ARIMAPIBAnnTrain <- auto.arima(PIBAnnTrain, stationary = F)
+plot(PIBAnnTrain, main="Comparaison entre le modèle et les données d'apprentissage
+     pour le PIB annuel")
+lines(ARIMAPIBAnnTrain$fitted, col="red")
+
+#Test
+ARIMAPIBTrimTest <- forecast(ARIMAPIBTrimTrain, h = 20)
+plot(PIBTrimTest, main="Comparaison entre le modèle et les données de validation
+     pour le PIB trimestriel")
+lines(ARIMAPIBTrimTest$mean, col="red")
+
+ARIMAPIBAnnTest <- forecast(ARIMAPIBAnnTrain, h = 7)
+plot(PIBAnnTest, main="Comparaison entre le modèle et les données de validation
+     pour le PIB trimestriel")
+lines(ARIMAPIBAnnTest$mean, col="red")
+
 ###Taux de chômage
 
 TCHOAnn <- ts(annuelle$TCHO, start = 1990, end = 2019)
@@ -202,7 +227,7 @@ lines(LETCHOTrimPred$mean, col='red')
 #Train
 ARIMATCHOTrimTrain <- auto.arima(TCHOTrimTrain, stationary = F)
 plot(TCHOTrimTrain, main="Comparaison entre le modèle et les données d'apprentissage
-     pour le taux de chômage trimestrielle")
+     pour le taux de chômage trimestriel")
 lines(ARIMATCHOTrimTrain$fitted, col="red")
 
 ARIMATCHOAnnTrain <- auto.arima(TCHOAnnTrain, stationary = F)
@@ -213,7 +238,7 @@ lines(ARIMATCHOAnnTrain$fitted, col="red")
 #Test
 ARIMATCHOTrimTest <- forecast(ARIMATCHOTrimTrain, h = 20)
 plot(TCHOTrimTest, main="Comparaison entre le modèle et les données de validation
-     pour le taux de chômage trimestrielle", ylim = c(9.4,10.7))
+     pour le taux de chômage trimestriel", ylim = c(9.4,10.7))
 lines(ARIMATCHOTrimTest$mean, col="red")
 
 ARIMATCHOAnnTest <- forecast(ARIMATCHOAnnTrain, h = 7)
