@@ -17,16 +17,16 @@ pacf(MSETrim, main="Auto-corrélation partielle de la masse salariale trimestrie
 
 #On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
 
-MSEAnnTrain <- window(MSEAnn, start=1990, end=2015)
-MSETrimTrain <- window(MSETrim, start=1990, end=c(2015,4))
-MSEAnnTest <- window(MSEAnn, start=2016)
-MSETrimTest <- window(MSETrim, start=2016)
+MSEAnnTrain <- window(MSEAnn, start=1990, end=2012)
+MSETrimTrain <- window(MSETrim, start=1990, end=c(2012,4))
+MSEAnnTest <- window(MSEAnn, start=2013)
+MSETrimTest <- window(MSETrim, start=2013)
 
 ##Modélisation par Holt-Winter
 LEMSEAnn <- HoltWinters(MSEAnnTrain,alpha=NULL,beta=NULL,gamma=FALSE)
 LEMSETrim <- HoltWinters(MSETrimTrain,alpha=NULL,beta=NULL,gamma=NULL, seasonal = "mul")
-LEMSEAnnPred <- forecast(LEMSEAnn, h = 2)
-LEMSETrimPred <- forecast(LEMSETrim, h = 6)
+LEMSEAnnPred <- forecast(LEMSEAnn, h = 5)
+LEMSETrimPred <- forecast(LEMSETrim, h = 18)
 
 plot(MSEAnnTest, type='l', ylim=c(5000000000,6000000000),
      main="Comparaison entre la prédiction du modèle et les valeurs
