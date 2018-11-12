@@ -72,6 +72,63 @@ plot(MSEAnnTest, main="Comparaison entre le modèle et les données de validatio
      pour la masse salariale annuelle", ylim=c(5000000000,6000000000))
 lines(ARIMAMSEAnnTest$mean, col="red")
 
+###SMIC
+SMICAnn <- ts(annuelle$SMIC, start = 1990, end = 2019)
+SMICTrim <- ts(trim$SMIC, start=c(1990,1), end = c(2017,4), frequency = 4)
+plot(SMICAnn, main="Evolution annuelle du SMIC")
+plot(SMICTrim, main="Evolution trimestrielle du SMIC")
+acf(SMICAnn, main="Auto-corrélation du SMIC", na.action=na.pass)
+pacf(SMICAnn, main="Auto-corrélation partielle du SMIC", na.action=na.pass)
+acf(SMICTrim, main="Auto-corrélation du SMIC", na.action=na.pass)
+pacf(SMICTrim, main="Auto-corrélation partielle du SMIC", na.action=na.pass)
+
+#On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
+
+SMICAnnTrain <- window(SMICAnn, start=1990, end=2012)
+SMICTrimTrain <- window(SMICTrim, start=1990, end=c(2012,4))
+SMICAnnTest <- window(SMICAnn, start=2013)
+SMICTrimTest <- window(SMICTrim, start=2013)
+
+##Modélisation par Holt-Winter
+LESMICAnn <- HoltWinters(SMICAnnTrain,alpha=NULL,beta=NULL,gamma=FALSE)
+LESMICTrim <- HoltWinters(SMICTrimTrain,alpha=NULL,beta=NULL,gamma=NULL, seasonal = "add")
+LESMICAnnPred <- forecast(LESMICAnn, h = 7)
+LESMICTrimPred <- forecast(LESMICTrim, h = 20)
+
+plot(SMICAnnTest, type='l', ylim = c(9.4,11),
+     main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
+     réelles pour le SMIC annuel")
+lines(LESMICAnnPred$mean, col="red")
+
+plot(SMICTrimTest, type='l', ylim = c(9.4, 10.7),
+     main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
+     réelles pour le SMIC trimestrielle")
+lines(LESMICTrimPred$mean, col='red')
+
+##Modèles SARIMA
+
+#Train
+ARIMASMICTrimTrain <- auto.arima(SMICTrimTrain, stationary = F)
+plot(SMICTrimTrain, main="Comparaison entre le modèle et les données d'apprentissage
+     pour le SMIC trimestrielle")
+lines(ARIMASMICTrimTrain$fitted, col="red")
+
+ARIMASMICAnnTrain <- auto.arima(SMICAnnTrain, stationary = F)
+plot(SMICAnnTrain, main="Comparaison entre le modèle et les données d'apprentissage
+     pour le SMIC annuel")
+lines(ARIMASMICAnnTrain$fitted, col="red")
+
+#Test
+ARIMASMICTrimTest <- forecast(ARIMASMICTrimTrain, h = 20)
+plot(SMICTrimTest, main="Comparaison entre le modèle et les données de validation
+     pour la masse salariale trimestrielle", ylim = c(9.4,10.7))
+lines(ARIMASMICTrimTest$mean, col="red")
+
+ARIMASMICAnnTest <- forecast(ARIMASMICAnnTrain, h = 7)
+plot(SMICAnnTest, main="Comparaison entre le modèle et les données de validation
+     pour la masse salariale annuelle", ylim=c(9.4,11))
+lines(ARIMASMICAnnTest$mean, col="red")
+
 ###PIB
 
 PIBAnn <- ts(annuelle$PIB, start = 1990, end = 2019)
@@ -101,9 +158,9 @@ plot(PIBAnnTest, type='l',
      réelles pour le PIB")
 lines(LEPIBAnnPred$mean, col="red")
 
-plot(PIBTrimTest, type='l', ylim=c(50000, 530000)
+plot(PIBTrimTrain, type='l', 
      main="Comparaison entre la prédiction du modèle et les valeurs
      réelles pour le PIB")
-lines(LEPIBTrimPred$mean, col='red')
+lines(LEPIBTrim$fitted[,1], col='red')
 
 
