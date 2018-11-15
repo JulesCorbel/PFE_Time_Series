@@ -1,9 +1,9 @@
 visualisation <- function(variable, start, end, freq, titre) {
 
   serie_temporelle <- ts(variable, start = start, end = c(end, freq), frequency = freq)
-  plot(serie_temporelle, main=paste("Evolution de", titre, sep=" "))
-  acf(serie_temporelle, main=paste("Auto-corrélation de", titre, sep=" "), na.action=na.pass)
-  pacf(serie_temporelle, main=paste("Autocorrélation partielle de", titre, sep=" "), na.action=na.pass)
+  plot(serie_temporelle, main=paste("Evolution", titre, sep=" "))
+  acf(serie_temporelle, main=paste("Auto-corrélation", titre, sep=" "), na.action=na.pass)
+  pacf(serie_temporelle, main=paste("Autocorrélation partielle", titre, sep=" "), na.action=na.pass)
   
   return(serie_temporelle)
 }
@@ -22,17 +22,16 @@ lissage_exponentiel<-function(serie_train, start, end_train, freq, nb_predicted_
   }
   
   predictions <- forecast(lissage, h = nb_predicted_values)
-  
   return(predictions)
 }
 
 tendance_exists<-function(serie){
-  regression<-lm(seq(1, length(AGEDAnn))~AGEDAnn)
+  regression<-lm(seq(1, length(serie))~serie)
   pvalue<-summary(regression)$coefficients[2,4]
   if(pvalue < 0.05)
-    return (FALSE)
-  else
     return (TRUE)
+  else
+    return (FALSE)
 }
 
 calcul_saisonnalite<-function(serie, start, end, freq){
@@ -47,21 +46,6 @@ calcul_saisonnalite<-function(serie, start, end, freq){
     return ("mul")
 }
 
-modele_SARIMA<-function(serie_train, serie_test, titre, nb_values_predicted){
+SSE<-function(LEPred, LETest, SARIMAPred, SARIMATest){
   
-  #Train
-  sarima <- auto.arima(serie_train, max.p = 10, max.q=10)
-  plot(serie_train, main=paste("Comparaison entre le modèle et les données d'apprentissage
-     pour", titre, sep=" "))
-  lines(sarima$fitted, col="red")
-  
-  #Test
-  predictions <- forecast(sarima, h = nb_values_predicted)
-  plot(serie_test, main=paste("Comparaison entre le modèle et les données de validation
-     pour", titre, sep=" "))
-  lines(predictions$mean, col="red")
-  
-  return(predictions)
 }
-
-

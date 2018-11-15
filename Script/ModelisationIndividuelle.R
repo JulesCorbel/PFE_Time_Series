@@ -1,4 +1,4 @@
-rm(list=ls())
+#rm(list=ls())
 setwd("~/PFE_Time_Series")
 library(tseries)
 library(forecast)
@@ -7,14 +7,15 @@ annuelle <- read.csv("Data/Data_Annuel.csv", sep=";", dec=",", nrows=30)
 trim <- read.csv("Data/Data_Trim.csv", sep=";", dec=",")
 
 ###Séries temporelles MSE
-MSEAnn<-visualisation(annuelle$MSE, 1990, 2019, 1, "la masse salariale")
-MSETrim<-visualisation(trim$MSE, 1990, 2017, 4, "la masse salariale")
+MSEAnn<-visualisation(annuelle$MSE, 1990, 2017, 1, "de la masse salariale annuelle")
+MSETrim<-visualisation(trim$MSE, 1990, 2017, 4, "de la masse salariale trimestrielle")
 
 MSEAnnTrain <- window(MSEAnn, start=1990, end=2012)
 MSETrimTrain <- window(MSETrim, start=1990, end=c(2012,4))
 MSEAnnTest <- window(MSEAnn, start=2013)
 MSETrimTest <- window(MSETrim, start=2013)
 
+##Lissage Exponentiel
 MSEAnnPred<-lissage_exponentiel(MSEAnnTrain, 1990, 2012, 1, 5)
 
 plot(MSEAnnTest, type='l', ylim=c(5000000000,6300000000),
@@ -29,6 +30,7 @@ plot(MSETrimTest, type='l', ylim=c(1350000000,1650000000),
      réelles pour la masse salariale trimestrielle")
 lines(MSETrimPred$mean, col='red')
 
+##Modèles SARIMA
 #Train
 ARIMAMSETrimTrain <- auto.arima(MSETrimTrain, stationary = F)
 plot(MSETrimTrain, main="Comparaison entre le modèle et les données d'apprentissage
@@ -52,8 +54,8 @@ plot(MSEAnnTest, main="Comparaison entre le modèle et les données de validatio
 lines(ARIMAMSEAnnTest$mean, col="red")
 
 ###SMIC
-SMICAnn<-visualisation(annuelle$SMIC, 1990, 2019, 1, "le SMIC")
-SMICTrim<-visualisation(trim$SMIC, 1990, 2017, 4, "le SMIC")
+SMICAnn<-visualisation(annuelle$SMIC, 1990, 2019, 1, "du SMIC annuel")
+SMICTrim<-visualisation(trim$SMIC, 1990, 2017, 4, "du SMIC trimestriel")
 
 #On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
 
@@ -62,6 +64,7 @@ SMICTrimTrain <- window(SMICTrim, start=1990, end=c(2012,4))
 SMICAnnTest <- window(SMICAnn, start=2013)
 SMICTrimTest <- window(SMICTrim, start=2013)
 
+##Lissage exponentiel
 SMICAnnPred<-lissage_exponentiel(SMICAnnTrain, 1990, 2012, 1, 7)
 
 plot(SMICAnnTest, type='l', ylim = c(9.4,11),
@@ -69,9 +72,9 @@ plot(SMICAnnTest, type='l', ylim = c(9.4,11),
      réelles pour le SMIC annuel")
 lines(SMICAnnPred$mean, col="red")
 
-SMICTrimPred<-lissage_exponentiel(SMICAnnTrain, 1990, 2012, 1, 20)
+SMICTrimPred<-lissage_exponentiel(SMICTrimTrain, 1990, 2012, 1, 20)
 
-plot(SMICTrimTest, type='l', ylim = c(9.4, 10.7),
+plot(SMICTrimTest, type='l', ylim = c(9.4, 11),
      main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
      réelles pour le SMIC trimestrielle")
 lines(SMICTrimPred$mean, col='red')
@@ -102,8 +105,8 @@ lines(ARIMASMICAnnTest$mean, col="red")
 
 ###PIB
 
-PIBAnn<-visualisation(annuelle$PIB, 1990, 2019, 1, "le PIB")
-PIBTrim<-visualisation(trim$PIB, 1990, 2017, 4, "le PIB")
+PIBAnn<-visualisation(annuelle$PIB, 1990, 2019, 1, "du PIB annuel")
+PIBTrim<-visualisation(trim$PIB, 1990, 2017, 4, "du PIB trimestriel")
 
 #On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
 
@@ -112,18 +115,19 @@ PIBTrimTrain <- window(PIBTrim, start=1990, end=c(2012,4))
 PIBAnnTest <- window(PIBAnn, start=2013)
 PIBTrimTest <- window(PIBTrim, start=2013)
 
-PIBAnnPred<-lissage_exponentiel(PIBAnnTrain, 1990, 2012, 1, 7)
+##Lissage Exponentiel
+PIBAnnPred<-lissage_exponentiel(PIBAnnTrain, 1990, 2012, 1, 5)
 
 plot(PIBAnnTest, type='l',
      main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
      réelles pour le PIB annuel")
-lines(LEPIBAnnPred$mean, col="red")
+lines(PIBAnnPred$mean, col="red")
 
-PIBTrimPred<-lissage_exponentiel(PIBAnnTrain, 1990, 2012, 1, 20)
+PIBTrimPred<-lissage_exponentiel(PIBTrimTrain, 1990, 2012, 4, 17)
 
-plot(PIBTrimTest, type='l',
-     main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
-     réelles pour le PIB trimestriel")
+plot(PIBTrimTest, type='l', ylim=c(502000, 535000),
+     main="Comparaison entre la prédiction du lissage exponentiel et les
+      valeurs réelles pour le PIB trimestriel")
 lines(PIBTrimPred$mean, col='red')
 
 ##Modèles SARIMA
@@ -140,25 +144,27 @@ plot(PIBAnnTrain, main="Comparaison entre le modèle et les données d'apprentis
 lines(ARIMAPIBAnnTrain$fitted, col="red")
 
 #Test
-ARIMAPIBTrimTest <- forecast(ARIMAPIBTrimTrain, h = 20)
+ARIMAPIBTrimTest <- forecast(ARIMAPIBTrimTrain, h = 17)
 plot(PIBTrimTest, main="Comparaison entre le modèle et les données de validation
-     pour le PIB trimestriel")
+     pour le PIB trimestriel", ylim=c(510000, 544000))
 lines(ARIMAPIBTrimTest$mean, col="red")
 
-ARIMAPIBAnnTest <- forecast(ARIMAPIBAnnTrain, h = 7)
+ARIMAPIBAnnTest <- forecast(ARIMAPIBAnnTrain, h = 5)
 plot(PIBAnnTest, main="Comparaison entre le modèle et les données de validation
-     pour le PIB trimestriel")
+     pour le PIB trimestriel", ylim=c(2050,2200))
 lines(ARIMAPIBAnnTest$mean, col="red")
 
 ###Taux de chômage
 
-TCHOAnn<-visualisation(annuelle$TCHO, 1990, 2019, 1, "le taux de chômage")
-TCHOTrim<-visualisation(trim$TCHO, 1990, 2017, 4, "le taux de chômage")
+TCHOAnn<-visualisation(annuelle$TCHO, 1990, 2019, 1, "du taux de chômage annuel")
+TCHOTrim<-visualisation(trim$TCHO, 1990, 2017, 4, "du taux de chômage trimestriel")
 
 TCHOAnnTrain <- window(TCHOAnn, start=1990, end=2012)
 TCHOTrimTrain <- window(TCHOTrim, start=1990, end=c(2012,4))
 TCHOAnnTest <- window(TCHOAnn, start=2013)
 TCHOTrimTest <- window(TCHOTrim, start=2013)
+
+##Lissage Exponentiel
 
 TCHOAnnPred<-lissage_exponentiel(TCHOAnnTrain, 1990, 2012, 1, 7)
 
@@ -167,13 +173,12 @@ plot(TCHOAnnTest, type='l', ylim=c(8.7,11),
      réelles pour le taux de chômage annuel")
 lines(TCHOAnnPred$mean, col="red")
 
-TCHOTrimPred<-lissage_exponentiel(TCHOAnnTrain, 1990, 2012, 1, 20)
+TCHOTrimPred<-lissage_exponentiel(TCHOTrimTrain, 1990, 2012, 1, 20)
 
 plot(TCHOTrimTest, type='l', ylim = c(8.8, 10.6),
      main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
      réelles pour le taux de chômage trimestriel")
 lines(TCHOTrimPred$mean, col='red')
-
 ##Modèles SARIMA
 
 #Train
@@ -190,7 +195,7 @@ lines(ARIMATCHOAnnTrain$fitted, col="red")
 #Test
 ARIMATCHOTrimTest <- forecast(ARIMATCHOTrimTrain, h = 20)
 plot(TCHOTrimTest, main="Comparaison entre le modèle et les données de validation
-     pour le taux de chômage trimestriel", ylim = c(9.4,10.7))
+     pour le taux de chômage trimestriel", ylim = c(8.7,10))
 lines(ARIMATCHOTrimTest$mean, col="red")
 
 ARIMATCHOAnnTest <- forecast(ARIMATCHOAnnTrain, h = 7)
@@ -205,9 +210,11 @@ AGEDAnn<-visualisation(annuelle$AGED, 1990, 2019, 1, "aged")
 AGEDAnnTrain <- window(AGEDAnn, start=1990, end=2012)
 AGEDAnnTest <- window(AGEDAnn, start=2013)
 
+
+##Lissage Exponentiel
 AGEDAnnPred<-lissage_exponentiel(AGEDAnnTrain, 1990, 2012, 1, 7)
 
-plot(AGEDAnnTest, ylim=c(270, 295), type='l',
+plot(AGEDAnnTest, ylim=c(270, 310), type='l',
      main="Comparaison entre la prédiction du lissage exponentiel et les valeurs
      réelles pour le AGED annuel")
 lines(AGEDAnnPred$mean, col="red")
@@ -225,3 +232,5 @@ ARIMAAGEDAnnTest <- forecast(ARIMAAGEDAnnTrain, h = 7)
 plot(AGEDAnnTest, main="Comparaison entre le modèle et les données de validation
      pour le AGED annuel")
 lines(ARIMAAGEDAnnTest$mean, col="red")
+
+
