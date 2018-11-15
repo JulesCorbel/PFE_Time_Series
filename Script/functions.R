@@ -46,6 +46,12 @@ calcul_saisonnalite<-function(serie, start, end, freq){
     return ("mul")
 }
 
-SSE<-function(LEPred, LETest, SARIMAPred, SARIMATest){
-  
+best_model<-function(serie_test, LEpredictions, SARIMApredictions){
+  EQM_LE<-EQM(serie_test, LEpredictions)
+  EQM_SARIMA<-EQM(serie_test, SARIMApredictions)
+  return(c(EQM_LE, EQM_SARIMA, ifelse(EQM_LE < EQM_SARIMA, "lissage exponentiel", "modèle SARIMA")))
+}
+
+EQM<-function(serie, prediction){
+  return(mean((serie - prediction)^2)/length(serie))
 }

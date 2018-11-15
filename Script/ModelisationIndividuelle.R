@@ -102,7 +102,7 @@ ARIMASMICAnnTest <- forecast(ARIMASMICAnnTrain, h = 7)
 plot(SMICAnnTest, main="Comparaison entre le modèle et les données de validation
      pour le SMIC annuel", ylim=c(9.4,11))
 lines(ARIMASMICAnnTest$mean, col="red")
-
+lines(SMICTrimPred$mean, col='green')
 ###PIB
 
 PIBAnn<-visualisation(annuelle$PIB, 1990, 2019, 1, "du PIB annuel")
