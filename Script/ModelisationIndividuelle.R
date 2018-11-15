@@ -53,6 +53,12 @@ plot(MSEAnnTest, main="Comparaison entre le modèle ARIMA et les données de
     validation pour la masse salariale annuelle", ylim=c(5400000000,7200000000))
 lines(ARIMAMSEAnnTest$mean, col="red")
 
+##Choix du modèle
+best_model(MSEAnnTest, MSEAnnPred$mean, ARIMAMSEAnnTest$mean)
+#-> Lissage Exponentiel
+best_model(MSETrimTest, MSETrimPred$mean, ARIMAMSETrimTest$mean)
+#-> Lissage Exponentiel
+
 ###SMIC
 SMICAnn<-visualisation(annuelle$SMIC, 1990, 2019, 1, "du SMIC annuel")
 SMICTrim<-visualisation(trim$SMIC, 1990, 2017, 4, "du SMIC trimestriel")
@@ -103,6 +109,12 @@ plot(SMICAnnTest, main="Comparaison entre le modèle ARIMA et les données de
       validation pour le SMIC annuel", ylim=c(9.4,11))
 lines(ARIMASMICAnnTest$mean, col="red")
 
+##Choix du modèle
+best_model(SMICAnnTest, SMICAnnPred$mean, ARIMASMICAnnTest$mean)
+#-> modèle ARIMA
+best_model(SMICTrimTest, SMICTrimPred$mean, ARIMASMICTrimTest$mean)
+#-> modèle SARIMA
+
 ###PIB
 PIBAnn<-visualisation(annuelle$PIB, 1990, 2019, 1, "du PIB annuel")
 PIBTrim<-visualisation(trim$PIB, 1990, 2017, 4, "du PIB trimestriel")
@@ -151,6 +163,12 @@ ARIMAPIBAnnTest <- forecast(ARIMAPIBAnnTrain, h = 7)
 plot(PIBAnnTest, main="Comparaison entre le modèle ARIMA et les données de 
       validation pour le PIB trimestriel", ylim=c(2050,2250))
 lines(ARIMAPIBAnnTest$mean, col="red")
+
+##Choix du modèle
+best_model(PIBAnnTest, PIBAnnPred$mean, ARIMAPIBAnnTest$mean)
+#-> Modèle ARIMA
+best_model(PIBTrimTest, PIBTrimPred$mean, ARIMAPIBTrimTest$mean)
+#-> Modèle SARIMA
 
 ###Taux de chômage
 
@@ -201,6 +219,12 @@ plot(TCHOAnnTest, main="Comparaison entre le modèle ARMA et les données de
       validation pour le taux de chômage annuel")
 lines(ARIMATCHOAnnTest$mean, col="red")
 
+##Choix du modèle
+best_model(TCHOAnnTest, TCHOAnnPred$mean, ARIMATCHOAnnTest$mean)
+#-> Lissage Exponentiel
+best_model(TCHOTrimTest, TCHOTrimPred$mean, ARIMATCHOTrimTest$mean)
+#-> Modèle ARIMA
+
 ###Aged
 
 AGEDAnn<-visualisation(annuelle$AGED, 1990, 2019, 1, "aged")
@@ -231,4 +255,6 @@ plot(AGEDAnnTest, main="Comparaison entre le modèle ARIMA et les données de
       validation pour le AGED annuel")
 lines(ARIMAAGEDAnnTest$mean, col="red")
 
-
+##Choix du modèle
+best_model(AGEDAnnTest, AGEDAnnPred$mean, ARIMAAGEDAnnTest$mean)
+#-> Modèle ARIMA
