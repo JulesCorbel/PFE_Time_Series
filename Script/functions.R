@@ -10,8 +10,6 @@ visualisation <- function(variable, start, end, freq, titre) {
   return(serie_temporelle)
 }
 
-
-#On fait l'hypothèse que la série possède toujours une tendance
 lissage_exponentiel<-function(serie_train, start, end_train, freq, nb_predicted_values){
   if(!tendance_exists(serie_train)){
     lissage<- HoltWinters(serie_train, alpha=NULL,beta=F, gamma=F)
