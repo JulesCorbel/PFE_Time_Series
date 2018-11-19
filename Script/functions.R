@@ -1,3 +1,5 @@
+#Ce script contient toutes les fonctions créées et utilisées au sein du projet
+
 visualisation <- function(variable, start, end, freq, titre) {
 
   serie_temporelle <- ts(variable, start = start, end = c(end, freq), frequency = freq)

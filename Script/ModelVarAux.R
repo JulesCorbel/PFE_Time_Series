@@ -1,0 +1,1 @@
+#Ce script correspond à la modélisation des variables MSE en fonction des autres séries temporelles

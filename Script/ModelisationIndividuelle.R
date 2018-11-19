@@ -1,3 +1,5 @@
+#Ce script correspond à la modélisation des différentes séries temporelles
+
 #rm(list=ls())
 setwd("~/PFE_Time_Series")
 library(tseries)
