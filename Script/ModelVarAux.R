@@ -5,32 +5,43 @@ library(smooth)
 ###MSE annuelle
 ##Lissage Exponentiel
 
+#0 VARIABLE
+LE <- es(MSEAnn, model = "ZZZ", ic="AICc", h = 5, holdout = T)
+plot(LE$forecast, col="red", ylim=c(5474429602, 6818282513),
+     main = "Lissage exponentiel expliqué par 'Aged' vs Vraies valeurs")
+lines(MSEAnnTest)
+EQM(MSEAnnTest, LE$forecast)
+
 ## 1 VARIABLE
 
 #Aged
-LEAged <- es(MSEAnn, model = "CCC", xreg = AGEDAnn[1:28], h = 5, holdout = T)
+LEAged <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = AGEDAnn[1:28], h = 5, holdout = T)
 plot(LEAged$forecast, col="red", ylim=c(5474429602, 6818282513),
      main = "Lissage exponentiel expliqué par 'Aged' vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAged$forecast)
 
 #PIB
-LEPIB <- es(MSEAnn, model = "CCC", xreg = PIBAnn[1:28], h = 5, holdout = T)
+LEPIB <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = PIBAnn[1:28], h = 5, holdout = T)
 plot(LEPIB$forecast, col="red", ylim=c(5474429602, 6213315012),
      main = "Lissage exponentiel expliqué par le PIB vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEPIB$forecast)
 
 #SMIC
-LESMIC <- es(MSEAnn, model = "CCC", xreg = SMICAnn[1:28], h = 5, holdout = T)
+LESMIC <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = SMICAnn[1:28], h = 5, holdout = T)
 plot(LESMIC$forecast, col="red", ylim=c(5474429602, 6471879218),
      main = "Lissage exponentiel expliqué par le SMIC vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LESMIC$forecast)
 
 #TCHO
-LETCHO <- es(MSEAnn, model = "CCC", xreg = TCHOAnn[1:28], h = 5, holdout = T)
+LETCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = TCHOAnn[1:28], h = 5, holdout = T)
 plot(LETCHO$forecast, col="red", ylim=c(5474429602, 6228255409),
      main = "Lissage exponentiel expliqué par le taux de chômage 
      vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LETCHO$forecast)
 
 plot(MSEAnnTest, main="Comparaison des modèles avec 1 variable", ylim=c(5474429602, 6818282513))
 lines(LEAged$forecast, col="blue")
@@ -43,41 +54,46 @@ legend('topleft', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chômage
 ## 2 VARIABLES
 
 #Aged & PIB
-LEAgedPIB <- es(MSEAnn, model = "CCC", xreg = cbind(AGEDAnn[1:28], PIBAnn[1:28]), h = 5, holdout = T)
+LEAgedPIB <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(AGEDAnn[1:28], PIBAnn[1:28]), h = 5, holdout = T)
 plot(LEAgedPIB$forecast, col="red", ylim=c(5474429602, 5963269156),
      main = "Lissage exponentiel expliqué par 'Aged' et le PIB vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAgedPIB$forecast)
 
 #Aged & SMIC
-LEAgedSMIC <- es(MSEAnn, model = "CCC", xreg = cbind(AGEDAnn[1:28], SMICAnn[1:28]), h = 5, holdout = T)
+LEAgedSMIC <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(AGEDAnn[1:28], SMICAnn[1:28]), h = 5, holdout = T)
 plot(LEAgedSMIC$forecast, col="red", ylim=c(5474429602, 5970508508),
      main = "Lissage exponentiel expliqué par 'Aged' et le SMIC vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAgedSMIC$forecast)
 
 #Aged & TCHO
-#WARNING INCONGRU
-LEAgedTCHO <- es(MSEAnn, model = "CCC", xreg = cbind(AGEDAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
+LEAgedTCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(AGEDAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
 plot(LEAgedTCHO$forecast, col="red", ylim=c(5474429602, 5970508508),
      main = "Lissage exponentiel expliqué par 'Aged' et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAgedTCHO$forecast)
 
 #PIB & SMIC
-LEPIBSMIC <- es(MSEAnn, model = "CCC", xreg = cbind(PIBAnn[1:28], SMICAnn[1:28]), h = 5, holdout = T)
+LEPIBSMIC <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(PIBAnn[1:28], SMICAnn[1:28]), h = 5, holdout = T)
 plot(LEPIBSMIC$forecast, col="red", ylim=c(5474429602, 6561846579),
      main = "Lissage exponentiel expliqué par le PIB et le SMIC vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEPIBSMIC$forecast)
 
 #PIB & TCHO
-LEPIBTCHO <- es(MSEAnn, model = "CCC", xreg = cbind(PIBAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
+LEPIBTCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(PIBAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
 plot(LEPIBTCHO$forecast, col="red", ylim=c(5474429602, 6235116423),
      main = "Lissage exponentiel expliqué par le PIB et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEPIBTCHO$forecast)
 
 #SMIC & TCHO
-LESMICTCHO <- es(MSEAnn, model = "CCC", xreg = cbind(SMICAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
+LESMICTCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(SMICAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
 plot(LESMICTCHO$forecast, col="red", ylim=c(5474429602, 6499886903),
      main = "Lissage exponentiel expliqué par le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LESMICTCHO$forecast)
 
 plot(MSEAnnTest, main="Comparaison des modèles avec 2 variables", ylim=c(5474429602, 6818282513))
 lines(LEAgedPIB$forecast, col="red")
@@ -94,28 +110,32 @@ legend('topleft',
 ## 3 VARIABLES
 
 #Aged & PIB & SMIC
-LEAgedPIBSMIC <- es(MSEAnn, model = "CCC", xreg = cbind(AGEDAnn[1:28], PIBAnn[1:28], SMICAnn[1:28]), h = 5, holdout = T)
+LEAgedPIBSMIC <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(AGEDAnn[1:28], PIBAnn[1:28], SMICAnn[1:28]), h = 5, holdout = T)
 plot(LEAgedPIBSMIC$forecast, col="red", ylim=c(5474429602, 6045581604),
      main = "Lissage exponentiel expliqué par 'Aged', le PIB et le SMIC vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAgedPIBSMIC$forecast)
 
 #Aged & PIB & TCHO
-LEAgedPIBTCHO <- es(MSEAnn, model = "CCC", xreg = cbind(AGEDAnn[1:28], PIBAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
+LEAgedPIBTCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(AGEDAnn[1:28], PIBAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
 plot(LEAgedPIBTCHO$forecast, col="red", ylim=c(5474429602, 5978025204),
      main = "Lissage exponentiel expliqué par 'Aged', le PIB et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAgedPIBTCHO$forecast)
 
 #Aged & SMIC & TCHO
-LEAgedSMICTCHO <- es(MSEAnn, model = "CCC", xreg = cbind(AGEDAnn[1:28], SMICAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
+LEAgedSMICTCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(AGEDAnn[1:28], SMICAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
 plot(LEAgedSMICTCHO$forecast, col="red", ylim=c(5474429602, 5999275427),
      main = "Lissage exponentiel expliqué par 'Aged', le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEAgedSMICTCHO$forecast)
 
 #PIB & SMIC & TCHO
-LEPIBSMICTCHO <- es(MSEAnn, model = "CCC", xreg = cbind(PIBAnn[1:28], SMICAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
+LEPIBSMICTCHO <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(PIBAnn[1:28], SMICAnn[1:28], TCHOAnn[1:28]), h = 5, holdout = T)
 plot(LEPIBSMICTCHO$forecast, col="red", ylim=c(5474429602, 6543671066),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
+EQM(MSEAnnTest, LEPIBSMICTCHO$forecast)
 
 plot(MSEAnnTest, main="Comparaison des modèles avec 3 variables", ylim=c(5474429602, 6818282513))
 lines(LEAgedPIBSMIC$forecast, col="blue")
@@ -128,15 +148,11 @@ legend('topleft', legend = c('Série MSE', 'Aged & PIB & SMIC', 'Aged & PIB & Ta
 
 ## 4 VARIABLES
 
-LECOMPLET <- es(MSEAnn, model = "CCC", xreg = cbind(PIBAnn[1:28], SMICAnn[1:28], TCHOAnn[1:28], AGEDAnn[1:28]), h = 5, holdout = T)
+LECOMPLET <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = cbind(PIBAnn[1:28], SMICAnn[1:28], TCHOAnn[1:28], AGEDAnn[1:28]), h = 5, holdout = T)
 plot(LECOMPLET$forecast, col="red", ylim=c(5474429602, 6245405741),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
-
-plot(MSEAnnTest, main="Comparaison du modèle complet", ylim=c(5474429602, 6245405741))
-lines(LECOMPLET$forecast, col="blue")
-legend('topleft', legend = c('Série MSE', 'Modèle complet'),
-       col=c('black', 'blue'), lty=1, cex=0.8)
+EQM(MSEAnnTest, LECOMPLET$forecast)
 
 #Comparaison des 4 modèles
 
