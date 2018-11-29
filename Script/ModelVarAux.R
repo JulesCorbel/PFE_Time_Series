@@ -289,8 +289,24 @@ legend('right', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', '
 # 1 VARIABLE
 
 #Aged
-SARIMAAged <- auto.arima(MSEAnnTrain, stationary = F, xreg = AGEDAnnTrain)
-PredAged <- forecast(SARIMAAged, xreg = AGEDAnnTest[1:28])
+AGEDAnnSta <- diff(AGEDAnn, differences = 2)
+acf(AGEDAnnSta)
+pacf(AGEDAnnSta)
+Box.test(AGEDAnnSta)
+plot(AGEDAnnSta)
+AGEDAnnStaTrain <- window(AGEDAnnSta, end=2015)
+AGEDAnnStaTest <- window(AGEDAnnSta, start=2016)
+
+MSEAnnSta <- diff(MSEAnn, differences = 2)
+acf(MSEAnnSta)
+pacf(MSEAnnSta)
+Box.test(MSEAnnSta)
+plot(MSEAnnSta)
+MSEAnnStaTrain <- window(MSEAnnSta, end=2015)
+MSEAnnStaTest <- window(MSEAnnSta, start=2016)
+
+SARIMAAged <- auto.arima(MSEAnnStaTrain, stationary = F, xreg = AGEDAnnStaTrain)
+PredAged <- forecast(SARIMAAged, xreg = AGEDAnnTest[1:2])
 plot(PredAged$mean, col="red", 
      ylim=c(min(MSEAnnTest,PredAged$mean), max(MSEAnnTest,PredAged$mean)),
      main = "SARIMA expliqué par 'Aged' vs Vraies valeurs")
@@ -423,7 +439,7 @@ legend('topleft', legend = c('Série MSE', 'Aged & PIB & SMIC', 'Aged & PIB & Ta
 ## 4 VARIABLES
 
 SARIMACOMPLET <- auto.arima(MSEAnnTrain, xreg = cbind(PIBAnnTrain, SMICAnnTrain, TCHOAnnTrain, AGEDAnnTrain))
-PredCOMPLET <- forecast(SARIMACOMPLET, xreg = cbind(PIBAnnTest[1:28], SMICAnnTest[1:28], TCHOAnnTest[1:28], AGEDAnn[1:28]))
+PredCOMPLET <- forecast(SARIMACOMPLET, xreg = cbind(PIBAnnTest[1:2], SMICAnnTest[1:2], TCHOAnnTest[1:2], AGEDAnn[1:2]))
 plot(PredCOMPLET$mean, col="red", ylim=c(5474429602, 6245405741),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSEAnnTest)
