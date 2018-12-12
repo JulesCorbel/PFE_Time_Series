@@ -58,19 +58,15 @@ lines(MSETrimPred$mean, col='red')
 ##Modèles SARIMA
 #Train
 
-MSEAnnSta <- diff(MSEAnn, differences = 2)
-MSEAnnStaTrain <- window(MSEAnnSta, start=1990, end=2015)
-MSEAnnStaTest <- window(MSEAnnSta, start=2016)
-
 ARIMAMSETrimTrain <- auto.arima(MSETrimTrain, stationary = F)
 plot(MSETrimTrain, main="Comparaison entre le modèle SARIMA et les données
     d'apprentissage pour la masse salariale trimestrielle")
 lines(ARIMAMSETrimTrain$fitted, col="red")
 
-ARIMAMSEAnnTrain <- auto.arima(MSEAnnStaTrain, stationary = T)
-plot(MSEAnnStaTrain, main="Comparaison entre le modèle ARIMA et les données
+ARIMAMSEAnnTrain <- auto.arima(MSEAnnTrain, stationary = F)
+plot(MSEAnnTrain, main="Comparaison entre le modèle ARIMA et les données
     d'apprentissage pour la masse salariale annuelle", 
-    ylim=c(min(MSEAnnStaTrain,ARIMAMSEAnnTrain$fitted),max(MSEAnnStaTrain,ARIMAMSEAnnTrain$fitted)))
+    ylim=c(min(MSEAnnTrain,ARIMAMSEAnnTrain$fitted),max(MSEAnnTrain,ARIMAMSEAnnTrain$fitted)))
 lines(ARIMAMSEAnnTrain$fitted, col="red")
 
 #Test
@@ -80,9 +76,9 @@ plot(MSETrimTest, main="Comparaison entre le modèle SARIMA et les données de
 lines(ARIMAMSETrimTest$mean, col="red")
 
 ARIMAMSEAnnTest <- forecast(ARIMAMSEAnnTrain, h = 2)
-plot(MSEAnnStaTest, main="Comparaison entre le modèle ARIMA et les données de 
+plot(MSEAnnTest, main="Comparaison entre le modèle ARIMA et les données de 
     validation pour la masse salariale annuelle",
-    ylim=c(min(MSEAnnStaTest,ARIMAMSEAnnTest$mean),max(MSEAnnStaTest,ARIMAMSEAnnTest$mean)))
+    ylim=c(min(MSEAnnTest,ARIMAMSEAnnTest$mean),max(MSEAnnTest,ARIMAMSEAnnTest$mean)))
 lines(ARIMAMSEAnnTest$mean, col="red")
 
 ##Choix du modèle
@@ -122,20 +118,14 @@ lines(SMICTrimPred$mean, col='red')
 ##Modèles SARIMA
 
 #Train
-SMICAnnSta <- diff(SMICAnn, differences = 1)
-plot(SMICAnnSta)
-acf(SMICAnnSta)
-pacf(SMICAnnSta)
-SMICAnnStaTrain <- window(SMICAnnSta, start=1990, end=2015)
-SMICAnnStaTest <- window(SMICAnnSta, start=2016)
 
 ARIMASMICTrimTrain <- auto.arima(SMICTrimTrain, stationary = F)
 plot(SMICTrimTrain, main="Comparaison entre le modèle SARIMA et les données 
       d'apprentissage pour le SMIC trimestriel")
 lines(ARIMASMICTrimTrain$fitted, col="red")
 
-ARIMASMICAnnTrain <- auto.arima(SMICAnnStaTrain, stationary = F)
-plot(SMICAnnStaTrain, main="Comparaison entre le modèle ARIMA et les données
+ARIMASMICAnnTrain <- auto.arima(SMICAnnTrain, stationary = F)
+plot(SMICAnnTrain, main="Comparaison entre le modèle ARIMA et les données
       d'apprentissage pour le SMIC annuel")
 lines(ARIMASMICAnnTrain$fitted, col="red")
 
@@ -161,6 +151,7 @@ best_model(SMICTrimTest, SMICTrimPred$mean, ARIMASMICTrimTest$mean)
 ###PIB
 PIBAnn<-visualisation(annuelle$PIB, 1990, 2019, 1, "du PIB annuel")
 PIBTrim<-visualisation(trim$PIB, 1990, 2017, 4, "du PIB trimestriel")
+PIBTrim<-window(PIBTrim, end=c(2017,1))
 
 #On sépare les séries : modélisations jusque 2015, prévision à partir de 2016
 PIBAnnTrain <- window(PIBAnn, start=1990, end=2015)
@@ -305,3 +296,4 @@ lines(ARIMAAGEDAnnTest$mean, col="red")
 ##Choix du modèle
 best_model(AGEDAnnTest, AGEDAnnPred$mean, ARIMAAGEDAnnTest$mean)
 #-> Modèle ARIMA
+

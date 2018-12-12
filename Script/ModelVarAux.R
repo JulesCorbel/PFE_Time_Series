@@ -1,14 +1,16 @@
 #Ce script correspond à la modélisation des variables MSE en fonction des autres séries temporelles
 
-
+library(vars)
 library(smooth)
+library(MTS)
+library(portes)
 ###Lissage Exponentiel
 ##MSE annuelle
 
 #0 VARIABLE
 LE <- es(MSEAnn, model = "ZZZ", ic="AICc", h = 2, holdout = T)
 plot(LE$forecast, col="red",
-     main = "Lissage exponentiel expliqué par 'Aged' vs Vraies valeurs",
+     main = "Lissage exponentiel de MSE vs Vraies valeurs",
      ylim=c(min(LE$forecast,MSEAnnTest),max(LE$forecast,MSEAnnTest)))
 lines(MSEAnnTest)
 EQM(MSEAnnTest, LE$forecast)
@@ -286,113 +288,172 @@ legend('right', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', '
 
 ###SARIMA
 
-# 1 VARIABLE
+##Annuelle
 
-#Aged
-AGEDAnnSta <- diff(AGEDAnn, differences = 2)
-acf(AGEDAnnSta)
-pacf(AGEDAnnSta)
-Box.test(AGEDAnnSta)
-plot(AGEDAnnSta)
-AGEDAnnStaTrain <- window(AGEDAnnSta, end=2015)
-AGEDAnnStaTest <- window(AGEDAnnSta, start=2016)
+# 0 Variable
 
+adf.test(MSEAnn)
 MSEAnnSta <- diff(MSEAnn, differences = 2)
 acf(MSEAnnSta)
 pacf(MSEAnnSta)
-Box.test(MSEAnnSta)
+kpss.test(MSEAnnSta)
 plot(MSEAnnSta)
 MSEAnnStaTrain <- window(MSEAnnSta, end=2015)
 MSEAnnStaTest <- window(MSEAnnSta, start=2016)
 
-SARIMAAged <- auto.arima(MSEAnnStaTrain, stationary = F, xreg = AGEDAnnStaTrain)
-PredAged <- forecast(SARIMAAged, xreg = AGEDAnnTest[1:2])
+ARIMAMSEAnnStaTrain <- auto.arima(MSEAnnStaTrain, stationary = T)
+PredVide <- forecast(ARIMAMSEAnnStaTrain, h = 2)
+plot(PredVide$mean, main="Comparaison entre le modèle ARIMA et les données
+     d'apprentissage pour la masse salariale annuelle", 
+     ylim=c(min(MSEAnnStaTrain,ARIMAMSEAnnStaTrain$fitted),max(MSEAnnStaTrain,ARIMAMSEAnnStaTrain$fitted)),
+     col="red")
+lines(MSEAnnStaTest)
+
+# 1 VARIABLE
+
+#Aged
+summary(lm(MSEAnn ~ AGEDAnn[1:28]))
+adf.test(AGEDAnn)
+AGEDAnnSta <- diff(AGEDAnn, differences = 1)
+acf(AGEDAnnSta)
+pacf(AGEDAnnSta)
+kpss.test(AGEDAnnSta)
+plot(AGEDAnnSta)
+AGEDAnnStaTrain <- window(AGEDAnnSta, end=2015)
+AGEDAnnStaTest <- window(AGEDAnnSta, start=2016)
+
+#Pas même taille à cause du diff -> On s'assure de commencer à la même année pour les 2 séries
+
+SARIMAAged <- auto.arima(MSEAnnStaTrain, stationary = T, xreg = AGEDAnnStaTrain[2:25])
+PredAged <- forecast(SARIMAAged, xreg = AGEDAnnStaTest[1:2])
 plot(PredAged$mean, col="red", 
-     ylim=c(min(MSEAnnTest,PredAged$mean), max(MSEAnnTest,PredAged$mean)),
+     ylim=c(min(MSEAnnStaTest,PredAged$mean), max(MSEAnnStaTest,PredAged$mean)),
      main = "SARIMA expliqué par 'Aged' vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
 
 #PIB
-SARIMAPIB <- auto.arima(MSEAnnTrain, stationary = F, xreg = PIBAnnTrain)
-PredPIB <- forecast(SARIMAPIB, xreg = PIBAnnTest[1:28])
-plot(PredPIB$mean, col="red", ylim=c(5474429602, 6712539781),
+summary(lm(MSEAnn ~ PIBAnn[1:28]))
+adf.test(PIBAnn)
+PIBAnnSta <- diff(PIBAnn, differences = 1)
+acf(PIBAnnSta)
+pacf(PIBAnnSta)
+kpss.test(PIBAnnSta)
+plot(PIBAnnSta)
+PIBAnnStaTrain <- window(PIBAnnSta, end=2015)
+PIBAnnStaTest <- window(PIBAnnSta, start=2016)
+
+SARIMAPIB <- auto.arima(MSEAnnStaTrain, stationary = T, xreg = PIBAnnStaTrain[2:25])
+PredPIB <- forecast(SARIMAPIB, xreg = PIBAnnStaTest[1:2])
+plot(PredPIB$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIB$mean), max(MSEAnnStaTest,PredPIB$mean)),
      main = "SARIMA expliqué par le PIB vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
 
 #SMIC
-SARIMASMIC <- auto.arima(MSEAnnTrain, stationary = F, xreg = SMICAnnTrain)
-PredSMIC <- forecast(SARIMASMIC, xreg = SMICAnnTest[1:28])
-plot(PredSMIC$mean, col="red", ylim=c(5474429602, 6928283434),
+summary(lm(MSEAnn ~ SMICAnn[1:28]))
+adf.test(SMICAnn)
+SMICAnnSta <- diff(SMICAnn, differences = 2)
+acf(SMICAnnSta)
+pacf(SMICAnnSta)
+kpss.test(SMICAnnSta)
+plot(SMICAnnSta)
+SMICAnnStaTrain <- window(SMICAnnSta, end=2015)
+SMICAnnStaTest <- window(SMICAnnSta, start=2016)
+
+SARIMASMIC <- auto.arima(MSEAnnStaTrain, stationary = T, xreg = SMICAnnStaTrain)
+PredSMIC <- forecast(SARIMASMIC, xreg = SMICAnnStaTest[1:2])
+plot(PredSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredSMIC$mean), max(MSEAnnStaTest,PredSMIC$mean)),
      main = "SARIMA expliqué par le SMIC vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
 
 #TCHO
-SARIMATCHO <- auto.arima(MSEAnnTrain, stationary = F, xreg = TCHOAnnTrain)
-PredTCHO <- forecast(SARIMATCHO, xreg = TCHOAnnTest[1:28])
-plot(PredTCHO$mean, col="red", ylim=c(5474429602, 7167531139),
-     main = "SARIMA expliqué par le taux chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+summary(lm(MSEAnn ~ TCHOAnn[1:28]))
+adf.test(TCHOAnn)
+TCHOAnnSta <- diff(TCHOAnn, differences = 1)
+acf(TCHOAnnSta)
+pacf(TCHOAnnSta)
+kpss.test(TCHOAnnSta)
+plot(TCHOAnnSta)
+TCHOAnnStaTrain <- window(TCHOAnnSta, end=2015)
+TCHOAnnStaTest <- window(TCHOAnnSta, start=2016)
 
-plot(MSEAnnTest, main="Comparaison des modèles avec 1 variable", ylim=c(5474429602, 7167531139))
+SARIMATCHO <- auto.arima(MSEAnnStaTrain, stationary = F, xreg = TCHOAnnStaTrain[2:25])
+PredTCHO <- forecast(SARIMATCHO, xreg = TCHOAnnStaTest[1:2])
+plot(PredTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredTCHO$mean), max(MSEAnnStaTest,PredTCHO$mean)),
+     main = "SARIMA expliqué par le taux chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 1 variable", ylim = c(-4924246, 104051097))
 lines(PredAged$mean, col="blue")
 lines(PredPIB$mean, col="green")
 lines(PredSMIC$mean, col="red")
 lines(PredTCHO$mean, col="gold")
-legend('topleft', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chômage'),
+legend('topright', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chômage'),
        col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
 
 ## 2 VARIABLES
 
 #Aged & PIB
-SARIMAAgedPIB <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, PIBAnnTrain))
-PredAgedPIB <- forecast(SARIMAAgedPIB, xreg = cbind(AGEDAnnTest[1:28], PIBAnnTest[1:28]))
-plot(PredAgedPIB$mean, col="red", ylim=c(4273400654, 5963269156),
+SARIMAAgedPIB <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25]))
+PredAgedPIB <- forecast(SARIMAAgedPIB, xreg = cbind(AGEDAnnStaTest[1:2], PIBAnnStaTest[1:2]))
+plot(PredAgedPIB$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedPIB$mean), max(MSEAnnStaTest,PredAgedPIB$mean)),
      main = "SARIMA expliqué par 'Aged' et le PIB vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
 
 #Aged & SMIC
-SARIMAAgedSMIC <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, SMICAnnTrain))
-PredAgedSMIC <- forecast(SARIMAAgedSMIC, xreg = cbind(AGEDAnnTest[1:28], SMICAnnTest[1:28]))
-plot(PredAgedSMIC$mean, col="red", ylim=c(5474429602, 6889864072),
+SARIMAAgedSMIC <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], SMICAnnStaTrain))
+PredAgedSMIC <- forecast(SARIMAAgedSMIC, xreg = cbind(AGEDAnnStaTest[1:2], SMICAnnStaTest[1:2]))
+plot(PredAgedSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedSMIC$mean), max(MSEAnnStaTest,PredAgedSMIC$mean)),
      main = "SARIMA expliqué par 'Aged' et le SMIC vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
 
 #Aged & TCHO
-SARIMAAgedTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, TCHOAnnTrain))
-PredAgedTCHO <- forecast(SARIMAAgedTCHO, xreg = cbind(AGEDAnnTest[1:28], TCHOAnnTest[1:28]))
-plot(PredAgedTCHO$mean, col="red", ylim=c(5474429602, 7054008367),
+SARIMAAgedTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]))
+PredAgedTCHO <- forecast(SARIMAAgedTCHO, xreg = cbind(AGEDAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredAgedTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedTCHO$mean), max(MSEAnnStaTest,PredAgedTCHO$mean)),
      main = "SARIMA expliqué par 'Aged' et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
 
 #PIB & SMIC
-SARIMAPIBSMIC <- auto.arima(MSEAnnTrain, xreg = cbind(PIBAnnTrain, SMICAnnTrain))
-PredPIBSMIC <- forecast(SARIMAPIBSMIC, xreg = cbind(PIBAnnTest[1:28], SMICAnnTest[1:28]))
-plot(PredPIBSMIC$mean, col="red", ylim=c(5474429602, 6916290440),
+SARIMAPIBSMIC <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], SMICAnnStaTrain))
+PredPIBSMIC <- forecast(SARIMAPIBSMIC, xreg = cbind(PIBAnnStaTest[1:2], SMICAnnStaTest[1:2]))
+plot(PredPIBSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIBSMIC$mean), max(MSEAnnStaTest,PredPIBSMIC$mean)),
      main = "SARIMA expliqué par le PIB et le SMIC vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+#Pas de modèle ARIMA possible
 
 #PIB & TCHO
-SARIMAPIBTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(PIBAnnTrain, TCHOAnnTrain))
-PredPIBTCHO <- forecast(SARIMAPIBTCHO, xreg = cbind(PIBAnnTest[1:28], TCHOAnnTest[1:28]))
-plot(PredPIBTCHO$mean, col="red", ylim=c(4568330820, 5773709052),
+SARIMAPIBTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]))
+PredPIBTCHO <- forecast(SARIMAPIBTCHO, xreg = cbind(PIBAnnTest[1:2], TCHOAnnTest[1:2]))
+plot(PredPIBTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIBTCHO$mean), max(MSEAnnStaTest,PredPIBTCHO$mean)),
      main = "SARIMA expliqué par le PIB et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+EQM(PredPIBTCHO$mean, MSEAnnStaTest)
 
 #SMIC & TCHO
-SARIMASMICTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(SMICAnnTrain, TCHOAnnTrain))
-PredSMICTCHO <- forecast(SARIMASMICTCHO, xreg = cbind(SMICAnnTest[1:28], TCHOAnnTest[1:28]))
-plot(PredSMICTCHO$mean, col="red", ylim=c(5474429602, 6499886903),
+SARIMASMICTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(SMICAnnStaTrain, TCHOAnnStaTrain[2:25]))
+PredSMICTCHO <- forecast(SARIMASMICTCHO, xreg = cbind(SMICAnnStaTest[1:28], TCHOAnnStaTest[1:28]))
+plot(PredSMICTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredSMICTCHO$mean), max(MSEAnnStaTest,PredSMICTCHO$mean)),
      main = "SARIMA expliqué par le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+#Pas de modèle ARIMA possible
 
-plot(MSEAnnTest, main="Comparaison des modèles avec 2 variables", ylim=c(4273400654, 7054008367))
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 2 variables", ylim=c(-17144682, 104051097))
 lines(PredAgedPIB$mean, col="red")
 lines(PredAgedSMIC$mean, col="blue")
 lines(PredAgedTCHO$mean, col="green")
-lines(PredPIBSMIC$mean, col="gold")
+#lines(PredPIBSMIC$mean, col="gold")
 lines(PredPIBTCHO$mean, col="purple")
-lines(PredSMICTCHO$mean, col="brown")
-legend('topleft', 
+#lines(PredSMICTCHO$mean, col="brown")
+legend('topright', 
        legend = c('Série MSE', 'Aged & PIB', 'Aged & SMIC', 'Aged & Taux chômage',
                   'PIB & SMIC', 'PIB & Taux chômage', 'SMIC & Taux chômage'),
        col=c('black', 'red', 'blue', 'green', 'gold', 'purple', 'brown'), lty=1, cex=0.8)
@@ -400,63 +461,287 @@ legend('topleft',
 ## 3 VARIABLES
 
 #Aged & PIB & SMIC
-SARIMAAgedPIBSMIC <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, PIBAnnTrain, SMICAnnTrain))
-PredAgedPIBSMIC <- forecast(SARIMAAgedPIBSMIC, xreg = cbind(AGEDAnnTest[1:28], PIBAnnTest[1:28], SMICAnnTest[1:28]))
-plot(PredAgedPIBSMIC$mean, col="red", ylim=c(5474429602, 6851478773),
+SARIMAAgedPIBSMIC <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], SMICAnnStaTrain))
+PredAgedPIBSMIC <- forecast(SARIMAAgedPIBSMIC, xreg = cbind(AGEDAnnStaTest[1:2], PIBAnnStaTest[1:2], SMICAnnStaTest[1:2]))
+plot(PredAgedPIBSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedPIBSMIC$mean), max(MSEAnnStaTest,PredAgedPIBSMIC$mean)),
      main = "Lissage exponentiel expliqué par 'Aged', le PIB et le SMIC vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+EQM(PredAgedPIBSMIC$mean, MSEAnnStaTest)
 
 #Aged & PIB & TCHO
-SARIMAAgedPIBTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, PIBAnnTrain, TCHOAnnTrain))
-PredAgedPIBTCHO <- forecast(SARIMAAgedPIBTCHO, xreg = cbind(AGEDAnnTest[1:28], PIBAnnTest[1:28], TCHOAnnTest[1:28]))
-plot(PredAgedPIBTCHO$mean, col="red", ylim=c(5108085624, 5849552197),
+SARIMAAgedPIBTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]))
+PredAgedPIBTCHO <- forecast(SARIMAAgedPIBTCHO, xreg = cbind(AGEDAnnStaTest[1:2], PIBAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredAgedPIBTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedPIBTCHO$mean), max(MSEAnnStaTest,PredAgedPIBTCHO$mean)),
      main = "Lissage exponentiel expliqué par 'Aged', le PIB et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+EQM(PredAgedPIBTCHO$mean, MSEAnnStaTest)
 
 #Aged & SMIC & TCHO
-SARIMAAgedSMICTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, SMICAnnTrain, TCHOAnnTrain))
-PredAgedSMICTCHO <- forecast(SARIMAAgedSMICTCHO, xreg = cbind(AGEDAnnTest[1:28], SMICAnnTest[1:28], TCHOAnnTest[1:28]))
-plot(PredAgedSMICTCHO$mean, col="red", ylim=c(5474429602, 6796461684),
+SARIMAAgedSMICTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], SMICAnnStaTrain, TCHOAnnStaTrain[2:25]))
+PredAgedSMICTCHO <- forecast(SARIMAAgedSMICTCHO, xreg = cbind(AGEDAnnStaTest[1:2], SMICAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredAgedSMICTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedSMICTCHO$mean), max(MSEAnnStaTest,PredAgedSMICTCHO$mean)),
      main = "Lissage exponentiel expliqué par 'Aged', le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+EQM(PredAgedSMICTCHO$mean, MSEAnnStaTest)
+
 
 #PIB & SMIC & TCHO
-SARIMAPIBSMICTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(PIBAnnTrain, SMICAnnTrain, TCHOAnnTrain))
-PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBAnnTest[1:28], SMICAnnTest[1:28], TCHOAnnTest[1:28]))
-plot(PredPIBSMICTCHO$mean, col="red", ylim=c(5474429602, 6748974133),
+SARIMAPIBSMICTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], SMICAnnStaTrain, TCHOAnnStaTrain[2:25]))
+PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBAnnStaTest[1:2], SMICAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredPIBSMICTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIBSMICTCHO$mean), max(MSEAnnStaTest,PredPIBSMICTCHO$mean)),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
+lines(MSEAnnStaTest)
+EQM(PredPIBSMICTCHO$mean, MSEAnnStaTest)
 
-plot(MSEAnnTest, main="Comparaison des modèles avec 3 variables", ylim=c(5108085624, 6851478773))
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 3 variables", ylim=c(0, 104051097))
 lines(PredAgedPIBSMIC$mean, col="blue")
 lines(PredAgedPIBTCHO$mean, col="green")
 lines(PredAgedSMICTCHO$mean, col="red")
 lines(PredPIBSMICTCHO$mean, col="gold")
-legend('topleft', legend = c('Série MSE', 'Aged & PIB & SMIC', 'Aged & PIB & Taux chômage',
+legend('topright', legend = c('Série MSE', 'Aged & PIB & SMIC', 'Aged & PIB & Taux chômage',
                              'Aged & SMIC & Taux chômage', 'PIB & SMIC & Taux chômage'),
        col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
 
 ## 4 VARIABLES
 
-SARIMACOMPLET <- auto.arima(MSEAnnTrain, xreg = cbind(PIBAnnTrain, SMICAnnTrain, TCHOAnnTrain, AGEDAnnTrain))
-PredCOMPLET <- forecast(SARIMACOMPLET, xreg = cbind(PIBAnnTest[1:2], SMICAnnTest[1:2], TCHOAnnTest[1:2], AGEDAnn[1:2]))
-plot(PredCOMPLET$mean, col="red", ylim=c(5474429602, 6245405741),
+SARIMACOMPLET <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], SMICAnnStaTrain, TCHOAnnStaTrain[2:25], AGEDAnnStaTrain[2:25]))
+PredCOMPLET <- forecast(SARIMACOMPLET, xreg = cbind(PIBAnnStaTest[1:2], SMICAnnStaTest[1:2], TCHOAnnStaTest[1:2], AGEDAnnStaTest[1:2]))
+plot(PredCOMPLET$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredCOMPLET$mean), max(MSEAnnStaTest,PredCOMPLET$mean)),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
-
-plot(MSEAnnTest, main="Comparaison du modèle complet", ylim=c(5474429602, 6245405741))
-lines(SARIMACOMPLET$mean, col="blue")
-legend('topleft', legend = c('Série MSE', 'Modèle complet'),
-       col=c('black', 'blue'), lty=1, cex=0.8)
+lines(MSEAnnStaTest)
 
 #Comparaison des 4 modèles
 
-plot(MSEAnnTest, main="Comparaison des 4 modèles", ylim=c(5108085624, 7158992946))
-lines(ARIMAMSEAnnTest$mean, col='brown')
+plot(MSEAnnStaTest, main="Comparaison des 4 modèles", ylim=c(0, 104051097))
+lines(PredVide$mean, col='brown')
 lines(PredPIB$mean, col="blue")
-lines(PredSMICTCHO$mean, col="green")
+#lines(PredSMICTCHO$mean, col="green")
 lines(PredAgedPIBTCHO$mean, col="red")
 lines(PredCOMPLET$mean, col="gold")
-legend('topleft', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
+legend('topright', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
                              'Aged + PIB + Taux chômage', 'Complet'),
+       col=c('black', 'brown', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+##Trimestrielle
+
+# 0 Variable
+
+adf.test(MSETrim)
+MSETrimSta <- diff(MSETrim, differences = 2, lag = 4)
+acf(MSETrimSta, lag=20)
+pacf(MSETrimSta)
+kpss.test(MSETrimSta)
+plot(MSETrimSta)
+MSETrimStaTrain <- window(MSETrimSta, end=c(2015,4))
+MSETrimStaTest <- window(MSETrimSta, start=2016)
+
+ARIMAMSETrimStaTrain <- auto.arima(MSETrimStaTrain, stationary = T, seasonal = F)
+PredVide <- forecast(ARIMAMSETrimStaTrain, h = 5)
+plot(PredVide$mean, main="Comparaison entre le modèle ARIMA et les données
+     d'apprentissage pour la masse salariale annuelle", 
+     ylim=c(min(MSETrimStaTest,PredVide$mean),max(MSETrimStaTest,PredVide$mean)),
+     col="red")
+lines(MSETrimStaTest)
+
+# 1 VARIABLE
+
+#PIB
+summary(lm(MSETrim ~ PIBTrim))
+adf.test(PIBTrim)
+PIBTrimSta <- diff(PIBTrim, differences = 1, lag=4)
+acf(PIBTrimSta)
+pacf(PIBTrimSta)
+kpss.test(PIBTrimSta)
+plot(PIBTrimSta)
+PIBTrimStaTrain <- window(PIBTrimSta, end=c(2015,4))
+PIBTrimStaTest <- window(PIBTrimSta, start=2016)
+
+SARIMAPIB <- auto.arima(MSETrimStaTrain, stationary = T, xreg = PIBTrimStaTrain[5:100], seasonal = F)
+PredPIB <- forecast(SARIMAPIB, xreg = PIBTrimStaTest[1:5])
+plot(PredPIB$mean, col="red",
+     ylim=c(min(MSETrimStaTest,PredPIB$mean), max(MSETrimStaTest,PredPIB$mean)),
+     main = "SARIMA expliqué par le PIB vs Vraies valeurs")
+lines(MSETrimStaTest)
+
+#SMIC
+summary(lm(MSEAnn ~ SMICAnn[1:28]))
+adf.test(SMICAnn)
+SMICAnnSta <- diff(SMICAnn, differences = 2)
+acf(SMICAnnSta)
+pacf(SMICAnnSta)
+kpss.test(SMICAnnSta)
+plot(SMICAnnSta)
+SMICAnnStaTrain <- window(SMICAnnSta, end=2015)
+SMICAnnStaTest <- window(SMICAnnSta, start=2016)
+
+SARIMASMIC <- auto.arima(MSEAnnStaTrain, stationary = T, xreg = SMICAnnStaTrain)
+PredSMIC <- forecast(SARIMASMIC, xreg = SMICAnnStaTest[1:2])
+plot(PredSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredSMIC$mean), max(MSEAnnStaTest,PredSMIC$mean)),
+     main = "SARIMA expliqué par le SMIC vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+#TCHO
+summary(lm(MSEAnn ~ TCHOAnn[1:28]))
+adf.test(TCHOAnn)
+TCHOAnnSta <- diff(TCHOAnn, differences = 1)
+acf(TCHOAnnSta)
+pacf(TCHOAnnSta)
+kpss.test(TCHOAnnSta)
+plot(TCHOAnnSta)
+TCHOAnnStaTrain <- window(TCHOAnnSta, end=2015)
+TCHOAnnStaTest <- window(TCHOAnnSta, start=2016)
+
+SARIMATCHO <- auto.arima(MSEAnnStaTrain, stationary = F, xreg = TCHOAnnStaTrain[2:25])
+PredTCHO <- forecast(SARIMATCHO, xreg = TCHOAnnStaTest[1:2])
+plot(PredTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredTCHO$mean), max(MSEAnnStaTest,PredTCHO$mean)),
+     main = "SARIMA expliqué par le taux chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 1 variable", ylim = c(-4924246, 104051097))
+lines(PredAged$mean, col="blue")
+lines(PredPIB$mean, col="green")
+lines(PredSMIC$mean, col="red")
+lines(PredTCHO$mean, col="gold")
+legend('topright', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chômage'),
+       col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+## 2 VARIABLES
+
+#Aged & PIB
+SARIMAAgedPIB <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25]))
+PredAgedPIB <- forecast(SARIMAAgedPIB, xreg = cbind(AGEDAnnStaTest[1:2], PIBAnnStaTest[1:2]))
+plot(PredAgedPIB$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedPIB$mean), max(MSEAnnStaTest,PredAgedPIB$mean)),
+     main = "SARIMA expliqué par 'Aged' et le PIB vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+#Aged & SMIC
+SARIMAAgedSMIC <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], SMICAnnStaTrain))
+PredAgedSMIC <- forecast(SARIMAAgedSMIC, xreg = cbind(AGEDAnnStaTest[1:2], SMICAnnStaTest[1:2]))
+plot(PredAgedSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedSMIC$mean), max(MSEAnnStaTest,PredAgedSMIC$mean)),
+     main = "SARIMA expliqué par 'Aged' et le SMIC vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+#Aged & TCHO
+SARIMAAgedTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]))
+PredAgedTCHO <- forecast(SARIMAAgedTCHO, xreg = cbind(AGEDAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredAgedTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedTCHO$mean), max(MSEAnnStaTest,PredAgedTCHO$mean)),
+     main = "SARIMA expliqué par 'Aged' et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+#PIB & SMIC
+SARIMAPIBSMIC <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], SMICAnnStaTrain))
+PredPIBSMIC <- forecast(SARIMAPIBSMIC, xreg = cbind(PIBAnnStaTest[1:2], SMICAnnStaTest[1:2]))
+plot(PredPIBSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIBSMIC$mean), max(MSEAnnStaTest,PredPIBSMIC$mean)),
+     main = "SARIMA expliqué par le PIB et le SMIC vs Vraies valeurs")
+lines(MSEAnnStaTest)
+#Pas de modèle ARIMA possible
+
+#PIB & TCHO
+SARIMAPIBTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]))
+PredPIBTCHO <- forecast(SARIMAPIBTCHO, xreg = cbind(PIBAnnTest[1:2], TCHOAnnTest[1:2]))
+plot(PredPIBTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIBTCHO$mean), max(MSEAnnStaTest,PredPIBTCHO$mean)),
+     main = "SARIMA expliqué par le PIB et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+EQM(PredPIBTCHO$mean, MSEAnnStaTest)
+
+#SMIC & TCHO
+SARIMASMICTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(SMICAnnStaTrain, TCHOAnnStaTrain[2:25]))
+PredSMICTCHO <- forecast(SARIMASMICTCHO, xreg = cbind(SMICAnnStaTest[1:28], TCHOAnnStaTest[1:28]))
+plot(PredSMICTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredSMICTCHO$mean), max(MSEAnnStaTest,PredSMICTCHO$mean)),
+     main = "SARIMA expliqué par le SMIC et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+#Pas de modèle ARIMA possible
+
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 2 variables", ylim=c(-17144682, 104051097))
+lines(PredAgedPIB$mean, col="red")
+lines(PredAgedSMIC$mean, col="blue")
+lines(PredAgedTCHO$mean, col="green")
+#lines(PredPIBSMIC$mean, col="gold")
+lines(PredPIBTCHO$mean, col="purple")
+#lines(PredSMICTCHO$mean, col="brown")
+legend('topright', 
+       legend = c('Série MSE', 'Aged & PIB', 'Aged & SMIC', 'Aged & Taux chômage',
+                  'PIB & SMIC', 'PIB & Taux chômage', 'SMIC & Taux chômage'),
+       col=c('black', 'red', 'blue', 'green', 'gold', 'purple', 'brown'), lty=1, cex=0.8)
+
+## 3 VARIABLES
+
+#Aged & PIB & SMIC
+SARIMAAgedPIBSMIC <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], SMICAnnStaTrain))
+PredAgedPIBSMIC <- forecast(SARIMAAgedPIBSMIC, xreg = cbind(AGEDAnnStaTest[1:2], PIBAnnStaTest[1:2], SMICAnnStaTest[1:2]))
+plot(PredAgedPIBSMIC$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedPIBSMIC$mean), max(MSEAnnStaTest,PredAgedPIBSMIC$mean)),
+     main = "Lissage exponentiel expliqué par 'Aged', le PIB et le SMIC vs Vraies valeurs")
+lines(MSEAnnStaTest)
+EQM(PredAgedPIBSMIC$mean, MSEAnnStaTest)
+
+#Aged & PIB & TCHO
+SARIMAAgedPIBTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]))
+PredAgedPIBTCHO <- forecast(SARIMAAgedPIBTCHO, xreg = cbind(AGEDAnnStaTest[1:2], PIBAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredAgedPIBTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedPIBTCHO$mean), max(MSEAnnStaTest,PredAgedPIBTCHO$mean)),
+     main = "Lissage exponentiel expliqué par 'Aged', le PIB et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+EQM(PredAgedPIBTCHO$mean, MSEAnnStaTest)
+
+#Aged & SMIC & TCHO
+SARIMAAgedSMICTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(AGEDAnnStaTrain[2:25], SMICAnnStaTrain, TCHOAnnStaTrain[2:25]))
+PredAgedSMICTCHO <- forecast(SARIMAAgedSMICTCHO, xreg = cbind(AGEDAnnStaTest[1:2], SMICAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredAgedSMICTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredAgedSMICTCHO$mean), max(MSEAnnStaTest,PredAgedSMICTCHO$mean)),
+     main = "Lissage exponentiel expliqué par 'Aged', le SMIC et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+EQM(PredAgedSMICTCHO$mean, MSEAnnStaTest)
+
+
+#PIB & SMIC & TCHO
+SARIMAPIBSMICTCHO <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], SMICAnnStaTrain, TCHOAnnStaTrain[2:25]))
+PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBAnnStaTest[1:2], SMICAnnStaTest[1:2], TCHOAnnStaTest[1:2]))
+plot(PredPIBSMICTCHO$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredPIBSMICTCHO$mean), max(MSEAnnStaTest,PredPIBSMICTCHO$mean)),
+     main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+EQM(PredPIBSMICTCHO$mean, MSEAnnStaTest)
+
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 3 variables", ylim=c(0, 104051097))
+lines(PredAgedPIBSMIC$mean, col="blue")
+lines(PredAgedPIBTCHO$mean, col="green")
+lines(PredAgedSMICTCHO$mean, col="red")
+lines(PredPIBSMICTCHO$mean, col="gold")
+legend('topright', legend = c('Série MSE', 'Aged & PIB & SMIC', 'Aged & PIB & Taux chômage',
+                              'Aged & SMIC & Taux chômage', 'PIB & SMIC & Taux chômage'),
+       col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+## 4 VARIABLES
+
+SARIMACOMPLET <- auto.arima(MSEAnnStaTrain, xreg = cbind(PIBAnnStaTrain[2:25], SMICAnnStaTrain, TCHOAnnStaTrain[2:25], AGEDAnnStaTrain[2:25]))
+PredCOMPLET <- forecast(SARIMACOMPLET, xreg = cbind(PIBAnnStaTest[1:2], SMICAnnStaTest[1:2], TCHOAnnStaTest[1:2], AGEDAnnStaTest[1:2]))
+plot(PredCOMPLET$mean, col="red",
+     ylim=c(min(MSEAnnStaTest,PredCOMPLET$mean), max(MSEAnnStaTest,PredCOMPLET$mean)),
+     main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
+lines(MSEAnnStaTest)
+
+#Comparaison des 4 modèles
+
+plot(MSEAnnStaTest, main="Comparaison des 4 modèles", ylim=c(0, 104051097))
+lines(PredVide$mean, col='brown')
+lines(PredPIB$mean, col="blue")
+#lines(PredSMICTCHO$mean, col="green")
+lines(PredAgedPIBTCHO$mean, col="red")
+lines(PredCOMPLET$mean, col="gold")
+legend('topright', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
+                              'Aged + PIB + Taux chômage', 'Complet'),
        col=c('black', 'brown', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
