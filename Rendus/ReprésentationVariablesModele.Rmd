@@ -1,0 +1,172 @@
+---
+title: "Analyse des variables du jeu de données"
+author: "Jules Corbel & Paul Guillotte"
+date: "12 décembre 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tseries)
+library(forecast)
+library(corrplot)
+library(fUnitRoots)
+```
+
+```{r, include=FALSE}
+cor.mtest <- function(mat, conf.level = 0.95){
+  mat <- as.matrix(mat)
+  n <- ncol(mat)
+  p.mat <- lowCI.mat <- uppCI.mat <- matrix(NA, n, n)
+  diag(p.mat) <- 0
+  diag(lowCI.mat) <- diag(uppCI.mat) <- 1
+  for(i in 1:(n-1)){
+    for(j in (i+1):n){
+      tmp <- cor.test(mat[,i], mat[,j], conf.level = conf.level)
+      p.mat[i,j] <- p.mat[j,i] <- tmp$p.value
+      lowCI.mat[i,j] <- lowCI.mat[j,i] <- tmp$conf.int[1]
+      uppCI.mat[i,j] <- uppCI.mat[j,i] <- tmp$conf.int[2]
+    }
+  }
+  return(list(p.mat, lowCI.mat, uppCI.mat))
+}
+```
+  
+Il y a deux ensembles de séries de données : les séries annuelles et les séries trimestrielles. Dans un premier temps, nous nous intéressons aux corrélations entre les variables deux à deux dans ces deux ensembles afin de nous faire une première idée du lien qu'il existe entre les variables.  
+  
+```{r}
+annuelle <- read.csv("~/PFE_Time_Series/Data/Data_Annuel.csv", sep=";", dec=",", nrows=30)
+trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
+
+corrplot(cor(annuelle[1:28,-1]), method = "number", type="lower", p.mat=cor.mtest(annuelle[1:28,-1], 0.95)[[1]], insig="pch", col=colorRampPalette(c("blue", "light blue", "red"))(50))
+corrplot(cor(trim[1:109,-1]), method = "number", type="lower", p.mat=cor.mtest(trim[1:109,-1], 0.95)[[1]], insig="pch", col=colorRampPalette(c("blue", "light blue", "red"))(50))
+
+```
+
+On se rend compte que dans l'ensemble annuel, le taux de chômage est faiblement corrélé avec la variable AGED et non corrélé avec les autres variables. La variable AGED est très liée avec la MSE (variable à expliquer), le PIB et le SMIC. Enfin, les trois variables du trio PIB, MSE et SMIC sont extrêmement corrélées entre elles.
+Pour ce qui concerne l'ensemble trimestriel, le taux de chômage est corrélé négativement avec toutes les autres variables. Une nouvelle fois, les trois variables du trio PIB, MSE et SMIC sont extrêmement liées entre elles.
+
+#Ensemble des variables annuelles
+
+##Masse salariale
+```{r}
+  MSE <- ts(annuelle$MSE, start = 1990, end = c(2017, 1))
+  plot(MSE, main="Evolution de la masse salariale annuelle")
+  acf(MSE, main="Auto-corrélation de la masse salariale annuelle")
+  pacf(MSE, "Autocorrélation partielle de la masse salariale")
+  adfTest(MSE, type='ct')
+```
+
+La masse salariale annuelle possède une composante de tendance de 1990 à 2010. La série tend par la suite à stagner et même à s'inverser à partir de 2013. Nous ne voyons pas de saisonnalité pour cette série.
+
+Comme la série comporte une tendance, elle ne correspond pas à la première condition de la stationnarité du second ordre, soit que la série possède une moyenne constante. Cela est confirmé par la fonction ACF qui 
+décroît régulièrement. Nous effectuons également un test de Dickey-Fuller augmenté servant à vérifier si la série est stationnaire ou non. Les hypothèses de ce test sont les suivantes
+$H{_0}$ : la série possède une racine unitaire i.e la série n'est pas stationnaire
+$H{_1}$ : la série est stationnaire
+La p-value vaut 0.82 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%.
+
+Afin de la stationnariser, nous effectuons donc dans un premier temps une différenciation d'ordre 1. 
+```{r}
+MSEdiff<-diff(MSE)
+plot(MSEdiff)
+kpss.test(MSEdiff)
+adfTest(MSEdiff, type='c')
+```
+
+Le graphique ci-dessus ne semble pas représenter une série stationnaire. Cela est confirmé par la réalisation d'un test KPSS, dont l'hypothèse nulle est que la série est stationnaire ainsi que d'un test ADF. Avec un risque de 5%, ces deux tests nous permettent de conclure que la série n'est pas stationnaire. Nous choisissons donc d'effectuer une différenciation d'ordre 2. ```
+Cette fois-ci, les tests nous permettent de voir que la série obtenue est stationnaire.
+```{r}
+MSEdiff<-diff(MSE, differences=2)
+plot(MSEdiff)
+kpss.test(MSEdiff)
+adfTest(MSEdiff, type='c')
+```
+
+##PIB
+```{r}
+  PIB <- ts(annuelle$PIB, start = 1990, end = 2017)
+  plot(PIB, main="Evolution du PIB annuel")
+  acf(PIB, main="Auto-corrélation du PIB annuel")
+  pacf(PIB, "Autocorrélation partielle du PIB annuel")
+  adfTest(PIB, type='c')
+```
+
+Comme pour la masse salariale, le PIB annuel possède une tendance mais pas de saisonnalité. Cette série n'est donc pas non plus stationnaire. Cependant, il semble cette fois-ci que la tendance soit linéaire, donc une différenciation d'ordre 1 pourrait suffire à stationnariser la série. 
+```{r}
+PIBdiff<-diff(PIB)
+plot(PIBdiff)
+kpss.test(PIBdiff)
+adfTest(PIBdiff, type='c')
+```
+En rpendant un risque de première espèce de 5%, le test KPSS et le test ADF nous indiquent que la série différenciée est bien stationnaire.
+
+```{r}
+  SMIC <- ts(annuelle$SMIC, start = 1990, end = 2019)
+  plot(SMIC, main="Evolution du SMIC annuel")
+  acf(SMIC, main="Auto-corrélation du SMIC annuel")
+  pacf(SMIC, "Autocorrélation partielle du SMIC annuel")
+  adfTest(SMIC, type='c')
+```
+
+La série SMIC possède la même forme que celle du PIB. Nous avons utilisé la même méthodologie pour la rendre stationnaire.
+
+```{r}
+  TCHO <- ts(annuelle$TCHO, start = 1990, end = 2019)
+  plot(TCHO, main="Evolution du taux de chômage annuel")
+  acf(TCHO, main="Auto-corrélation du taux de chômage annuel", lag=30)
+  pacf(TCHO, "Autocorrélation partielle du taux de chômage annuel")
+  adfTest(TCHO, type='c')
+```
+
+Contrairement aux séries précédentes, le taux de chômage ne possède pas de tendance ou de saisonnalité clairement définie. Cependant, cela ne nous permet pas d'affirmer que la série est stationnaire. Le test ADF nous amène à conserver l'hypothèse de non-stationnarité. Nous construisons donc la série différenciée d'ordre 1.
+```{r}
+TCHOdiff<-diff(TCHO)
+plot(TCHOdiff)
+kpss.test(TCHOdiff)
+adfTest(TCHOdiff, type='c')
+```
+Après la différenciation, la représentation graphique ainsi que les réultats des tests de stationnarité nous font conserver cette série.
+
+```{r}
+  AGED <- ts(annuelle$AGED, start = 1990, end = 2019)
+  plot(AGED, main="Evolution de l'AGED annuelle")
+  acf(AGED, main="Auto-corrélation de l'AGED annuelle")
+  pacf(AGED, "Autocorrélation partielle de l'AGED annuelle")
+  adfTest(AGED, type='c')
+```
+Cette variable correspond aux Allocations des Gardes d'Enfants à Domicile. Comme pour le taux de chômage, il est difficile de visualiser une tendance ou une saisonnalité mais le test ADF nous indique que la série n'est pas stationnaire. La différenciation d'ordre 1 suffit pour stationnariser la série.
+```{r}
+AGEDdiff<-diff(AGED)
+plot(AGEDdiff)
+kpss.test(AGEDdiff)
+adfTest(AGEDdiff, type='c')
+```
+
+#Ensemble des variables trimestrielles
+```{r}
+  MSE <- ts(trim$MSE, start = 1990, end = c(2017, 2), frequency=4)
+  plot(MSE, main="Evolution de la masse salariale trimestrielle")
+  acf(MSE, main="Auto-corrélation de la masse salariale trimestrielle")
+  pacf(MSE, "Autocorrélation partielle de la masse trimestrielle")
+```
+
+```{r}
+  PIB <- ts(trim$PIB, start = 1990, end = c(2017, 1), frequency=4)
+  plot(PIB, main="Evolution du PIB trimestriel")
+  acf(PIB, main="Auto-corrélation du PIB trimestriel")
+  pacf(PIB, "Autocorrélation partielle du PIB trimestriel")
+```
+
+```{r}
+  SMIC <- ts(annuelle$SMIC, start = 1990, end = c(2017, 4))
+  plot(SMIC, main="Evolution du SMIC trimestriel")
+  acf(SMIC, main="Auto-corrélation du SMIC trimestriel")
+  pacf(SMIC, "Autocorrélation partielle du SMIC trimestriel")
+```
+
+```{r}
+  TCHO <- ts(annuelle$TCHO, start = 1990, end = c(2017, 4))
+  plot(TCHO, main="Evolution du taux de chômage trimestriel")
+  acf(TCHO, main="Auto-corrélation du taux de chômage trimestriel")
+  pacf(TCHO, "Autocorrélation partielle du taux de chômage trimestriel")
+```
+
