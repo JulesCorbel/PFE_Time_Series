@@ -569,22 +569,22 @@ plot(PredPIB$mean, col="red",
 lines(MSETrimStaTest)
 
 #SMIC
-summary(lm(MSEAnn ~ SMICAnn[1:28]))
-adf.test(SMICAnn)
-SMICAnnSta <- diff(SMICAnn, differences = 2)
-acf(SMICAnnSta)
-pacf(SMICAnnSta)
-kpss.test(SMICAnnSta)
-plot(SMICAnnSta)
-SMICAnnStaTrain <- window(SMICAnnSta, end=2015)
-SMICAnnStaTest <- window(SMICAnnSta, start=2016)
+summary(lm(MSETrim ~ SMICTrim[1:109]))
+adf.test(SMICTrim[1:109])
+SMICTrimSta <- diff(SMICTrim, differences = 1, lag = 4)
+acf(SMICTrimSta)
+pacf(SMICTrimSta)
+kpss.test(SMICTrimSta)
+plot(SMICTrimSta)
+SMICTrimStaTrain <- window(SMICTrimSta, end=c(2015,4))
+SMICTrimStaTest <- window(SMICTrimSta, start=2016)
 
-SARIMASMIC <- auto.arima(MSEAnnStaTrain, stationary = T, xreg = SMICAnnStaTrain)
-PredSMIC <- forecast(SARIMASMIC, xreg = SMICAnnStaTest[1:2])
+SARIMASMIC <- auto.arima(MSETrimStaTrain, stationary = T, xreg = SMICTrimStaTrain[5:100], seasonal = F)
+PredSMIC <- forecast(SARIMASMIC, xreg = SMICTrimStaTest[1:5])
 plot(PredSMIC$mean, col="red",
-     ylim=c(min(MSEAnnStaTest,PredSMIC$mean), max(MSEAnnStaTest,PredSMIC$mean)),
+     ylim=c(min(MSETrimStaTest,PredSMIC$mean), max(MSETrimStaTest,PredSMIC$mean)),
      main = "SARIMA expliqué par le SMIC vs Vraies valeurs")
-lines(MSEAnnStaTest)
+lines(MSETrimStaTest)
 
 #TCHO
 summary(lm(MSEAnn ~ TCHOAnn[1:28]))
