@@ -82,8 +82,7 @@ kpss.test(MSEdiff)
 adfTest(MSEdiff, type='c')
 ```
 
-Le graphique ci-dessus ne semble pas représenter une série stationnaire. Cela est confirmé par la réalisation d'un test KPSS, dont l'hypothèse nulle est que la série est stationnaire ainsi que d'un test ADF. Avec un risque de 5%, ces deux tests nous permettent de conclure que la série n'est pas stationnaire. Nous choisissons donc d'effectuer une différenciation d'ordre 2. ```
-Cette fois-ci, les tests nous permettent de voir que la série obtenue est stationnaire.
+Le graphique ci-dessus ne semble pas représenter une série stationnaire. Cela est confirmé par la réalisation d'un test KPSS, dont l'hypothèse nulle est que la série est stationnaire ainsi que d'un test ADF. Avec un risque de 5%, ces deux tests nous permettent de conclure que la série n'est pas stationnaire. Nous choisissons donc d'effectuer une différenciation d'ordre 2. Cette fois-ci, les tests nous permettent de voir que la série obtenue est stationnaire.
 ```{r}
 MSEdiff<-diff(MSE, differences=2)
 plot(MSEdiff)
@@ -182,8 +181,7 @@ kpss.test(MSEdiff)
 adfTest(MSEdiff, type='c')
 ```
 
-Le graphique ci-dessus ne semble pas représenter une série stationnaire. Cela est confirmé par la réalisation d'un test KPSS et d'un test ADF. Avec un risque de 5%, ces deux tests nous permettent de conclure que la série n'est pas stationnaire. Nous choisissons donc d'effectuer une différenciation d'ordre 2. ```
-Cette fois-ci, les tests nous permettent de voir que la série obtenue est stationnaire.
+Le graphique ci-dessus ne semble pas représenter une série stationnaire. Cela est confirmé par la réalisation d'un test KPSS et d'un test ADF. Avec un risque de 5%, ces deux tests nous permettent de conclure que la série n'est pas stationnaire. Nous choisissons donc d'effectuer une différenciation d'ordre 2. Cette fois-ci, les tests nous permettent de voir que la série obtenue est stationnaire.
 
 ```{r}
 MSEdiff<-diff(MSE, differences=2, lag=4)
@@ -238,7 +236,7 @@ kpss.test(SMICdiff)
 adfTest(SMICdiff, type='c')
 ```
 
-Les résultats des tests d'hypothèses nous permettent donc de confirmer que cette série différenciée est stationnaire avec un risque de premier espèce à 5%. 
+Les résultats des tests d'hypothèse nous permettent donc de confirmer que cette série différenciée est stationnaire avec un risque de premier espèce à 5%. 
 
 ##Taux de chômage des femmes
 
@@ -250,7 +248,7 @@ Les résultats des tests d'hypothèses nous permettent donc de confirmer que cet
   adfTest(TCHOF, type='ct')
 ```
 
-Pour cette dernière série qui représente le taux de chômage trimestrielle des femmes, il ne semble pas y avoir de saisonnalité. On remarque cependant qu'il y a bien une tendance. Le test ADF nous confirme que la série n'est pas stationnaire. Nous allons donc tenter de la stationnariser.
+Pour cette dernière série qui représente le taux de chômage trimestriel des femmes, il ne semble pas y avoir de saisonnalité. On remarque cependant qu'il y a bien une tendance. Le test ADF nous confirme que la série n'est pas stationnaire. Nous allons donc tenter de la stationnariser.
 
 ```{r}
 TCHOFdiff<-diff(TCHOF)
