@@ -659,69 +659,23 @@ legend('bottomright',
 
 ## 3 VARIABLES
 
-#Aged & PIB & SMIC
-SARIMAAgedPIBSMIC <- auto.arima(MSETrimTrain, xreg = cbind(AGEDTrimTrain[2:25], PIBTrimTrain[2:25], SMICTrimTrain))
-PredAgedPIBSMIC <- forecast(SARIMAAgedPIBSMIC, xreg = cbind(AGEDTrimTest[1:2], PIBTrimTest[1:2], SMICTrimTest[1:2]))
-plot(PredAgedPIBSMIC$mean, col="red",
-     ylim=c(min(MSETrimTest,PredAgedPIBSMIC$mean), max(MSETrimTest,PredAgedPIBSMIC$mean)),
-     main = "Lissage exponentiel expliqué par 'Aged', le PIB et le SMIC vs Vraies valeurs")
-lines(MSETrimTest)
-EQM(PredAgedPIBSMIC$mean, MSETrimTest)
-
-#Aged & PIB & TCHO
-SARIMAAgedPIBTCHO <- auto.arima(MSETrimTrain, xreg = cbind(AGEDTrimTrain[2:25], PIBTrimTrain[2:25], TCHOTrimTrain[2:25]))
-PredAgedPIBTCHO <- forecast(SARIMAAgedPIBTCHO, xreg = cbind(AGEDTrimTest[1:2], PIBTrimTest[1:2], TCHOTrimTest[1:2]))
-plot(PredAgedPIBTCHO$mean, col="red",
-     ylim=c(min(MSETrimTest,PredAgedPIBTCHO$mean), max(MSETrimTest,PredAgedPIBTCHO$mean)),
-     main = "Lissage exponentiel expliqué par 'Aged', le PIB et le taux de chômage vs Vraies valeurs")
-lines(MSETrimTest)
-EQM(PredAgedPIBTCHO$mean, MSETrimTest)
-
-#Aged & SMIC & TCHO
-SARIMAAgedSMICTCHO <- auto.arima(MSETrimTrain, xreg = cbind(AGEDTrimTrain[2:25], SMICTrimTrain, TCHOTrimTrain[2:25]))
-PredAgedSMICTCHO <- forecast(SARIMAAgedSMICTCHO, xreg = cbind(AGEDTrimTest[1:2], SMICTrimTest[1:2], TCHOTrimTest[1:2]))
-plot(PredAgedSMICTCHO$mean, col="red",
-     ylim=c(min(MSETrimTest,PredAgedSMICTCHO$mean), max(MSETrimTest,PredAgedSMICTCHO$mean)),
-     main = "Lissage exponentiel expliqué par 'Aged', le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSETrimTest)
-EQM(PredAgedSMICTCHO$mean, MSETrimTest)
-
-
 #PIB & SMIC & TCHO
-SARIMAPIBSMICTCHO <- auto.arima(MSETrimTrain, xreg = cbind(PIBTrimTrain[2:25], SMICTrimTrain, TCHOTrimTrain[2:25]))
-PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBTrimTest[1:2], SMICTrimTest[1:2], TCHOTrimTest[1:2]))
+SARIMAPIBSMICTCHO <- auto.arima(MSETrimTrain, xreg = cbind(PIBTrimTrain, SMICTrimTrain, TCHOTrimTrain))
+PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBTrimTest[1:5], SMICTrimTest[1:5], TCHOTrimTest[1:5]))
 plot(PredPIBSMICTCHO$mean, col="red",
      ylim=c(min(MSETrimTest,PredPIBSMICTCHO$mean), max(MSETrimTest,PredPIBSMICTCHO$mean)),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSETrimTest)
 EQM(PredPIBSMICTCHO$mean, MSETrimTest)
 
-plot(MSETrimTest, main="Comparaison des modèles avec 3 variables", ylim=c(0, 104051097))
-lines(PredAgedPIBSMIC$mean, col="blue")
-lines(PredAgedPIBTCHO$mean, col="green")
-lines(PredAgedSMICTCHO$mean, col="red")
-lines(PredPIBSMICTCHO$mean, col="gold")
-legend('topright', legend = c('Série MSE', 'Aged & PIB & SMIC', 'Aged & PIB & Taux chômage',
-                              'Aged & SMIC & Taux chômage', 'PIB & SMIC & Taux chômage'),
-       col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
-
-## 4 VARIABLES
-
-SARIMACOMPLET <- auto.arima(MSETrimTrain, xreg = cbind(PIBTrimTrain[2:25], SMICTrimTrain, TCHOTrimTrain[2:25], AGEDTrimTrain[2:25]))
-PredCOMPLET <- forecast(SARIMACOMPLET, xreg = cbind(PIBTrimTest[1:2], SMICTrimTest[1:2], TCHOTrimTest[1:2], AGEDTrimTest[1:2]))
-plot(PredCOMPLET$mean, col="red",
-     ylim=c(min(MSETrimTest,PredCOMPLET$mean), max(MSETrimTest,PredCOMPLET$mean)),
-     main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSETrimTest)
-
 #Comparaison des 4 modèles
 
-plot(MSETrimTest, main="Comparaison des 4 modèles", ylim=c(0, 104051097))
+plot(MSETrimTest, main="Comparaison des 4 modèles", ylim=c(1350308319, 1573075485))
 lines(PredVide$mean, col='brown')
 lines(PredPIB$mean, col="blue")
-#lines(PredSMICTCHO$mean, col="green")
-lines(PredAgedPIBTCHO$mean, col="red")
-lines(PredCOMPLET$mean, col="gold")
-legend('topright', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
+lines(PredSMICTCHO$mean, col="green")
+lines(PredPIBSMICTCHO$mean, col="red")
+legend('left', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
                               'Aged + PIB + Taux chômage', 'Complet'),
        col=c('black', 'brown', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
