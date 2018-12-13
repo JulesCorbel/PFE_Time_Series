@@ -2,8 +2,12 @@
 title: "Analyse des variables du jeu de données"
 author: "Jules Corbel & Paul Guillotte"
 date: "12 décembre 2018"
-output: pdf_document
+output: 
+  pdf_document:
+    toc: true
 ---
+
+\newpage
 
 ```{r setup, include=FALSE}
 library(tseries)
@@ -37,8 +41,14 @@ Il y a deux ensembles de séries de données : les séries annuelles et les sér
 annuelle <- read.csv("~/PFE_Time_Series/Data/Data_Annuel.csv", sep=";", dec=",", nrows=30)
 trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 
-corrplot(cor(annuelle[1:28,-1]), method = "number", type="lower", p.mat=cor.mtest(annuelle[1:28,-1], 0.95)[[1]], insig="pch", col=colorRampPalette(c("blue", "light blue", "red"))(50))
-corrplot(cor(trim[1:109,-1]), method = "number", type="lower", p.mat=cor.mtest(trim[1:109,-1], 0.95)[[1]], insig="pch", col=colorRampPalette(c("blue", "light blue", "red"))(50))
+corrplot(cor(annuelle[1:28,-1]), method = "number", type="lower", 
+        p.mat=cor.mtest(annuelle[1:28,-1], 0.95)[[1]], insig="pch", 
+        col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
+         Corrélations entre les variables annuelles")
+corrplot(cor(trim[1:109,-1]), method = "number", type="lower",
+         p.mat=cor.mtest(trim[1:109,-1], 0.95)[[1]], insig="pch",
+         col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
+         Corrélations entre les variables trimestrielles")
 
 ```
 
@@ -97,7 +107,9 @@ plot(PIBdiff)
 kpss.test(PIBdiff)
 adfTest(PIBdiff, type='c')
 ```
-En rpendant un risque de première espèce de 5%, le test KPSS et le test ADF nous indiquent que la série différenciée est bien stationnaire.
+En prenant un risque de première espèce de 5%, le test KPSS et le test ADF nous indiquent que la série différenciée est bien stationnaire.
+
+##SMIC
 
 ```{r}
   SMIC <- ts(annuelle$SMIC, start = 1990, end = 2019)
@@ -108,6 +120,8 @@ En rpendant un risque de première espèce de 5%, le test KPSS et le test ADF no
 ```
 
 La série SMIC possède la même forme que celle du PIB. Nous avons utilisé la même méthodologie pour la rendre stationnaire.
+
+##Taux de chômage
 
 ```{r}
   TCHO <- ts(annuelle$TCHO, start = 1990, end = 2019)
@@ -126,6 +140,8 @@ adfTest(TCHOdiff, type='c')
 ```
 Après la différenciation, la représentation graphique ainsi que les réultats des tests de stationnarité nous font conserver cette série.
 
+##Allocations Garde Enfant à Domicile (AGED)
+
 ```{r}
   AGED <- ts(annuelle$AGED, start = 1990, end = 2019)
   plot(AGED, main="Evolution de l'AGED annuelle")
@@ -142,11 +158,38 @@ adfTest(AGEDdiff, type='c')
 ```
 
 #Ensemble des variables trimestrielles
+
+##MSE
+
 ```{r}
   MSE <- ts(trim$MSE, start = 1990, end = c(2017, 2), frequency=4)
   plot(MSE, main="Evolution de la masse salariale trimestrielle")
   acf(MSE, main="Auto-corrélation de la masse salariale trimestrielle")
   pacf(MSE, "Autocorrélation partielle de la masse trimestrielle")
+  adfTest(MSE, type='ct')
+```
+
+La masse salariale trimestrielle possède une composante de tendance de 1990 à 2010. La série tend par la suite à stagner. Nous remarquons également une saisonnalité sur cette série, qui est de plus en plus marquée à mesure que le temps passe. 
+
+Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la fonction ACF qui décroît régulièrement. Nous effectuons également un test de Dickey-Fuller augmenté servant à vérifier si la série est stationnaire ou non. La p-value est de 0.66 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%.
+
+Afin de la stationnariser, nous effectuons donc dans un premier temps une différenciation d'ordre 1.
+
+```{r}
+MSEdiff<-diff(MSE, lag=4)
+plot(MSEdiff)
+kpss.test(MSEdiff)
+adfTest(MSEdiff, type='c')
+```
+
+Le graphique ci-dessus ne semble pas représenter une série stationnaire. Cela est confirmé par la réalisation d'un test KPSS et d'un test ADF. Avec un risque de 5%, ces deux tests nous permettent de conclure que la série n'est pas stationnaire. Nous choisissons donc d'effectuer une différenciation d'ordre 2. ```
+Cette fois-ci, les tests nous permettent de voir que la série obtenue est stationnaire.
+
+```{r}
+MSEdiff<-diff(MSE, differences=2, lag=4)
+plot(MSEdiff)
+kpss.test(MSEdiff)
+adfTest(MSEdiff, type='c')
 ```
 
 ```{r}
@@ -154,19 +197,66 @@ adfTest(AGEDdiff, type='c')
   plot(PIB, main="Evolution du PIB trimestriel")
   acf(PIB, main="Auto-corrélation du PIB trimestriel")
   pacf(PIB, "Autocorrélation partielle du PIB trimestriel")
+  adfTest(PIB, type='ct')
 ```
 
+Comme pour la masse salariale, le PIB annuel possède une tendance. Cependant, il ne semble pas posséder de saisonnalité. Cette série n'est donc pas non plus stationnaire. Cependant, il semble cette fois-ci que la tendance soit linéaire, donc une différenciation d'ordre 1 pourrait suffire à stationnariser la série.
+
 ```{r}
-  SMIC <- ts(annuelle$SMIC, start = 1990, end = c(2017, 4))
+PIBdiff<-diff(PIB)
+plot(PIBdiff)
+kpss.test(PIBdiff)
+adfTest(PIBdiff, type='c')
+```
+
+En prenant un risque de première espèce de 5%, le test KPSS et le test ADF nous indiquent que la série différenciée est bien stationnaire, sans avoir eu à prendre en compte une quelconque saisonnalité.
+
+##SMIC
+
+```{r}
+  SMIC <- ts(trim$SMIC, start = c(1990,1), end = c(2017, 4), frequency = 4)
   plot(SMIC, main="Evolution du SMIC trimestriel")
   acf(SMIC, main="Auto-corrélation du SMIC trimestriel")
   pacf(SMIC, "Autocorrélation partielle du SMIC trimestriel")
+  adfTest(SMIC, type='ct')
 ```
+
+Au regard de la représentation graphique, on s'aperçoit qu'il y a bien une tendance. Pour la saisonnalité, il est plus difficile de savoir s'il en existe une ou pas, puisque la série semble augmenter seulement à certains temps. Nous allons donc supprimer la tendance dans un premier temps pour définir s'il existe ou non une saisonnalité.
 
 ```{r}
-  TCHO <- ts(annuelle$TCHO, start = 1990, end = c(2017, 4))
-  plot(TCHO, main="Evolution du taux de chômage trimestriel")
-  acf(TCHO, main="Auto-corrélation du taux de chômage trimestriel")
-  pacf(TCHO, "Autocorrélation partielle du taux de chômage trimestriel")
+SMICdiff<-diff(SMIC)
+acf(SMICdiff)
+pacf(SMICdiff)
 ```
 
+Après analyse de la fonction ACF, il semblerait qu'il existe bien une saisonnalité. Nous allons donc la supprimer avec la tendance, pour rendre la série stationnaire.
+
+```{r}
+SMICdiff<-diff(SMIC, lag=4, differences = 2)
+plot(SMICdiff)
+kpss.test(SMICdiff)
+adfTest(SMICdiff, type='c')
+```
+
+Les résultats des tests d'hypothèses nous permettent donc de confirmer que cette série différenciée est stationnaire avec un risque de premier espèce à 5%. 
+
+##Taux de chômage des femmes
+
+```{r}
+  TCHOF <- ts(trim$TCHOF, start = c(1990,1), end = c(2017, 4), frequency = 4)
+  plot(TCHOF, main="Evolution du taux de chômage des femmes trimestriel")
+  acf(TCHOF, main="Auto-corrélation du taux de chômage des femmes trimestriel")
+  pacf(TCHOF, "Autocorrélation partielle du taux de chômage des femmes trimestriel")
+  adfTest(TCHOF, type='ct')
+```
+
+Pour cette dernière série qui représente le taux de chômage trimestrielle des femmes, il ne semble pas y avoir de saisonnalité. On remarque cependant qu'il y a bien une tendance. Le test ADF nous confirme que la série n'est pas stationnaire. Nous allons donc tenter de la stationnariser.
+
+```{r}
+TCHOFdiff<-diff(TCHOF)
+plot(TCHOFdiff)
+kpss.test(TCHOFdiff)
+adfTest(TCHOFdiff, type='c')
+```
+
+Après une différenciation d'ordre 1, les tests ADF et KPSS nous amènent à conclure que la série est stationnaire.
