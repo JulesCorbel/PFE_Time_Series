@@ -11,39 +11,10 @@ visualisation <- function(variable, start, end, freq, titre) {
 }
 
 lissage_exponentiel<-function(serie_train, start, end_train, freq, nb_predicted_values){
-  if(!tendance_exists(serie_train)){
-    lissage<- HoltWinters(serie_train, alpha=NULL,beta=F, gamma=F)
-  }
-  else if(freq > 1){
-    lissage<- HoltWinters(serie_train, alpha=NULL,beta=NULL, gamma=NULL, seasonal=calcul_saisonnalite(serie_train, start, end_train, freq))
-  }
-  else{
-    lissage<- HoltWinters(serie_train, alpha=NULL,beta=NULL, gamma=F)
-  }
-  
+  lissage<-ets(serie_train, "ZZZ")
+  print(lissage)
   predictions <- forecast(lissage, h = nb_predicted_values)
   return(predictions)
-}
-
-tendance_exists<-function(serie){
-  regression<-lm(seq(1, length(serie))~serie)
-  pvalue<-summary(regression)$coefficients[2,4]
-  if(pvalue < 0.05)
-    return (TRUE)
-  else
-    return (FALSE)
-}
-
-calcul_saisonnalite<-function(serie, start, end, freq){
-  serie_matrix<-matrix(data=serie, nrow=end-start+1, byrow=T)
-  mean<-apply(serie_matrix, 1, mean, na.rm=T)
-  sd<-apply(serie_matrix, 1, sd, na.rm=T)
-  regression<-lm(sd~mean)
-  pvalue<-summary(regression)$coefficients[2,4]
-  if(pvalue > 0.05)
-    return ("add")
-  else
-    return ("mul")
 }
 
 best_model<-function(serie_test, LEpredictions, SARIMApredictions){

@@ -1,7 +1,7 @@
 #Ce script correspond à la modélisation des différentes séries temporelles
 
 #rm(list=ls())
-setwd("~/PFE_Time_Series")
+setwd("C:/Users/Jules/Documents/Cygwin/app/home/Jules/PFE_Time_Series")
 library(tseries)
 library(forecast)
 library(corrplot)
@@ -276,7 +276,7 @@ AGEDAnnPred<-lissage_exponentiel(AGEDAnnTrain, 1990, 2015, 1, 4)
 
 plot(AGEDAnnTest, type='l',
      main="Comparaison entre la prédiction du lissage exponentiel et les 
-      valeurs réelles pour le AGED annuel")
+      valeurs réelles pour le AGED annuel", ylim=c(min(AGEDAnnPred$mean), max(AGEDAnnTest)))
 lines(AGEDAnnPred$mean, col="red")
 
 ##Modèles SARIMA
