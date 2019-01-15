@@ -1,7 +1,7 @@
 #Ce script correspond à la modélisation des différentes séries temporelles
 
 #rm(list=ls())
-setwd("C:/Users/Jules/Documents/Cygwin/app/home/Jules/PFE_Time_Series")
+setwd("PFE_Time_Series")
 library(tseries)
 library(forecast)
 library(corrplot)
@@ -47,6 +47,11 @@ plot(MSEAnnTest, type='l', ylim=c(min(MSEAnnTest,MSEAnnPred$mean),max(MSEAnnTest
      main="Comparaison entre la prédiction du lissage exponentiel et 
      les valeurs réelles pour la masse salariale annuelle")
 lines(MSEAnnPred$mean, col="red")
+
+plot(MSEAnnTrain, type="l", ylim=c(min(MSEAnnTrain,MSEAnnPred$fitted),max(MSEAnnTrain,MSEAnnPred$fitted)),
+     main="Comparaison entre les données prédites par le lissage et 
+     les valeurs réelles pour la masse salariale annuelle")
+lines(MSEAnnPred$fitted, col="red")
 
 MSETrimPred<-lissage_exponentiel(MSETrimTrain, 1990, 2015, 4, 6)
 

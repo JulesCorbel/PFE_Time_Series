@@ -587,7 +587,7 @@ pacf(SMICTrimSta)
 kpss.test(SMICTrimSta)
 plot(SMICTrimSta)
 
-SARIMASMIC <- auto.arima(MSETrimTrain, xreg = SMICTrimTrain, seasonal = F)
+SARIMASMIC <- auto.arima(MSETrimTrain, xreg = SMICTrimTrain)
 PredSMIC <- forecast(SARIMASMIC, xreg = SMICTrimTest[1:5])
 plot(PredSMIC$mean, col="red",
      ylim=c(min(MSETrimTest,PredSMIC$mean), max(MSETrimTest,PredSMIC$mean)),
@@ -596,7 +596,7 @@ lines(MSETrimTest)
 EQM(PredSMIC$mean, MSETrimTest)
 
 #TCHO
-summary(lm(MSETrim ~ TCHOTrim[1:28]))
+summary(lm(MSETrim ~ TCHOTrim[1:109]))
 adf.test(TCHOTrim)
 TCHOTrimSta <- diff(TCHOTrim, differences = 1)
 acf(TCHOTrimSta)
@@ -616,14 +616,14 @@ plot(MSETrimTest, main="Comparaison des modèles avec 1 variable", ylim=c(1.35e+
 lines(PredPIB$mean, col="green")
 lines(PredSMIC$mean, col="red")
 lines(PredTCHO$mean, col="gold")
-legend('bottomright', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chômage'),
-       col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+legend('bottomright', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
+       col=c('black', 'green', 'red', 'gold'), lty=1, cex=0.8)
 
 ## 2 VARIABLES
 
 #PIB & SMIC
 SARIMAPIBSMIC <- auto.arima(MSETrimTrain, xreg = cbind(PIBTrimTrain, SMICTrimTrain))
-PredPIBSMIC <- forecast(SARIMAPIBSMIC, xreg = cbind(PIBTrimTest[1:6], SMICTrimTest[1:6]))
+PredPIBSMIC <- forecast(SARIMAPIBSMIC, xreg = cbind(PIBTrimTest[1:5], SMICTrimTest[1:5]))
 plot(PredPIBSMIC$mean, col="red",
      ylim=c(min(MSETrimTest,PredPIBSMIC$mean), max(MSETrimTest,PredPIBSMIC$mean)),
      main = "SARIMA expliqué par le PIB et le SMIC vs Vraies valeurs")
@@ -653,9 +653,8 @@ lines(PredPIBSMIC$mean, col="gold")
 lines(PredPIBTCHO$mean, col="purple")
 lines(PredSMICTCHO$mean, col="brown")
 legend('bottomright', 
-       legend = c('Série MSE', 'Aged & PIB', 'Aged & SMIC', 'Aged & Taux chômage',
-                  'PIB & SMIC', 'PIB & Taux chômage', 'SMIC & Taux chômage'),
-       col=c('black', 'red', 'blue', 'green', 'gold', 'purple', 'brown'), lty=1, cex=0.8)
+       legend = c('Série MSE', 'PIB & SMIC', 'PIB & Taux chômage', 'SMIC & Taux chômage'),
+       col=c('black', 'gold', 'purple', 'brown'), lty=1, cex=0.8)
 
 ## 3 VARIABLES
 
@@ -676,6 +675,6 @@ lines(PredPIB$mean, col="blue")
 lines(PredSMICTCHO$mean, col="green")
 lines(PredPIBSMICTCHO$mean, col="red")
 legend('left', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
-                              'Aged + PIB + Taux chômage', 'Complet'),
-       col=c('black', 'brown', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+                              'Aged + PIB + Taux chômage'),
+       col=c('black', 'brown', 'blue', 'green', 'red'), lty=1, cex=0.8)
 

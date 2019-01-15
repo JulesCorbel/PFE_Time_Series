@@ -131,6 +131,7 @@ La série SMIC possède la même forme que celle du PIB. Nous avons utilisé la 
 ```
 
 Contrairement aux séries précédentes, le taux de chômage ne possède pas de tendance ou de saisonnalité clairement définie. Cependant, cela ne nous permet pas d'affirmer que la série est stationnaire. Le test ADF nous amène à conserver l'hypothèse de non-stationnarité. Nous construisons donc la série différenciée d'ordre 1.
+
 ```{r}
 TCHOdiff<-diff(TCHO)
 plot(TCHOdiff)
