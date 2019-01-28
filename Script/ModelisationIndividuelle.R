@@ -33,7 +33,7 @@ corrplot(cor(annuelle[1:28,]), method = "number", type="lower", p.mat=res[[1]], 
 
 ###Séries temporelles MSE
 MSEAnn<-visualisation(annuelle$MSE, 1990, 2017, 1, "de la masse salariale annuelle")
-MSETrim<-visualisation(trim$MSE, 1990, 2017, 4, "de la masse salariale trimestrielle")
+MSETrim<-visualisation(trim$MSE, 1990, c(2017,2), 4, "de la masse salariale trimestrielle")
 
 MSEAnnTrain <- window(MSEAnn, start=1990, end=2015)
 MSETrimTrain <- window(MSETrim, start=1990, end=c(2015,4))

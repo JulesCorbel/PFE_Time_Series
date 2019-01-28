@@ -1,4 +1,5 @@
 #Ce script contient toutes les fonctions créées et utilisées au sein du projet
+rm(list=ls())
 
 visualisation <- function(variable, start, end, freq, titre) {
 

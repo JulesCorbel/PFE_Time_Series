@@ -4,7 +4,7 @@ library(vars)
 library(smooth)
 library(MTS)
 library(portes)
-library(fUnitRoots)
+
 ###Lissage Exponentiel
 ##MSE annuelle
 
@@ -293,14 +293,7 @@ legend('right', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', '
 
 # 0 Variable
 
-adf.test(MSEAnn)
-MSEAnnSta <- diff(MSEAnn, differences = 2)
-acf(MSEAnnSta)
-pacf(MSEAnnSta)
-kpss.test(MSEAnnSta)
-plot(MSEAnnSta)
-MSEAnnTrain <- window(MSEAnn, end=2015)
-MSEAnnTest <- window(MSEAnn, start=2016)
+
 
 ARIMAMSEAnnTrain <- auto.arima(MSEAnnTrain, stationary = F)
 PredVide <- forecast(ARIMAMSEAnnTrain, h = 2)
@@ -314,18 +307,6 @@ EQM(MSEAnnTest, PredVide$mean)
 # 1 VARIABLE
 
 #Aged
-summary(lm(MSEAnn ~ AGEDAnn[1:28]))
-adf.test(AGEDAnn)
-AGEDAnnSta <- diff(AGEDAnn, differences = 1)
-acf(AGEDAnnSta)
-pacf(AGEDAnnSta)
-kpss.test(AGEDAnnSta)
-plot(AGEDAnnSta)
-AGEDAnnTrain <- window(AGEDAnn, end=2015)
-AGEDAnnTest <- window(AGEDAnn, start=2016)
-
-#Pas même taille à cause du diff -> On s'assure de commencer à la même année pour les 2 séries
-
 SARIMAAged <- auto.arima(MSEAnnTrain, stationary = F, xreg = AGEDAnnTrain)
 PredAged <- forecast(SARIMAAged, xreg = AGEDAnnTest[1:2])
 plot(PredAged$mean, col="red", 
@@ -335,16 +316,6 @@ lines(MSEAnnTest)
 EQM(MSEAnnTest, PredAged$mean)
 
 #PIB
-summary(lm(MSEAnn ~ PIBAnn[1:28]))
-adf.test(PIBAnn)
-PIBAnnSta <- diff(PIBAnn, differences = 1)
-acf(PIBAnnSta)
-pacf(PIBAnnSta)
-kpss.test(PIBAnnSta)
-plot(PIBAnnSta)
-PIBAnnTrain <- window(PIBAnn, end=2015)
-PIBAnnTest <- window(PIBAnn, start=2016)
-
 SARIMAPIB <- auto.arima(MSEAnnTrain, stationary = F, xreg = PIBAnnTrain)
 PredPIB <- forecast(SARIMAPIB, xreg = PIBAnnTest[1:2])
 plot(PredPIB$mean, col="red",
@@ -354,16 +325,6 @@ lines(MSEAnnTest)
 EQM(MSEAnnTest, PredPIB$mean)
 
 #SMIC
-summary(lm(MSEAnn ~ SMICAnn[1:28]))
-adf.test(SMICAnn)
-SMICAnnSta <- diff(SMICAnn, differences = 2)
-acf(SMICAnnSta)
-pacf(SMICAnnSta)
-kpss.test(SMICAnnSta)
-plot(SMICAnnSta)
-SMICAnnTrain <- window(SMICAnn, end=2015)
-SMICAnnTest <- window(SMICAnn, start=2016)
-
 SARIMASMIC <- auto.arima(MSEAnnTrain, stationary = F, xreg = SMICAnnTrain)
 PredSMIC <- forecast(SARIMASMIC, xreg = SMICAnnTest[1:2])
 plot(PredSMIC$mean, col="red",
@@ -373,16 +334,6 @@ lines(MSEAnnTest)
 EQM(MSEAnnTest, PredSMIC$mean)
 
 #TCHO
-summary(lm(MSEAnn ~ TCHOAnn[1:28]))
-adf.test(TCHOAnn)
-TCHOAnnSta <- diff(TCHOAnn, differences = 1)
-acf(TCHOAnnSta)
-pacf(TCHOAnnSta)
-kpss.test(TCHOAnnSta)
-plot(TCHOAnnSta)
-TCHOAnnTrain <- window(TCHOAnn, end=2015)
-TCHOAnnTest <- window(TCHOAnn, start=2016)
-
 SARIMATCHO <- auto.arima(MSEAnnTrain, stationary = F, xreg = TCHOAnnTrain)
 PredTCHO <- forecast(SARIMATCHO, xreg = TCHOAnnTest[1:2])
 plot(PredTCHO$mean, col="red",
@@ -541,14 +492,6 @@ legend('topright', legend = c('Série MSE', 'Pas de variable explicative', 'PIB'
 ##Trimestrielle
 
 # 0 Variable
-
-adf.test(MSETrim)
-MSETrimSta <- diff(MSETrim, differences = 2, lag = 4)
-acf(MSETrimSta, lag=20)
-pacf(MSETrimSta)
-kpss.test(MSETrimSta)
-plot(MSETrimSta)
-
 ARIMAMSETrimTrain <- auto.arima(MSETrimTrain)
 PredVide <- forecast(ARIMAMSETrimTrain, h = 5)
 plot(PredVide$mean, main="Comparaison entre le modèle ARIMA et les données
@@ -561,15 +504,6 @@ EQM(PredVide$mean, MSETrimTest)
 # 1 VARIABLE
 
 #PIB
-summary(lm(MSETrim ~ PIBTrim))
-adf.test(PIBTrim)
-PIBTrimSta <- diff(PIBTrim, differences = 1)
-acf(PIBTrimSta)
-pacf(PIBTrimSta)
-kpss.test(PIBTrimSta)
-adfTest(PIBTrimSta, type='c')
-plot(PIBTrimSta)
-
 SARIMAPIB <- auto.arima(MSETrimTrain, xreg = PIBTrimTrain)
 PredPIB <- forecast(SARIMAPIB, xreg = PIBTrimTest[1:5])
 plot(PredPIB$mean, col="red",
@@ -579,14 +513,6 @@ lines(MSETrimTest)
 EQM(PredPIB$mean, MSETrimTest)
 
 #SMIC
-summary(lm(MSETrim ~ SMICTrim[1:109]))
-adf.test(SMICTrim[1:109])
-SMICTrimSta <- diff(SMICTrim, differences = 1, lag = 4)
-acf(SMICTrimSta)
-pacf(SMICTrimSta)
-kpss.test(SMICTrimSta)
-plot(SMICTrimSta)
-
 SARIMASMIC <- auto.arima(MSETrimTrain, xreg = SMICTrimTrain)
 PredSMIC <- forecast(SARIMASMIC, xreg = SMICTrimTest[1:5])
 plot(PredSMIC$mean, col="red",
@@ -596,14 +522,6 @@ lines(MSETrimTest)
 EQM(PredSMIC$mean, MSETrimTest)
 
 #TCHO
-summary(lm(MSETrim ~ TCHOTrim[1:109]))
-adf.test(TCHOTrim)
-TCHOTrimSta <- diff(TCHOTrim, differences = 1)
-acf(TCHOTrimSta)
-pacf(TCHOTrimSta)
-kpss.test(TCHOTrimSta)
-plot(TCHOTrimSta)
-
 SARIMATCHO <- auto.arima(MSETrimTrain, xreg = TCHOTrimTrain)
 PredTCHO <- forecast(SARIMATCHO, h=5, xreg = TCHOTrimTest[1:5])
 plot(PredTCHO$mean, col="red",
