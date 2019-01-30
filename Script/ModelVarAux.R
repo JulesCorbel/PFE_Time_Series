@@ -2,7 +2,6 @@
 
 library(vars)
 library(smooth)
-library(MTS)
 library(portes)
 
 ###Lissage Exponentiel
