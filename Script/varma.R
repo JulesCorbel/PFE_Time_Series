@@ -405,9 +405,9 @@ plot(AGEDAnnStaTest, ylim=c(-30,30))
 lines(VARAGEDSta$forecast$AGEDAnnStaTrain$mean, col = "red")
 
 #PIB
-VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25]), lag.max=6)
-VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25]), p=1, type="const")
-VARPIBSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25]), p=1, type="const"))
+VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain), lag.max=6)
+VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain), p=1, type="const")
+VARPIBSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain), p=1, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARPIBSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARPIBSta$forecast$MSEAnnStaTrain$mean)
@@ -427,9 +427,9 @@ plot(SMICAnnStaTest, ylim=c(-0.5,0.5))
 lines(VARSMICSta$forecast$SMICAnnStaTrain$mean, col = "red")
 
 #TCHO
-VARselect(cbind(MSEAnnStaTrain, TCHOAnnStaTrain[2:25]), lag.max=6)
-VAR(cbind(MSEAnnStaTrain, TCHOAnnStaTrain[2:25]), p=1, type="const")
-VARTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, TCHOAnnStaTrain[2:25]), p=1, type="const"))
+VARselect(cbind(MSEAnnStaTrain, TCHOAnnStaTrain), lag.max=6)
+VAR(cbind(MSEAnnStaTrain, TCHOAnnStaTrain), p=4, type="const")
+VARTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, TCHOAnnStaTrain), p=4, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARTCHOSta$forecast$MSEAnnStaTrain$mean)
@@ -448,9 +448,9 @@ legend('bottomleft', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chôm
 
 #2 Variables
 #Aged & PIB
-VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25]), lag.max=4)
-VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25]), p=4, type="const")
-VARAGEDPIBSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25]), p=4, type="const"))
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain), lag.max=4)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain), p=4, type="const")
+VARAGEDPIBSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain), p=4, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARAGEDPIBSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARAGEDPIBSta$forecast$MSEAnnStaTrain$mean)
@@ -460,9 +460,9 @@ plot(PIBAnnStaTest, ylim=c(-10,100))
 lines(VARAGEDPIBSta$forecast$PIBAnnStaTrain$mean, col = "red")
 
 #Aged & SMIC
-VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], SMICAnnStaTrain), lag.max=5)
-VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], SMICAnnStaTrain), p=5, type="const")
-VARAGEDSMICSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], SMICAnnStaTrain), p=5, type="const"))
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, SMICAnnStaTrain), lag.max=5)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, SMICAnnStaTrain), p=5, type="const")
+VARAGEDSMICSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, SMICAnnStaTrain), p=5, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARAGEDSMICSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARAGEDSMICSta$forecast$MSEAnnStaTrain$mean)
@@ -473,9 +473,9 @@ plot(SMICAnnStaTest, ylim=c(-1,1))
 lines(VARAGEDSMICSta$forecast$SMICAnnStaTrain$mean, col = "red")
 
 #Aged & TCHO
-VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), lag.max=5)
-VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), p=5, type="const")
-VARAGEDTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), p=5, type="const"))
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, TCHOAnnStaTrain), lag.max=5)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, TCHOAnnStaTrain), p=5, type="const")
+VARAGEDTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, TCHOAnnStaTrain), p=5, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARAGEDTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARAGEDTCHOSta$forecast$MSEAnnStaTrain$mean)
@@ -485,9 +485,9 @@ plot(TCHOAnnStaTest, ylim=c(-2,2))
 lines(VARAGEDTCHOSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 
 #PIB & SMIC
-VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25], SMICAnnStaTrain), lag.max=5)
-VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25], SMICAnnStaTrain), p=5, type="const")
-VARPIBSMICSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25], SMICAnnStaTrain), p=5, type="const"))
+VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain), lag.max=5)
+VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain), p=5, type="const")
+VARPIBSMICSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain), p=5, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARPIBSMICSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARPIBSMICSta$forecast$MSEAnnStaTrain$mean)
@@ -497,9 +497,9 @@ plot(SMICAnnStaTest, ylim=c(-2,2))
 lines(VARPIBSMICSta$forecast$SMICAnnStaTrain$mean, col = "red")
 
 #PIB & TCHO
-VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), lag.max=5)
-VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), p=5, type="const")
-VARPIBTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), p=5, type="const"))
+VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain, TCHOAnnStaTrain), lag.max=5)
+VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain, TCHOAnnStaTrain), p=5, type="const")
+VARPIBTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain, TCHOAnnStaTrain), p=5, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARPIBTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARPIBTCHOSta$forecast$MSEAnnStaTrain$mean)
@@ -509,9 +509,9 @@ plot(TCHOAnnStaTest, ylim=c(-2,2))
 lines(VARPIBTCHOSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 
 #SMIC & TCHO
-VARselect(cbind(MSEAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain[2:25]), lag.max=5)
-VAR(cbind(MSEAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain[2:25]), p=5, type="const")
-VARSMICTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain[2:25]), p=5, type="const"))
+VARselect(cbind(MSEAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), lag.max=5)
+VAR(cbind(MSEAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=5, type="const")
+VARSMICTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=5, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARSMICTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARSMICTCHOSta$forecast$MSEAnnStaTrain$mean)
@@ -534,9 +534,9 @@ legend('topright',
 
 #3 Variables
 #Aged & PIB & SMIC
-VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], SMICAnnStaTrain), lag.max=4)
-VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], SMICAnnStaTrain), p=4, type="const")
-VARAGEDPIBSMICSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], SMICAnnStaTrain), p=4, type="const"))
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain), lag.max=4)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain), p=4, type="const")
+VARAGEDPIBSMICSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain), p=4, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARAGEDPIBSMICSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARAGEDPIBSMICSta$forecast$MSEAnnStaTrain$mean)
@@ -548,9 +548,9 @@ plot(SMICAnnStaTest, ylim=c(-1,1))
 lines(VARAGEDPIBSMICSta$forecast$SMICAnnStaTrain$mean, col = "red")
 
 #Aged & PIB & TCHO
-VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), lag.max=4)
-VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), p=4, type="const")
-VARAGEDPIBTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25], PIBAnnStaTrain[2:25], TCHOAnnStaTrain[2:25]), p=4, type="const"))
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, TCHOAnnStaTrain), lag.max=4)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, TCHOAnnStaTrain), p=4, type="const")
+VARAGEDPIBTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, TCHOAnnStaTrain), p=4, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
 lines(VARAGEDPIBTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
 EQM(MSEAnnStaTest, VARAGEDPIBTCHOSta$forecast$MSEAnnStaTrain$mean)
@@ -562,23 +562,57 @@ plot(TCHOAnnStaTest, ylim=c(-1,1))
 lines(VARAGEDPIBTCHOSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 
 #Aged & SMIC & TCHO
-SARIMAAgedSMICTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(AGEDAnnTrain, SMICAnnTrain, TCHOAnnTrain))
-PredAgedSMICTCHO <- forecast(SARIMAAgedSMICTCHO, xreg = cbind(AGEDAnnTest[1:2], SMICAnnTest[1:2], TCHOAnnTest[1:2]))
-plot(PredAgedSMICTCHO$mean, col="red",
-     ylim=c(min(MSEAnnTest,PredAgedSMICTCHO$mean), max(MSEAnnTest,PredAgedSMICTCHO$mean)),
-     main = "Lissage exponentiel expliqué par 'Aged', le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
-EQM(PredAgedSMICTCHO$mean, MSEAnnTest)
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), lag.max=4)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=4, type="const")
+VARAGEDSMICTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=4, type="const"))
+plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
+lines(VARAGEDSMICTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
+EQM(MSEAnnStaTest, VARAGEDSMICTCHOSta$forecast$MSEAnnStaTrain$mean)
+plot(AGEDAnnStaTest, ylim=c(-100,100))
+lines(VARAGEDSMICTCHOSta$forecast$AGEDAnnStaTrain$mean, col = "red")
+plot(SMICAnnStaTest, ylim=c(-1,1))
+lines(VARAGEDSMICTCHOSta$forecast$SMICAnnStaTrain$mean, col = "red")
+plot(TCHOAnnStaTest, ylim=c(-10,10))
+lines(VARAGEDSMICTCHOSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 
 
 #PIB & SMIC & TCHO
-SARIMAPIBSMICTCHO <- auto.arima(MSEAnnTrain, xreg = cbind(PIBAnnTrain, SMICAnnTrain, TCHOAnnTrain))
-PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBAnnTest[1:2], SMICAnnTest[1:2], TCHOAnnTest[1:2]))
-plot(PredPIBSMICTCHO$mean, col="red",
-     ylim=c(min(MSEAnnTest,PredPIBSMICTCHO$mean), max(MSEAnnTest,PredPIBSMICTCHO$mean)),
-     main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
-lines(MSEAnnTest)
-EQM(PredPIBSMICTCHO$mean, MSEAnnTest)
+VARselect(cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), lag.max=4)
+VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=4, type="const")
+VARPIBSMICTCHOSta <- forecast(VAR(cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=4, type="const"))
+plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
+lines(VARPIBSMICTCHOSta$forecast$MSEAnnStaTrain$mean, col = "red")
+EQM(MSEAnnStaTest, VARPIBSMICTCHOSta$forecast$MSEAnnStaTrain$mean)
+plot(PIBAnnStaTest, ylim=c(-100,100))
+lines(VARPIBSMICTCHOSta$forecast$PIBAnnStaTrain$mean, col = "red")
+plot(SMICAnnStaTest, ylim=c(-0.5,0.5))
+lines(VARPIBSMICTCHOSta$forecast$SMICAnnStaTrain$mean, col = "red")
+plot(TCHOAnnStaTest, ylim=c(-0.7,0.7))
+lines(VARPIBSMICTCHOSta$forecast$TCHOAnnStaTrain$mean, col = "red")
+
+plot(MSEAnnStaTest, main="Comparaison des modèles avec 1 variable", ylim=c(-1.5e+8, 1.5e+8))
+lines(VARAGEDPIBSMICSta$forecast$MSEAnnStaTrain$mean, col="blue")
+lines(VARAGEDPIBTCHOSta$forecast$MSEAnnStaTrain$mean, col="green")
+lines(VARAGEDSMICTCHOSta$forecast$MSEAnnStaTrain$mean, col="red")
+lines(VARPIBSMICTCHOSta$forecast$MSEAnnStaTrain$mean, col="gold")
+legend('bottomright', legend = c('Série MSE', 'Aged', 'PIB', 'SMIC', 'Taux chômage'),
+       col=c('black', 'blue', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+#4 Variables
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), lag.max=3)
+VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=3, type="const")
+VARCOMPLETSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain), p=3, type="const"))
+plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
+lines(VARCOMPLETSta$forecast$MSEAnnStaTrain$mean, col = "red")
+EQM(MSEAnnStaTest, VARCOMPLETSta$forecast$MSEAnnStaTrain$mean)
+plot(AGEDAnnStaTest, ylim=c(-40,40))
+lines(VARCOMPLETSta$forecast$AGEDAnnStaTrain$mean, col = "red")
+plot(PIBAnnStaTest, ylim=c(-100,100))
+lines(VARCOMPLETSta$forecast$PIBAnnStaTrain$mean, col = "red")
+plot(SMICAnnStaTest, ylim=c(-0.5,0.5))
+lines(VARCOMPLETSta$forecast$SMICAnnStaTrain$mean, col = "red")
+plot(TCHOAnnStaTest, ylim=c(-0.7,0.7))
+lines(VARCOMPLETSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 
 ###VARS
 data <- annuelle[1:28,]
