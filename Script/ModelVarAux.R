@@ -186,9 +186,6 @@ legend('right', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', '
 
 ##MSE trimestrielle
 
-MSETrim <- window(MSETrim, start=1990, end=c(2017,1))
-MSETrimTest <- window(MSETrimTest, start=2016, end=c(2017,1))
-
 #0 VARIABLE
 LET <- es(MSETrim, model = "ZZZ", ic="AICc", h = 5, holdout = T)
 plot(LET$forecast, col="red",

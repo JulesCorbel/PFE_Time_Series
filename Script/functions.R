@@ -25,5 +25,5 @@ best_model<-function(serie_test, LEpredictions, SARIMApredictions){
 }
 
 EQM<-function(serie, prediction){
-  return(mean((serie - prediction)^2)/length(serie))
+  return(sum((serie - prediction)^2)/length(serie))
 }
