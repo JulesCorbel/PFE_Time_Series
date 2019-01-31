@@ -289,7 +289,7 @@ VARTCHOTrim <- forecast(VAR(cbind(MSETrimTrain, TCHOTrimTrain), p=5, season=4, t
 plot(MSETrimTest, ylim=c(1.3e+9, 1.6e+9))
 lines(VARTCHOTrim$forecast$MSETrimTrain$mean, col = "red")
 lines(PredPIBTCHO$mean, col="green")
-EQM(MSETrimTest, VARPIBTrim$forecast$MSETrimTrain$mean)
+EQM(MSETrimTest, VARTCHOTrim$forecast$MSETrimTrain$mean)
 EQM(MSETrimTest, PredPIBTCHO$mean)
 plot(TCHOTrimTest, ylim=c(8.9,10))
 lines(VARTCHOTrim$forecast$TCHOTrimTrain$mean, col = "red")
