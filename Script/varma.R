@@ -344,11 +344,11 @@ lines(VARSMICTCHOTrim$forecast$SMICTrimTrain$mean, col = "red")
 plot(TCHOTrimTest, ylim=c(8.5,10))
 lines(VARSMICTCHOTrim$forecast$TCHOTrimTrain$mean, col = "red")
 
-plot(MSETrimTest, main="Comparaison des modèles avec 1 variable", ylim=c(1.35e+9, 1.65e+9))
+plot(MSETrimTest, main="Comparaison des modèles avec 2 variables", ylim=c(1.35e+9, 1.65e+9))
 lines(VARPIBSMICTrim$forecast$MSETrimTrain$mean, col="green")
 lines(VARPIBTCHOTrim$forecast$MSETrimTrain$mean, col="red")
 lines(VARSMICTCHOTrim$forecast$MSETrimTrain$mean, col="gold")
-legend('bottomright', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
+legend('bottomright', legend = c('Série MSE', 'PIB+SMIC', 'PIB+TCHO', 'SMIC+TCHO'),
        col=c('black', 'green', 'red', 'gold'), lty=1, cex=0.8)
 
 #3 Variables
@@ -368,33 +368,9 @@ plot(PIBTrimTest, ylim=c(500000,550000))
 lines(VARPIBSMICTCHOTrim$forecast$PIBTrimTrain$mean, col = "red")
 
 ####### STATIONAIRE
-
-MSEAnnStaTrain <- window(MSEAnnSta, end=2015)
-MSETrimStaTrain <- window(MSETrimSta, end=c(2015,4))
-MSEAnnStaTest <- window(MSEAnnSta, start=2016)
-MSETrimStaTest <- window(MSETrimSta, start=2016)
-
-AGEDAnnStaTrain <- window(AGEDAnnSta, end=2015)
-AGEDAnnStaTest <- window(AGEDAnnSta, start=2016)
-
-PIBAnnStaTrain <- window(PIBAnnSta, end=2015)
-PIBTrimStaTrain <- window(PIBTrimSta, end=c(2015,4))
-PIBAnnStaTest <- window(PIBAnnSta, start=2016)
-PIBTrimStaTest <- window(PIBTrimSta, start=2016)
-
-SMICAnnStaTrain <- window(SMICAnnSta, end=2015)
-SMICTrimStaTrain <- window(SMICTrimSta, end=c(2015,4))
-SMICAnnStaTest <- window(SMICAnnSta, start=2016)
-SMICTrimStaTest <- window(SMICTrimSta, start=2016)
-
-TCHOAnnStaTrain <- window(TCHOAnnSta, end=2015)
-TCHOTrimStaTrain <- window(TCHOTrimSta, end=c(2015,4))
-TCHOAnnStaTest <- window(TCHOAnnSta, start=2016)
-TCHOTrimStaTest <- window(TCHOTrimSta, start=2016)
-
 #1 Variable
 #AGED
-VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25]), lag.max=10)
+VARselect(cbind(MSEAnnStaTrain, AGEDAnnStaTrain), lag.max=10)
 VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25]), p=7, type="const")
 VARAGEDSta <- forecast(VAR(cbind(MSEAnnStaTrain, AGEDAnnStaTrain[2:25]), p=7, type="const"))
 plot(MSEAnnStaTest, ylim=c(-1.5e+8, 1.5e+8))
@@ -614,10 +590,119 @@ lines(VARCOMPLETSta$forecast$SMICAnnStaTrain$mean, col = "red")
 plot(TCHOAnnStaTest, ylim=c(-0.7,0.7))
 lines(VARCOMPLETSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 
-###VARS
-data <- annuelle[1:28,]
-summary(data)
-adf1 <- summary(ur.df(data$MSE, type="trend", lags=2))
-adf2 <- summary(ur.df(diff(data$MSE), type="trend", lags=1))
-VARselect(data, lag.max = 2)
+##Trimestrielles
+#1 Variable
+#PIB
+VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain), lag.max=10)
+VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain), p=4, type="const")
+VARPIBStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain), p=4, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95, 1.05))
+lines(VARPIBStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARPIBStaTrim$forecast$MSETrimStaTrain$mean)
+plot(PIBTrimStaTest, ylim=c(0.99,1.01))
+lines(VARPIBStaTrim$forecast$PIBTrimStaTrain$mean, col = "red")
 
+#SMIC
+VARselect(cbind(MSETrimStaTrain, SMICTrimStaTrain), lag.max=10)
+VAR(cbind(MSETrimStaTrain, SMICTrimStaTrain), p=3, type="const")
+VARSMICStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, SMICTrimStaTrain), p=3, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95,1.05))
+lines(VARSMICStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARSMICStaTrim$forecast$MSETrimStaTrain$mean)
+plot(SMICTrimStaTest, ylim=c(-0.5,0.5))
+lines(VARSMICStaTrim$forecast$SMICTrimStaTrain$mean, col = "red")
+
+#TCHO
+VARselect(cbind(MSETrimStaTrain, TCHOTrimStaTrain), lag.max=10)
+VAR(cbind(MSETrimStaTrain, TCHOTrimStaTrain), p=6, type="const")
+VARTCHOStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, TCHOTrimStaTrain), p=4, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95, 1.05))
+lines(VARTCHOStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARTCHOStaTrim$forecast$MSETrimStaTrain$mean)
+plot(TCHOTrimStaTest, ylim=c(-1,1))
+lines(VARTCHOStaTrim$forecast$TCHOTrimStaTrain$mean, col = "red")
+
+plot(MSETrimStaTest, main="Comparaison des modèles avec 1 variable", ylim=c(0.95, 1.05))
+lines(VARPIBStaTrim$forecast$MSETrimStaTrain$mean, col="green")
+lines(VARSMICStaTrim$forecast$MSETrimStaTrain$mean, col="red")
+lines(VARTCHOStaTrim$forecast$MSETrimStaTrain$mean, col="gold")
+legend('bottomleft', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
+       col=c('black', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+plot(MSETrimStaTest*MSETrimSeasonalTest*MSETrimTrendTest)
+lines(VARPIBStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col="green")
+lines(VARSMICStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+lines(VARTCHOStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col="gold")
+lines(VARPIBTrim$forecast$MSETrimTrain$mean, col="brown")
+lines(VARSMICTrim$forecast$MSETrimTrain$mean, col="blue")
+lines(VARTCHOTrim$forecast$MSETrimTrain$mean, col="brown")
+legend('bottomleft', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
+       col=c('black', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+#2 Variables
+#PIB & SMIC
+VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), lag.max=5)
+VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), p=5, type="const")
+VARPIBSMICStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), p=5, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95, 1.05))
+lines(VARPIBSMICStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARPIBSMICStaTrim$forecast$MSETrimStaTrain$mean)
+plot(PIBTrimStaTest, ylim=c(0.99,1.01))
+lines(VARPIBSMICStaTrim$forecast$PIBTrimStaTrain$mean, col = "red")
+plot(SMICTrimStaTest, ylim=c(-0.5,0.5))
+lines(VARPIBSMICStaTrim$forecast$SMICTrimStaTrain$mean, col = "red")
+
+#PIB & TCHO
+VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain, TCHOTrimStaTrain), lag.max=5)
+VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, TCHOTrimStaTrain), p=5, type="const")
+VARPIBTCHOStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, TCHOTrimStaTrain), p=5, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95, 1.05))
+lines(VARPIBTCHOStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARPIBTCHOStaTrim$forecast$MSETrimStaTrain$mean)
+plot(PIBTrimStaTest, ylim=c(0.99,1.01))
+lines(VARPIBTCHOStaTrim$forecast$PIBTrimStaTrain$mean, col = "red")
+plot(TCHOTrimStaTest, ylim=c(-0.5,0.5))
+lines(VARPIBTCHOStaTrim$forecast$TCHOTrimStaTrain$mean, col = "red")
+
+#SMIC & TCHO
+VARselect(cbind(MSETrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), lag.max=5)
+VAR(cbind(MSETrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=5, type="const")
+VARSMICTCHOStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=5, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95, 1.05))
+lines(VARSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean)
+plot(SMICTrimStaTest, ylim=c(-0.5,0.5))
+lines(VARSMICTCHOStaTrim$forecast$SMICTrimStaTrain$mean, col = "red")
+plot(TCHOTrimStaTest, ylim=c(-1,1))
+lines(VARSMICTCHOStaTrim$forecast$TCHOTrimStaTrain$mean, col = "red")
+
+plot(MSETrimStaTest, main="Comparaison des modèles avec 2 variables", ylim=c(0.95, 1.05))
+lines(VARPIBSMICStaTrim$forecast$MSETrimStaTrain$mean, col="red")
+lines(VARPIBTCHOStaTrim$forecast$MSETrimStaTrain$mean, col="green")
+lines(VARSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean, col="gold")
+legend('topright', 
+       legend = c('Série MSE', 'PIB & SMIC', 'PIB & Taux chômage', 'SMIC & Taux chômage'),
+       col=c('black', 'red', 'green', 'gold'), lty=1, cex=0.8)
+
+plot(MSETrimStaTest*MSETrimSeasonalTest*MSETrimTrendTest)
+lines(VARPIBSMICStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col="green")
+lines(VARPIBTCHOStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+lines(VARSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col="gold")
+legend('bottomleft', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
+       col=c('black', 'green', 'red', 'gold'), lty=1, cex=0.8)
+
+
+#3 Variables
+#PIB & SMIC & TCHO
+VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), lag.max=10)
+VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=10, type="const")
+VARPIBSMICTCHOStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=10, type="const"))
+plot(MSETrimStaTest, ylim=c(0.95, 1.05))
+lines(VARPIBSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
+EQM(MSETrimStaTest, VARPIBSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean)
+plot(PIBTrimStaTest, ylim=c(0.99,1.01))
+lines(VARPIBSMICTCHOStaTrim$forecast$PIBTrimStaTrain$mean, col = "red")
+plot(SMICTrimStaTest, ylim=c(-0.25,0.25))
+lines(VARPIBSMICTCHOStaTrim$forecast$SMICTrimStaTrain$mean, col = "red")
+plot(TCHOTrimStaTest, ylim=c(-0.7,0.7))
+lines(VARPIBSMICTCHOStaTrim$forecast$TCHOTrimStaTrain$mean, col = "red")
