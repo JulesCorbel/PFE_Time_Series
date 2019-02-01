@@ -12,9 +12,7 @@ require(corrplot)
 require(fUnitRoots)
 require(vars)
 require(portes)
-```
 
-```{r, include=FALSE}
 #Code permettant la mise en place de la représentation visuelle de la matrice des corrélations
 cor.mtest <- function(mat, conf.level = 0.95){
   mat <- as.matrix(mat)
@@ -31,6 +29,10 @@ cor.mtest <- function(mat, conf.level = 0.95){
     }
   }
   return(list(p.mat, lowCI.mat, uppCI.mat))
+}
+
+EQM<-function(serie, prediction){
+  return(sum((serie - prediction)^2)/length(serie))
 }
 ```
 
@@ -120,6 +122,8 @@ Pour cette dernière série qui représente le taux de chômage trimestriel des 
 
 Nous allons maintenant transformer les séries pour les rendre stationnaires, afin de pouvoir appliquer les différents modèles ensuite. Afin de stationnariser les séries, nous utiliserons la fonction decompose qui permet de découper la série en trois : la tendance, la saisonnalité et les résidus, afin de pouvoir ensuite travailler avec les résidus.
 
+Pour chacune de ces séries, nous allons créé un échantillon d'apprentissage, qui nous permettra de construire les différents modèles, ainsi qu'un échantillon de test, qui nous permettra de comparer les prédictions des modèles construits avec des vraies valeurs. L'échantillon d'apprentissage sera composé de toutes les valeurs jusqu'au 4e trimestre 2015, et celui de test de toutes les valeurs à partir du 1er trimestre 2016.
+
 ## Masse salariale
 
 ```{r}
@@ -137,6 +141,8 @@ Nous allons maintenant transformer les séries pour les rendre stationnaires, af
   plot(MSESta, main="Masse salariale trimestrielle stationnarisée")
   MSEStaTrain <- window(MSESta, end=c(2015,4))
   MSEStaTest <- window(MSESta, start=2016)
+  MSETrain <- window(MSE, end=c(2015,4))
+  MSETest <- window(MSE, start=2016)
 ```
 
 Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value du test de KPSS nous ammène à conserver l'hypothèse de stationnarité de la série avec un seuil de confiance à 5%.
@@ -155,6 +161,8 @@ Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les r�
   plot(PIBSta, main="PIB trimestriel stationnarisé")
   PIBStaTrain <- window(PIBSta, end=c(2015,4))
   PIBStaTest <- window(PIBSta, start=2016)
+  PIBTrain <- window(PIB, end=c(2015,4))
+  PIBTest <- window(PIB, start=2016)
 ```
 
 Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
@@ -173,6 +181,8 @@ Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les r�
   plot(SMICSta, main="SMIC trimestriel stationnarisé")
   SMICStaTrain <- window(SMICSta, end=c(2015,4))
   SMICStaTest <- window(SMICSta, start=2016)
+  SMICTrain <- window(SMIC, end=c(2015,4))
+  SMICTest <- window(SMIC, start=2016)
 ```
 
 Comme pour la masse salariale, les ACF et PACF semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS nous permet de conserver l'hypothèse de stationnarité des résidus.
@@ -193,28 +203,103 @@ Comme pour la masse salariale, les ACF et PACF semblent montrer que la série r�
   plot(TCHOFSta, main="Taux de chômage trimestriel des femmes stationnarisé")
   TCHOFStaTrain <- window(TCHOFSta, end=c(2015,4))
   TCHOFStaTest <- window(TCHOFSta, start=2016)
+  TCHOFTrain <- window(TCHOF, end=c(2015,4))
+  TCHOFTest <- window(TCHOF, start=2016)
 ```
 
 En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF et le test de KPSS, on peut conclure que la série résiduelle est stationnaire.
 
 Maintenant que toutes les séries ont été stationnarisées, nous allons pouvoir construire des modèles VAR.
 
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
-
-```{r}
-```
 # Calcul de l'ordre p
+
+Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. L'ordre p correspond à l'ordre de l'opérateur de retard, c'est-à-dire le nombre de valeurs du passé qui ont un impact sur la valeur à un instant défini. Dans le package **vars**, la fonction VARselect permet de déterminer les valeurs de 4 critères (AIC, HQ, SC et FPE) pour différentes valeurs de l'ordre p.
+
+Pour les critères suivants, n correspond à l'ordre de différenciation, T le nombre d'observations et K le nombre de variables et $\tilde{\Sigma}_u (n) = T^{-1} \Sigma_{t=1}^T \hat{u}_t \hat{u}_t'$.
+
+Le critère AIC (Aikaike information criterion) se calcule, dans ce package, de la manière suivante : $AIC(n) = \ln \det(\tilde{\Sigma}_u(n)) + \frac{2}{T}n K^2 \quad$. L'objectif est de minimiser ce critère.
+
+Le critère HQ (Hannan-Quinn criterion) se calcule, dans ce package, de la manière suivante : $HQ(n) = \ln \det(\tilde{\Sigma}_u(n)) + \frac{2 \ln(\ln(T))}{T}n K^2 \quad$. L'objectif est de minimiser ce critère. Contrairement à l'AIC, ce critère n'est pas asymptotiquement efficace.
+
+Le critère SC (Schwarz criterion) se calcule dans ce package de la manière suivante : $SC(n) = \ln \det(\tilde{\Sigma}_u(n)) + \frac{\ln(T)}{T}n K^2 \quad$. L'objectif est de minimiser ce critère. Ce critère est équivalent au BIC.`
+
+Le dernier critère, le critère FPE (Final Prediction Error), est un critère à minimiser. Cependant nous ne comprenons pas son fonctionnement. Nous ne l'utiliserons donc pas.
+
+Dans cette partie, nous développerons le fonctionement de la méthodologie en l'appliquant uniquement au modèle complet, soit celui prenant en compte les variables PIB, SMIC et taux de chômage des femmes.
+
+```{r}
+selec <- VARselect(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), lag.max=10)
+par(mfrow=c(2,2))
+plot(seq(1:10),t(selec$criteria[1,]), type="l", main="Evolution de l'AIC en
+     fonction de l'ordre",
+     xlab="Ordre", ylab="AIC")
+abline(v=which.min(selec$criteria[1,]), col="blue")
+plot(seq(1:10),t(selec$criteria[2,]), type="l", main="Evolution du critère HQ
+     en fonction de l'ordre",
+     xlab="Ordre", ylab="HQ")
+abline(v=which.min(selec$criteria[2,]), col="blue")
+plot(seq(1:10),t(selec$criteria[3,]), type="l", main="Evolution du SC en
+     fonction de l'ordre",
+     xlab="Ordre", ylab="SC")
+abline(v=which.min(selec$criteria[3,]), col="blue")
+plot(seq(1:10),t(selec$criteria[4,]), type="l", main="Evolution du FPE en
+     fonction de l'ordre",
+     xlab="Ordre", ylab="FPE")
+abline(v=which.min(selec$criteria[4,]), col="blue")
+```
+
+On s'aperçoit que les différents critères à notre disposition nous donne des ordres à choisir différents. Ainsi, le meilleur AIC correspond à un modèle d'ordre 10, le meilleur HQ à un modèle d'ordre 3 et le meilleur SC à un modèle d'ordre 2. L'ordre de l'AIC étant trop grand (car trop de coefficients à estimer par rapport au nombre d'observations à notre disposition), nous ne souhaitons pas conserver cet ordre. De plus, on se rend compte que l'AIC du modèle avec un ordre 10 est similaire à celle d'un modèle avec un ordre 4. Les modèles HQ et SC sont meilleurs avec respectivement un ordre 3 et 2. Nous allons donc, dans la suite de l'analyse, veillez à minimiser le critère AIC, tout en étant attentif aux autres critères. C'est pourquoi, ici, nous décidons de conserver un ordre 4.
 
 # Estimation du modèle
 
+Dans la partie précédente, nous avons sélectionné le meilleur ordre pour notre  modèle VAR. Il s'agit maintenant d'estimer différents modèles afin de pouvoir prédire la MSE. L'exemple que nous avons pris est pour le modèle complet, qui nous donne donc un ordre de 4. 
+
+Un modèle VAR s'écrit sous la forme suivante.: 
+
+  $y_t = \sum_{i = 1}^{p} {A_iy_{t-i}} + u_t$
+
+$A_i$ représentent les matrices de coefficients du modèle pour un ordre i, t le décalage de la série et $u_t$ le vecteur des résidus. Dans notre cas, nous aurons donc 3 matrices de taille 5x5. 
+
+Dans le package **vars**, la fonction utilisée pour construire des modèles VAR est VAR, qui prend en entrée la série temporelle multivariée, l'ordre du processus et le type de régresseurs à inclure. Dans notre cas, *type* vaut *const* car la série est stationnarisée.
+```{r, results="hide"}
+modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=4, type="const")
+```
+
+Les coefficients du modèle sont les suivants
+```{r}
+A1<-cbind(modele$varresult$MSEStaTrain$coefficients[1:4], modele$varresult$PIBStaTrain$coefficients[1:4], modele$varresult$SMICStaTrain$coefficients[1:4], modele$varresult$TCHOFStaTrain$coefficients[1:4])
+colnames(A1)<-rownames(A1)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A1
+```
+
+Dans cette fonction, nous ne disposons pas des erreurs standards associées aux coefficients. Les indicateurs de qualité du modèle sont présents ci-dessous.
+```{r}
+selection<-VARselect(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain))
+selection$criteria[,4]
+```
+
 # Prédictions
+
+Maintenant que nous avons estimé l'ordre des différents modèle VAR, et que nous avons explicité l'estimation des modèles, nous cherchons désormais à trouver celui dont les prédictions sont les plus proches de la réalité.
+
+Après avoir comparé tous les modèles possibles (7 : 3 modèles avec deux variables, 3 modèles avec trois variables et un modèle avec les quatre variables), nous nous apercevons que le meilleur en terme de prédictions est le modèle prenant en compte le SMIC (en plus de la masse salariale).
+
+```{r}
+#SMIC
+VARselect(cbind(MSEStaTrain, SMICStaTrain), lag.max=10)
+VAR(cbind(MSEStaTrain, SMICStaTrain), p=3, type="const")
+VARSMICSta <- forecast(VAR(cbind(MSEStaTrain, SMICStaTrain), p=3, type="const"))
+plot(MSETest, xlim=c(2016,2016.75), main="Différences entre les véritables
+     valeurs de 2016 et les prédictions du modèle pour la masse salariale")
+#Reconstruction de la variable stationnaire
+recon <- VARSMICSta$forecast$MSEStaTrain$mean * MSETrendTest * MSESeasonalTest
+lines(recon, col = "red")
+legend('bottomleft', legend = c('Vraies valeurs', 'Prévisions du modèle'),
+       col=c('black', 'red'), lty=1, cex=0.8)
+```
+
+Nous nous intéressons donc à l'erreur quadratique moyenne de cette prévision.
+
+```{r}
+EQM(MSETest, recon)
+```

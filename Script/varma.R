@@ -695,8 +695,8 @@ legend('bottomleft', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
 #3 Variables
 #PIB & SMIC & TCHO
 VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), lag.max=10)
-VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=10, type="const")
-VARPIBSMICTCHOStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=10, type="const"))
+VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=4, type="const")
+VARPIBSMICTCHOStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=4, type="const"))
 plot(MSETrimStaTest, ylim=c(0.95, 1.05))
 lines(VARPIBSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean, col = "red")
 EQM(MSETrimStaTest, VARPIBSMICTCHOStaTrim$forecast$MSETrimStaTrain$mean)
