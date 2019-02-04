@@ -7,6 +7,9 @@ testAnn<-cbind(MSEAnnStaTest, PIBAnnStaTest, SMICAnnStaTest, TCHOAnnStaTest, AGE
 cor(appAnn)
 MTSplot(appAnn)
 
+x<-t(appAnn[,-c(3:4)]) %*% appAnn[,-c(3:4)]
+rankMatrix(x)
+
 appTrim<-cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain)
 testTrim<-cbind(MSETrimStaTest, PIBTrimStaTest, SMICTrimStaTest, TCHOTrimStaTest)
 cor(appTrim)
@@ -14,11 +17,11 @@ MTSplot(appTrim)
 
 #Annuelle
   #1 variable
-  VARorder(appAnn, maxp=5)
-  MTSAnnPIB<-VAR(appAnn[,c(1:2)], p=1, output=F, include.mean = F)
+  VARorder(appAnn[,-c(3:4)], maxp=5)
+  MTSAnnPIB<-VAR(appAnn[,-c(3:4)], p=1, output=F)
   PredAnnMTSPIB<-ts(VARpred(MTSAnnPIB, 2)$pred[,1], start=2016)
-  plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSPIB), max(MSEAnnStaTest, PredAnnMTSPIB)))
-  lines(PredAnnMTSPIB, col="red")
+  plot(MSEAnnStaTest, xlim=c(2015,2017), ylim=c(-1.5e+08, max(PredAnnMTSPIB)), col="blue", pch=20, cex=2)
+  points(PredAnnMTSPIB, col="red")
   EQM(MSEAnnStaTest, PredAnnMTSPIB)
   
   VARorder(appAnn[,c(1:3)], maxp=5)

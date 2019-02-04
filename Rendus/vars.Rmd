@@ -36,7 +36,7 @@ EQM<-function(serie, prediction){
 }
 ```
 
-Nous nous intéresserons dans ce document à la mise en place de modèles VAR afin de prédire la masse salariale trimestrielle. Un modèle VAR, pour  Vecteur AutoRégressif, a pour objectif de capturer les interdépedences entre les différentes séries temporelles à notre disposition. Ainsi, chaque variable est expliquée par ses propres valeurs passées ainsi que par les valeurs passées des autres variables du modèle.
+Nous nous intéresserons dans ce document à la mise en place de modèles VAR afin de prédire la masse salariale trimestrielle. Un modèle VAR, pour  Vecteur AutoRégressif, a pour objectif de capturer les interdépendances entre les différentes séries temporelles à notre disposition. Ainsi, chaque variable est expliquée par ses propres valeurs passées ainsi que par les valeurs passées des autres variables du modèle.
 
 # Visualation des séries
 
@@ -50,7 +50,7 @@ corrplot(cor(trim[1:109,-1]), method = "number", type="lower",
          Corrélations entre les variables trimestrielles")
 ```
 
-On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Les trois variables du trio PIB, masse salariale et SMIC sont extrêmement liées entre elles.
+On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Le trio de variables PIB, masse salariale et SMIC sont extrêmement liées entre elles.
 
 Nous allons maintenant nous attarder sur chaque série individuellement.
 
@@ -145,7 +145,7 @@ Pour chacune de ces séries, nous allons créé un échantillon d'apprentissage,
   MSETest <- window(MSE, start=2016)
 ```
 
-Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value du test de KPSS nous ammène à conserver l'hypothèse de stationnarité de la série avec un seuil de confiance à 5%.
+Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value du test de KPSS nous amène à conserver l'hypothèse de stationnarité de la série avec un seuil de confiance à 5%.
 
 ## PIB
 
@@ -248,7 +248,7 @@ plot(seq(1:10),t(selec$criteria[4,]), type="l", main="Evolution du FPE en
 abline(v=which.min(selec$criteria[4,]), col="blue")
 ```
 
-On s'aperçoit que les différents critères à notre disposition nous donne des ordres à choisir différents. Ainsi, le meilleur AIC correspond à un modèle d'ordre 10, le meilleur HQ à un modèle d'ordre 3 et le meilleur SC à un modèle d'ordre 2. L'ordre de l'AIC étant trop grand (car trop de coefficients à estimer par rapport au nombre d'observations à notre disposition), nous ne souhaitons pas conserver cet ordre. De plus, on se rend compte que l'AIC du modèle avec un ordre 10 est similaire à celle d'un modèle avec un ordre 4. Les modèles HQ et SC sont meilleurs avec respectivement un ordre 3 et 2. Nous allons donc, dans la suite de l'analyse, veillez à minimiser le critère AIC, tout en étant attentif aux autres critères. C'est pourquoi, ici, nous décidons de conserver un ordre 4.
+On s'aperçoit que les différents critères à notre disposition nous donnent des ordres à choisir différents. Ainsi, le meilleur AIC correspond à un modèle d'ordre 10, le meilleur HQ à un modèle d'ordre 3 et le meilleur SC à un modèle d'ordre 2. L'ordre de l'AIC étant trop grand (car trop de coefficients à estimer par rapport au nombre d'observations à notre disposition), nous ne souhaitons pas conserver cet ordre. De plus, on se rend compte que l'AIC du modèle avec un ordre 10 est similaire à celle d'un modèle avec un ordre 4. Les modèles HQ et SC sont meilleurs avec respectivement un ordre 3 et 2. Nous allons donc, dans la suite de l'analyse, veillez à minimiser le critère AIC, tout en étant attentif aux autres critères. C'est pourquoi, ici, nous décidons de conserver un ordre 4.
 
 # Estimation du modèle
 
@@ -260,14 +260,17 @@ Un modèle VAR s'écrit sous la forme suivante.:
 
 $A_i$ représentent les matrices de coefficients du modèle pour un ordre i, t le décalage de la série et $u_t$ le vecteur des résidus. Dans notre cas, nous aurons donc 3 matrices de taille 5x5. 
 
-Dans le package **vars**, la fonction utilisée pour construire des modèles VAR est VAR, qui prend en entrée la série temporelle multivariée, l'ordre du processus et le type de régresseurs à inclure. Dans notre cas, *type* vaut *const* car la série est stationnarisée.
+Dans le package **vars**, la fonction utilisée pour construire des modèles VAR est VAR, qui prend en entrée la série temporelle multivariée, l'ordre du processus et le type de régresseurs à inclure. Dans notre cas, *type* vaut *const* car la série est stationnarisée et donc centrée en une constante $\mu$.
 ```{r, results="hide"}
 modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=4, type="const")
 ```
 
 Les coefficients du modèle sont les suivants
 ```{r}
-A1<-cbind(modele$varresult$MSEStaTrain$coefficients[1:4], modele$varresult$PIBStaTrain$coefficients[1:4], modele$varresult$SMICStaTrain$coefficients[1:4], modele$varresult$TCHOFStaTrain$coefficients[1:4])
+A1<-cbind(modele$varresult$MSEStaTrain$coefficients[1:4], 
+          modele$varresult$PIBStaTrain$coefficients[1:4], 
+          modele$varresult$SMICStaTrain$coefficients[1:4],
+          modele$varresult$TCHOFStaTrain$coefficients[1:4])
 colnames(A1)<-rownames(A1)<-c("MSE", "PIB", "SMIC", "TCHOF")
 A1
 ```
@@ -278,7 +281,7 @@ selection<-VARselect(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain
 selection$criteria[,4]
 ```
 
-# Prédictions
+# Prévisions
 
 Maintenant que nous avons estimé l'ordre des différents modèle VAR, et que nous avons explicité l'estimation des modèles, nous cherchons désormais à trouver celui dont les prédictions sont les plus proches de la réalité.
 
