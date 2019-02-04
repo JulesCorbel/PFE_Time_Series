@@ -1,8 +1,6 @@
 #Ce script correspond à la modélisation des variables MSE en fonction des autres séries temporelles
 
-library(vars)
 library(smooth)
-library(portes)
 
 ###Lissage Exponentiel
 ##MSE annuelle
@@ -18,7 +16,7 @@ EQM(MSEAnnTest, LE$forecast)
 ## 1 VARIABLE
 
 #Aged
-LEAged <- es(MSEAnnTrain, model = "ZZZ", ic="AICc", xreg = AGEDAnnTrain, h = 2, holdout = T)
+LEAged <- es(MSEAnn, model = "ZZZ", ic="AICc", xreg = AGEDAnn[1:28], h = 2, holdout = T)
 plot(LEAged$forecast, col="red", 
      ylim=c(min(LEAged$forecast,MSEAnnTest),max(LEAged$forecast,MSEAnnTest)),
      main = "Lissage exponentiel expliqué par 'Aged' vs Vraies valeurs")
