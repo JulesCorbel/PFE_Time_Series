@@ -108,7 +108,7 @@ MTSplot(appTrim)
            col=c('black', 'red', 'blue', 'green'), lty=1, cex=0.8)
     
     #Modèle complet
-    VARorder(appTrim[,c(1:4)], maxp=20)
+    VARorder(appTrim[,c(1:4)], maxp=10)
     MTSTrimCOMPLET<-VAR(appTrim[,c(1:4)], p=3, output=F)
     PredTrimMTSCOMPLET<-ts(VARpred(MTSTrimCOMPLET, 4)$pred[,1], start=2016, frequency=4)
     EQM(MSETrimStaTest, PredTrimMTSCOMPLET)
