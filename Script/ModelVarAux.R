@@ -2,8 +2,6 @@
 
 library(smooth)
 
-<<<<<<< HEAD
-=======
 ###Lissage Exponentiel
 ##MSE annuelle
 
@@ -283,7 +281,6 @@ legend('right', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', '
                            'Complet'),
        col=c('black', 'brown', 'blue', 'green', 'red'), lty=1, cex=0.5)
 
->>>>>>> 6c223888fab3729844c9be45551cd463689b5d73
 ###SARIMA
 
 ##Annuelle

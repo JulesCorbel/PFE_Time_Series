@@ -51,28 +51,34 @@ MTSplot(appTrim)
     VARorder(appTrim[,c(1:2)], maxp=10)
     MTSTrimPIB<-VAR(appTrim[,c(1:2)], p=4, output=F)
     PredTrimMTSPIB<-ts(VARpred(MTSTrimPIB, 4)$pred[,1], start=2016, frequency=4)
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSPIB), max(MSETrimStaTest, PredTrimMTSPIB)))
-    lines(PredTrimMTSPIB, col="red")
-    EQM(MSETrimStaTest, PredTrimMTSPIB)
+    plot(window(MSETrimTest, end=c(2016,4)),
+         ylim=c(min(MSETrimTest, PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest),
+                max(MSETrimTest, PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest)))
+    lines(PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest)
     
     VARorder(appTrim[,c(1,3)], maxp=10)
     MTSTrimSMIC<-VAR(appTrim[,c(1,3)], p=3, output=F)
     PredTrimMTSSMIC<-ts(VARpred(MTSTrimSMIC, 4)$pred[,1], start=2016, frequency=4)
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSSMIC), max(MSETrimStaTest, PredTrimMTSSMIC)))
-    lines(PredTrimMTSSMIC, col="red")
-    EQM(MSETrimStaTest, PredTrimMTSSMIC)
+    plot(window(MSETrimTest, end=c(2016,4)),
+         ylim=c(min(MSETrimTest, PredTrimMTSSMIC*MSETrimSeasonalTest*MSETrimTrendTest),
+                max(MSETrimTest, PredTrimMTSSMIC*MSETrimSeasonalTest*MSETrimTrendTest)))
+    lines(PredTrimMTSSMIC*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSSMIC*MSETrimSeasonalTest*MSETrimTrendTest)
     
     VARorder(appTrim[,c(1,4)], maxp=20)
     MTSTrimTCHO<-VAR(appTrim[,c(1,4)], p=3, output=F)
     PredTrimMTSTCHO<-ts(VARpred(MTSTrimTCHO, 4)$pred[,1], start=2016, frequency=4)
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSTCHO), max(MSETrimStaTest, PredTrimMTSTCHO)))
-    lines(PredTrimMTSTCHO, col="red")
-    EQM(MSETrimStaTest, PredTrimMTSTCHO)
+    plot(window(MSETrimTest, end=c(2016,4)),
+         ylim=c(min(MSETrimTest, PredTrimMTSTCHO*MSETrimSeasonalTest*MSETrimTrendTest),
+                max(MSETrimTest, PredTrimMTSTCHO*MSETrimSeasonalTest*MSETrimTrendTest)))
+    lines(PredTrimMTSTCHO*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSTCHO*MSETrimSeasonalTest*MSETrimTrendTest)
     
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest), max(MSETrimStaTest)))
-    lines(PredTrimMTSPIB, col="red")
-    lines(PredTrimMTSSMIC, col="blue")
-    lines(PredTrimMTSTCHO, col="green")
+    plot(window(MSETrimTest, end=c(2016,4)))
+    lines(PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    lines(PredTrimMTSSMIC*MSETrimSeasonalTest*MSETrimTrendTest, col="blue")
+    lines(PredTrimMTSTCHO*MSETrimSeasonalTest*MSETrimTrendTest, col="green")
     legend('bottomleft', 
            legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
            col=c('black', 'red', 'blue', 'green'), lty=1, cex=0.8)
@@ -81,28 +87,34 @@ MTSplot(appTrim)
     VARorder(appTrim[,c(1:3)], maxp=10)
     MTSTrimPIBSMIC<-VAR(appTrim[,c(1:3)], p=4, output=F)
     PredTrimMTSPIBSMIC<-ts(VARpred(MTSTrimPIBSMIC, 4)$pred[,1], start=2016, frequency=4)
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSPIBSMIC), max(MSETrimStaTest, PredTrimMTSPIBSMIC)))
-    lines(PredTrimMTSPIBSMIC, col="red")
-    EQM(MSETrimStaTest, PredTrimMTSPIBSMIC)
+    plot(window(MSETrimTest, end=c(2016,4)),
+         ylim=c(min(MSETrimTest, PredTrimMTSPIBSMIC*MSETrimSeasonalTest*MSETrimTrendTest),
+                max(MSETrimTest, PredTrimMTSPIBSMIC*MSETrimSeasonalTest*MSETrimTrendTest)))
+    lines(PredTrimMTSPIBSMIC*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSPIBSMIC*MSETrimSeasonalTest*MSETrimTrendTest)
     
     VARorder(appTrim[,c(1,2,4)], maxp=10)
     MTSTrimPIBTCHO<-VAR(appTrim[,c(1,2,4)], p=3, output=F)
     PredTrimMTSPIBTCHO<-ts(VARpred(MTSTrimPIBTCHO, 4)$pred[,1], start=2016, frequency=4)
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSPIBTCHO), max(MSETrimStaTest, PredTrimMTSPIBTCHO)))
-    lines(PredTrimMTSPIBTCHO, col="red")
-    EQM(MSETrimStaTest, PredTrimMTSPIBTCHO)
+    plot(window(MSETrimTest, end=c(2016,4)),
+         ylim=c(min(MSETrimTest, PredTrimMTSPIBTCHO*MSETrimSeasonalTest*MSETrimTrendTest),
+                max(MSETrimTest, PredTrimMTSPIBTCHO*MSETrimSeasonalTest*MSETrimTrendTest)))
+    lines(PredTrimMTSPIBTCHO*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSPIBTCHO*MSETrimSeasonalTest*MSETrimTrendTest)
     
-    VARorder(appTrim[,c(1,3,4)], maxp=20)
-    MTSTrimSMICTCHO<-VAR(appTrim[,c(1,3,4)], p=19, output=F)
+    VARorder(appTrim[,c(1,3,4)], maxp=10)
+    MTSTrimSMICTCHO<-VAR(appTrim[,c(1,3,4)], p=3, output=F)
     PredTrimMTSSMICTCHO<-ts(VARpred(MTSTrimSMICTCHO, 4)$pred[,1], start=2016, frequency=4)
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSSMICTCHO), max(MSETrimStaTest, PredTrimMTSSMICTCHO)))
-    lines(PredTrimMTSSMICTCHO, col="red")
-    EQM(MSETrimStaTest, PredTrimMTSSMICTCHO)
+    plot(window(MSETrimTest, end=c(2016,4)),
+         ylim=c(min(MSETrimTest, PredTrimMTSSMICTCHO*MSETrimSeasonalTest*MSETrimTrendTest),
+                max(MSETrimTest, PredTrimMTSSMICTCHO*MSETrimSeasonalTest*MSETrimTrendTest)))
+    lines(PredTrimMTSSMICTCHO*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSSMICTCHO*MSETrimSeasonalTest*MSETrimTrendTest)
 
-    plot(MSETrimStaTest, ylim=c(min(PredTrimMTSSMICTCHO), max(PredTrimMTSSMICTCHO)))
-    lines(PredTrimMTSPIBSMIC, col="red")
-    lines(PredTrimMTSPIBTCHO, col="blue")
-    lines(PredTrimMTSSMICTCHO, col="green")
+    plot(window(MSETrimTest, end=c(2016,4)))
+    lines(PredTrimMTSPIBSMIC*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    lines(PredTrimMTSPIBTCHO*MSETrimSeasonalTest*MSETrimTrendTest, col="blue")
+    lines(PredTrimMTSSMICTCHO*MSETrimSeasonalTest*MSETrimTrendTest, col="green")
     legend('bottomleft', 
            legend = c('Série MSE', 'PIB & SMIC', 'PIB & Taux chômage', 'SMIC & Taux chômage'),
            col=c('black', 'red', 'blue', 'green'), lty=1, cex=0.8)
@@ -111,12 +123,12 @@ MTSplot(appTrim)
     VARorder(appTrim[,c(1:4)], maxp=10)
     MTSTrimCOMPLET<-VAR(appTrim[,c(1:4)], p=3, output=F)
     PredTrimMTSCOMPLET<-ts(VARpred(MTSTrimCOMPLET, 4)$pred[,1], start=2016, frequency=4)
-    EQM(MSETrimStaTest, PredTrimMTSCOMPLET)
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSCOMPLET*MSETrimSeasonalTest*MSETrimTrendTest)
     
-    plot(MSETrimStaTest, ylim=c(min(MSETrimStaTest, PredTrimMTSPIB, PredTrimMTSPIBSMIC, PredTrimMTSCOMPLET), max(MSETrimStaTest, PredTrimMTSPIB, PredTrimMTSPIBSMIC, PredTrimMTSCOMPLET)))
-    lines(PredTrimMTSPIB, col="red")
-    lines(PredTrimMTSPIBSMIC, col="blue")
-    lines(PredTrimMTSCOMPLET, col="green")
+    plot(window(MSETrimTest, end=c(2016,4)))
+    lines(PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    lines(PredTrimMTSPIBSMIC*MSETrimSeasonalTest*MSETrimTrendTest, col="blue")
+    lines(PredTrimMTSCOMPLET*MSETrimSeasonalTest*MSETrimTrendTest, col="green")
     legend('bottomleft', 
            legend = c('Série MSE', 'SMIC', 'SMIC & Taux chômage', 'COMPLET'),
            col=c('black', 'red', 'blue', 'green'), lty=1, cex=0.8)
