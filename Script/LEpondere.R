@@ -281,3 +281,4 @@ lines(LETCOMPLET$forecast, col="red")
 legend('right', legend = c('Série MSE', 'Pas de variable explicative', 'PIB', 'SMIC + Taux chômage',
                            'Complet'),
        col=c('black', 'brown', 'blue', 'green', 'red'), lty=1, cex=0.5)
+
