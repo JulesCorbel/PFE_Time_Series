@@ -2,6 +2,7 @@
 
 require(MASS)
 require(vars)
+require(portes)
 
 ###Modèles VAR
 ##Annuel
@@ -518,7 +519,7 @@ legend('bottomleft', legend = c('Série MSE', 'PIB', 'SMIC', 'Taux chômage'),
 
 #2 Variables
 #PIB & SMIC
-VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), lag.max=5)
+VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), lag.max=10)
 VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), p=5, type="const")
 VARPIBSMICStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain), p=5, type="const"))
 plot(window(MSETrimTest, end=c(2016,4)))
@@ -575,3 +576,7 @@ plot(SMICTrimStaTest, ylim=c(-0.25,0.25))
 lines(VARPIBSMICTCHOStaTrim$forecast$SMICTrimStaTrain$mean, col = "red")
 plot(TCHOTrimStaTest, ylim=c(-0.7,0.7))
 lines(VARPIBSMICTCHOStaTrim$forecast$TCHOTrimStaTrain$mean, col = "red")
+
+#Test du Portmanteau
+test <- VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain), p=5, type="const")
+LjungBox(residuals(test),(1:10))
