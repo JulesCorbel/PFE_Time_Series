@@ -1,7 +1,7 @@
 ---
 title: "Package MTS"
 author: "Jules CORBEL & Paul GUILLOTTE"
-date: "04/02/2019"
+date: "05/02/2019"
 output: pdf_document
 ---
 
@@ -36,27 +36,19 @@ EQM<-function(serie, prediction){
 }
 ```
 
-Nous nous intéresserons dans ce document à la mise en place de modèles VAR afin de prédire la masse salariale trimestrielle. Un modèle VAR, pour  Vecteur AutoRégressif, a pour objectif de capturer les interdépendances entre les différentes séries temporelles à notre disposition. Ainsi, chaque variable est expliquée par ses propres valeurs passées ainsi que par les valeurs passées des autres variables du modèle.
+Nous nous intéresserons dans ce document à la mise en place de modèles VAR à l'aide du package **MTS** afin de prédire la masse salariale trimestrielle. Un modèle VAR, pour  Vecteur AutoRégressif, a pour objectif de capturer les interdépendances entre les différentes séries temporelles à notre disposition. Ainsi, chaque variable est expliquée par ses propres valeurs passées ainsi que par les valeurs passées des autres variables du modèle.
 
-# Visualation des séries
+# Visualisation des séries
 
-Nous nous intéressons dans cette partie aux différentes séries trimestrielles à notre disposition. Dans un premier temps, nous nous intéressons aux corrélations entre les variables deux à deux afin de nous faire une première idée du lien qu'il existe entre les variables.
+Même contenu que pour le package vars
 
-```{r}
+```{r, include=FALSE}
 trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 corrplot(cor(trim[1:109,-1]), method = "number", type="lower",
          p.mat=cor.mtest(trim[1:109,-1], 0.95)[[1]], insig="pch",
          col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
          Corrélations entre les variables trimestrielles")
-```
 
-On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Le trio de variables PIB, masse salariale et SMIC sont extrêmement liées entre elles.
-
-Nous allons maintenant nous attarder sur chaque série individuellement.
-
-##Masse salariale
-
-```{r}
   MSE <- ts(trim$MSE, start = 1990, end = c(2017, 2), frequency=4)
   plot(MSE, main="Evolution de la masse salariale trimestrielle")
   par(mfrow=c(1,2))
@@ -65,15 +57,7 @@ Nous allons maintenant nous attarder sur chaque série individuellement.
   pacf(MSE, main="Autocorrélation partielle
        de la masse trimestrielle", lag.max=20)
   kpss.test(MSE)
-```
 
-La masse salariale trimestrielle possède une composante de tendance de 1990 à 2010. La série tend par la suite à stagner. Nous remarquons également une saisonnalité sur cette série, qui est de plus en plus marquée à mesure que le temps passe. 
-
-Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%.
-
-##PIB 
-
-```{r}
   PIB <- ts(trim$PIB, start = 1990, end = c(2017, 1), frequency=4)
   plot(PIB, main="Evolution du PIB trimestriel")
   par(mfrow=c(1,2))
@@ -83,12 +67,7 @@ Comme la série comporte une tendance et une saisonnalité, elle ne correspond p
        du PIB trimestriel", lag.max=20)
   par(mfrow=c(1,1))
   kpss.test(PIB)
-```
 
-Comme pour la masse salariale, le PIB annuel possède une tendance. Cependant, il ne semble pas posséder de saisonnalité. Cette série n'est donc pas non plus stationnaire. Nous effectuons à nouveau un test de KPSS. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%.
-
-##SMIC
-```{r}
   SMIC <- ts(trim$SMIC, start = c(1990,1), end = c(2017, 4), frequency = 4)
   plot(SMIC, main="Evolution du SMIC trimestriel")
   par(mfrow=c(1,2))
@@ -98,35 +77,23 @@ Comme pour la masse salariale, le PIB annuel possède une tendance. Cependant, i
        du SMIC trimestriel", lag.max=20)
   par(mfrow=c(1,1))
   kpss.test(SMIC)
-```
-
-Au regard de la représentation graphique, on s'aperçoit qu'il y a bien une tendance. Pour la saisonnalité, il est plus difficile de savoir s'il en existe une ou pas, puisque la série semble augmenter seulement à certains temps.
-
-##Taux de chômage des femmes
-
-```{r}
+  
   TCHOF <- ts(trim$TCHOF, start = c(1990,1), end = c(2017, 4), frequency = 4)
-  plot(TCHOF, main="Evolution du taux de chômage des femmes trimestriel")
+  plot(TCHOF, main="Evolution du TCHOF trimestriel")
   par(mfrow=c(1,2))
-  acf(TCHOF, main="Auto-corrélation du taux de
-      chômage des femmes trimestriel", lag.max=20)
-  pacf(TCHOF, main="Autocorrélation partielle du
-       taux de chômage des femmes trimestriel", lag.max=20)
+  acf(TCHOF, main="Auto-corrélation du
+      TCHOF trimestriel", lag.max=20)
+  pacf(TCHOF, main="Autocorrélation partielle
+       du TCHOF trimestriel", lag.max=20)
   par(mfrow=c(1,1))
   kpss.test(TCHOF)
 ```
 
-Pour cette dernière série qui représente le taux de chômage trimestriel des femmes, il ne semble pas y avoir de saisonnalité. On remarque cependant qu'il y a bien une tendance. Le test KPSS nous confirme que la série n'est pas stationnaire.
-
 # Transformation des séries
 
-Nous allons maintenant transformer les séries pour les rendre stationnaires, afin de pouvoir appliquer les différents modèles ensuite. Afin de stationnariser les séries, nous utiliserons la fonction decompose qui permet de découper la série en trois : la tendance, la saisonnalité et les résidus, afin de pouvoir ensuite travailler avec les résidus.
+Même contenu que pour le package vars
 
-Pour chacune de ces séries, nous allons créé un échantillon d'apprentissage, qui nous permettra de construire les différents modèles, ainsi qu'un échantillon de test, qui nous permettra de comparer les prédictions des modèles construits avec des vraies valeurs. L'échantillon d'apprentissage sera composé de toutes les valeurs jusqu'au 4e trimestre 2015, et celui de test de toutes les valeurs à partir du 1er trimestre 2016.
-
-## Masse salariale
-
-```{r}
+```{r, include=FALSE}
   plot(decompose(MSE, "multiplicative"))
   MSESta <- na.omit(decompose(MSE, "multiplicative")$random)
   MSETrendTest<-window(decompose(MSE, "multiplicative")$trend, start=2016, end=c(2016,4))
@@ -143,13 +110,7 @@ Pour chacune de ces séries, nous allons créé un échantillon d'apprentissage,
   MSEStaTest <- window(MSESta, start=2016)
   MSETrain <- window(MSE, end=c(2015,4))
   MSETest <- window(MSE, start=2016)
-```
 
-Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value du test de KPSS nous amène à conserver l'hypothèse de stationnarité de la série avec un seuil de confiance à 5%.
-
-## PIB
-
-```{r}
   PIBSta <- na.omit(decompose(PIB, "multiplicative")$random)
   par(mfrow=c(1,2))
   acf(PIBSta, main="Auto-Corrélation du PIB
@@ -163,13 +124,7 @@ Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les r�
   PIBStaTest <- window(PIBSta, start=2016)
   PIBTrain <- window(PIB, end=c(2015,4))
   PIBTest <- window(PIB, start=2016)
-```
 
-Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
-
-## SMIC
-
-```{r}
   SMICSta <- na.omit(decompose(SMIC)$random)
   par(mfrow=c(1,2))
   acf(SMICSta, main="Auto-Corrélation du SMIC
@@ -183,13 +138,7 @@ Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les r�
   SMICStaTest <- window(SMICSta, start=2016)
   SMICTrain <- window(SMIC, end=c(2015,4))
   SMICTest <- window(SMIC, start=2016)
-```
 
-Comme pour la masse salariale, les ACF et PACF semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS nous permet de conserver l'hypothèse de stationnarité des résidus.
-
-## Taux de chômage des femmes
-
-```{r}
   TCHOFSta <- na.omit(decompose(TCHOF)$random)
   par(mfrow=c(1,2))
   acf(TCHOFSta, main="Auto-Corrélation du Taux de
@@ -206,10 +155,6 @@ Comme pour la masse salariale, les ACF et PACF semblent montrer que la série r�
   TCHOFTrain <- window(TCHOF, end=c(2015,4))
   TCHOFTest <- window(TCHOF, start=2016)
 ```
-
-En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF et le test de KPSS, on peut conclure que la série résiduelle est stationnaire.
-
-Maintenant que toutes les séries ont été stationnarisées, nous allons pouvoir construire des modèles VAR.
 
 # Calcul de l'ordre p
 
@@ -250,12 +195,12 @@ L'hypothèse nulle d'indépendance des résidus est conservée, ce qui nous perm
 
 Maintenant que nous avons estimé l'ordre des différents modèle VAR, et que nous avons explicité l'estimation des modèles, nous cherchons désormais à trouver celui dont les prédictions sont les plus proches de la réalité.
 
-Après avoir comparé tous les modèles possibles (7 : 3 modèles avec deux variables, 3 modèles avec trois variables et un modèle avec les quatre variables), nous nous apercevons que le meilleur en terme de prédictions est le modèle prenant en compte le SMIC et le taux de chômage.
+Après avoir comparé tous les modèles possibles (7 : 3 modèles avec deux variables, 3 modèles avec trois variables et un modèle avec les quatre variables), nous nous apercevons que le meilleur en terme de prédictions est le modèle prenant en compte le SMIC et le PIB, avec un ordre égal à 4.
 
 ```{r, results="hide"}
 #SMIC
-VARorder(cbind(MSEStaTrain, SMICStaTrain, TCHOFStaTrain), maxp=10)
-modele<-VAR(cbind(MSEStaTrain, SMICStaTrain, TCHOFStaTrain), p=3)
+VARorder(cbind(MSEStaTrain, SMICStaTrain, PIBStaTrain), maxp=10)
+modele<-VAR(cbind(MSEStaTrain, SMICStaTrain, PIBStaTrain), p=4)
 pred <- VARpred(modele, 4)
 ```
 

@@ -1,0 +1,11 @@
+---
+title: "Package vars"
+author: "Paul GUILLOTTE & Jules CORBEL"
+date: "01/02/2019"
+fontsize : 11pt
+output: 
+  pdf_document:
+    keep_tex: yes
+    toc: yes
+    fig_caption: yes
+---
