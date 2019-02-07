@@ -40,7 +40,7 @@ trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 
 Nous nous intéresserons dans ce document à la mise en place de modèles VAR afin de prédire la masse salariale trimestrielle. Un modèle VAR, pour  Vecteur AutoRégressif, a pour objectif de capturer les interdépendances entre les différentes séries temporelles à notre disposition. Ainsi, chaque variable est expliquée par ses propres valeurs passées ainsi que par les valeurs passées des autres variables du modèle.
 
-# Visualation des séries
+# Visualisation des séries
 
 Nous nous intéressons dans cette partie aux différentes séries trimestrielles à notre disposition. Dans un premier temps, nous nous intéressons aux corrélations entre les variables deux à deux afin de nous faire une première idée du lien qu'il existe entre les variables.
 
@@ -52,15 +52,16 @@ Nous nous intéressons dans cette partie aux différentes séries trimestrielles
   axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
   par(mfrow=c(1,2))
   acf(MSE, main="Auto-corrélation de la
-      masse salariale trimestrielle", lag.max=20)
+      masse salariale trimestrielle", lag.max=40)
   pacf(MSE, main="Autocorrélation partielle
-       de la masse trimestrielle", lag.max=20)
+       de la masse trimestrielle", lag.max=40)
   kpss.test(MSE)
+  adf.test(MSE)
 ```
 
 La masse salariale trimestrielle possède une composante de tendance de 1990 à 2010. La série tend par la suite à stagner. Nous remarquons également une saisonnalité sur cette série, qui est de plus en plus marquée à mesure que le temps passe. 
 
-Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas **Préciser plus clairement à quoi correspond la stationnarité dans ce test + Ajouter d'autres tests de stationnarité**). La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%.
+Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS (test de stationnarité) servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La série est dite stationnaire si ses propriétés statistiques (espérance, variance et auto-corrélation) sont fixes au cours du temps. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Nous mettons également en place un test de racines unitaires, le test de Dickey Fuller augmenté. Son hypothèse nulle est que la série a été générée par un processus présentant une racine unitaire, et donc que la série n'est pas stationnaire. Ici, avec un risque de premier espèce à 5%, on conserve l'hypothèse nulle est on conclut, à l'aide des deux tests effectués, que la série n'est pas stationnaire. 
 
 ##PIB 
 
@@ -70,14 +71,15 @@ Comme la série comporte une tendance et une saisonnalité, elle ne correspond p
   axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
   par(mfrow=c(1,2))
   acf(PIB, main="Auto-corrélation 
-      du PIB trimestriel", lag.max=20)
+      du PIB trimestriel", lag.max=40)
   pacf(PIB, main="Autocorrélation partielle
-       du PIB trimestriel", lag.max=20)
+       du PIB trimestriel", lag.max=40)
   par(mfrow=c(1,1))
   kpss.test(PIB)
+  adf.test(PIB)
 ```
 
-Comme pour la masse salariale, le PIB annuel possède une tendance. Cependant, il ne semble pas posséder de saisonnalité. Cette série n'est donc pas non plus stationnaire. Nous effectuons à nouveau un test de KPSS. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%.
+Comme pour la masse salariale, le PIB annuel possède une tendance. Cependant, il ne semble pas posséder de saisonnalité. Cette série ne semble donc pas non plus stationnaire. Nous effectuons à nouveau un test de KPSS. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Même conclusion au regard du test augmenté de Dickey Fuller.
 
 ##SMIC
 ```{r}
@@ -91,9 +93,10 @@ Comme pour la masse salariale, le PIB annuel possède une tendance. Cependant, i
        du SMIC trimestriel", lag.max=20)
   par(mfrow=c(1,1))
   kpss.test(SMIC)
+  adf.test(SMIC)
 ```
 
-Au regard de la représentation graphique, on s'aperçoit qu'il y a bien une tendance. Pour la saisonnalité, il est plus difficile de savoir s'il en existe une ou pas, puisque la série semble augmenter seulement à certains temps.
+Au regard de la représentation graphique, on s'aperçoit qu'il y a bien une tendance. Pour la saisonnalité, il est plus difficile de savoir s'il en existe une ou pas, puisque la série semble augmenter seulement à certains temps. Les tests de KPSS et de Dickey Fuller augmenté nous confirment que la série n'est pas stationnaire.
 
 ##Taux de chômage des femmes
 
@@ -108,26 +111,29 @@ Au regard de la représentation graphique, on s'aperçoit qu'il y a bien une ten
        taux de chômage des femmes trimestriel", lag.max=20)
   par(mfrow=c(1,1))
   kpss.test(TCHOF)
+  adf.test(TCHOF)
 ```
 
-Pour cette dernière série qui représente le taux de chômage trimestriel des femmes, il ne semble pas y avoir de saisonnalité. On remarque cependant qu'il y a bien une tendance. Le test KPSS nous confirme que la série n'est pas stationnaire. ** Ou est la tendance et de quel type est-elle ? **
+Pour cette dernière série qui représente le taux de chômage trimestriel des femmes, il ne semble pas y avoir de saisonnalité. On remarque cependant qu'il y a bien une tendance, au regard de la fonction d'auto-corrélation. En regardant la série de plus près, on s'aperçoit que la tendance semble être "par morceaux" : d'abord une hausse de 1990 à 1996, puis elle décroît jusqu'en 2002, avant d'augmenter à nouveau jusqu'en 2007, de chuter jusqu'en 2010. Si la série ne possède pas une tendance uniforme sur toute la durée étudiée, elle semble donc bien posséder une tendance par morceaux. Les tests KPSS et de Dickey Fuller augmenté nous confirment que la série n'est pas stationnaire, avec un risque de première espèce de 5%.
 
 ##Calcul des corrélations
 
 ```{r}
-trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 corrplot(cor(trim[1:109,-1]), method = "number", type="lower",
          p.mat=cor.mtest(trim[1:109,-1], 0.95)[[1]], insig="pch",
          col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
          Corrélations entre les variables trimestrielles")
-cor.mtest(trim[1:109,-1], 0.95)[[1]]
+corr <- cor.mtest(trim[1:109,-1], 0.95)[[1]]
+rownames(corr) <- c("MSE","PIB","SMIC","TCHOF")
+colnames(corr) <- c("MSE","PIB","SMIC","TCHOF")
+corr
 ```
 
 On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Le trio de variables PIB, masse salariale et SMIC sont extrêmement liées entre elles. En regardant le tableau des p-values associées au test de Student (H0 : La corrélation entre les deux variables est nulle), on s'aperçoit que toutes les variables prises deux à deux présentes une corrélation.
 
 # Transformation des séries
 
-Pour chacune des séries, nous allons créé un échantillon d'apprentissage, qui nous permettra de construire les différents modèles, ainsi qu'un échantillon de test, qui nous permettra de comparer les prédictions des modèles construits avec des vraies valeurs. L'échantillon d'apprentissage sera composé de toutes les valeurs jusqu'au 4e trimestre 2015, et celui de test de toutes les valeurs à partir du 1er trimestre 2016. ** Utiliser des (S)AR(I)MA pour estimer et stationnariser les modèles **
+Pour chacune des séries, nous allons créé un échantillon d'apprentissage, qui nous permettra de construire les différents modèles, ainsi qu'un échantillon de test, qui nous permettra de comparer les prédictions des modèles construits avec des vraies valeurs. L'échantillon d'apprentissage sera composé de toutes les valeurs jusqu'au 4e trimestre 2015, et celui de test de toutes les valeurs à partir du 1er trimestre 2016. **Utiliser des (S)AR(I)MA pour estimer et stationnariser les modèles**
 
 Nous allons maintenant transformer les séries pour les rendre stationnaires, afin de pouvoir appliquer les différents modèles ensuite. Afin de stationnariser les séries, nous utiliserons la fonction decompose qui permet de découper la série en trois : la tendance, la saisonnalité et les résidus, afin de pouvoir ensuite travailler avec les résidus. Nous ne stationnariserons que les échantillons d'apprentissage.
 
@@ -149,9 +155,10 @@ Nous allons maintenant transformer les séries pour les rendre stationnaires, af
        salariale trimestrielle stationnarisée")
   par(mfrow=c(1,1))
   kpss.test(MSESta)
+  adf.test(MSESta)
 ```
 
-Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value du test de KPSS nous amène à conserver l'hypothèse de stationnarité de la série avec un seuil de confiance à 5%. ** Utiliser d'autres tests de stationnarité **
+Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value des tests de KPSS et Dickey Fuller augmenté nous amène à confirmer que notre série est désormais stationnarisée (avec un seuil de confiance à 5% pour les deux tests effectués).
 
 ## PIB
 
@@ -168,10 +175,10 @@ Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les r�
       trimestrielle stationnarisée")
   par(mfrow=c(1,1))
   kpss.test(PIBSta)
-  
+  adf.test(PIBSta)
 ```
 
-Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
+Nous nous intéressons aux ACF, PACF, test de KPSS et test de Dickey Fuller augmenté afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
 
 ## SMIC
 
@@ -188,9 +195,10 @@ Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les r�
       trimestrielle stationnarisée")
   par(mfrow=c(1,1))
   kpss.test(SMICSta)
+  adf.test(SMICSta)
 ```
 
-Comme pour la masse salariale, les ACF et PACF semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS nous permet de conserver l'hypothèse de stationnarité des résidus.
+Comme pour la masse salariale, les ACF et PACF semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS ainsi que le test de Dickey Fuller augmenté nous permettent de conclure à la stationnarité des résidus.
 
 ## Taux de chômage des femmes
 
@@ -209,9 +217,10 @@ Comme pour la masse salariale, les ACF et PACF semblent montrer que la série r�
       trimestrielle stationnarisée")
   par(mfrow=c(1,1))
   kpss.test(TCHOFSta)
+  adf.test(TCHOFSta)
 ```
 
-En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF et le test de KPSS, on peut conclure que la série résiduelle est stationnaire.
+En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF, le test de KPSS et le test de Dickey Fuller augmenté, on peut conclure que la série résiduelle est stationnaire.
 
 Maintenant que toutes les séries ont été stationnarisées, nous allons pouvoir construire des modèles VAR.
 
@@ -222,7 +231,10 @@ corrplot(cor(cbind(MSESta, PIBSta, SMICSta, TCHOFSta)), method = "number", type=
          p.mat=cor.mtest(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), 0.95)[[1]], insig="n",
          col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
          Corrélations entre les variables trimestrielles")
-cor.mtest(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), 0.95)[[1]]
+corr <- cor.mtest(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), 0.95)[[1]]
+rownames(corr) <- c("MSE","PIB","SMIC","TCHOF")
+colnames(corr) <- c("MSE","PIB","SMIC","TCHOF")
+corr
 ```
 
 On s'aperçoit que la transformation de nos séries a permis de supprimer les corrélations entre elles. En effet, en regardant le tableau des p-value, l'hypothèse nulle d'absence de corrélations n'est rejeté pour aucun couple de varaiables (avec un seuil de 5%).
@@ -262,20 +274,24 @@ On s'aperçoit que les différents critères à notre disposition nous donnent d
 
 # Estimation du modèle VAR(p)
 
-Dans la partie précédente, nous avons sélectionné le meilleur ordre pour notre  modèle VAR. Il s'agit maintenant d'estimer différents modèles afin de pouvoir prédire la MSE. L'exemple que nous avons pris est pour le modèle complet, qui nous donne donc un ordre de 4. 
+Dans la partie précédente, nous avons sélectionné le meilleur ordre pour notre  modèle VAR. Il s'agit maintenant d'estimer différents modèles afin de pouvoir prédire la MSE. L'exemple que nous avons pris est pour le modèle complet, avec les trois ordres déterminés précédemment (2, 3 et 4). 
 
-Un modèle VAR s'écrit sous la forme suivante.: 
+Un modèle VAR s'écrit sous la forme suivante : 
 
   $y_t = \sum_{i = 1}^{p} {A_iy_{t-i}} + u_t$
 
 $A_i$ représentent les matrices de coefficients du modèle pour un ordre i, t le décalage de la série et $u_t$ une matrice K-dimensionnelle composée des résidus du modèle (indépendants et identiquement distribués).
 
-Dans le package **vars**, la fonction utilisée pour construire des modèles VAR est VAR, qui prend en entrée la série temporelle multivariée, l'ordre du processus et le type de régresseurs à inclure. Dans notre cas, *type* vaut *const* car la série est stationnarisée et donc centrée en une constante $\mu$.
+##Ordre 4
+
+Dans le package **vars**, la fonction utilisée pour construire des modèles VAR est VAR, qui prend en entrée la série temporelle multivariée, l'ordre du processus et le type de régresseurs à inclure. Dans notre cas, *type* vaut *const* car la série est stationnarisée et donc centrée en une constante $\mu$. Ci-dessous, le modèle d'ordre 4.
+
 ```{r, results="hide"}
 modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const")
 ```
 
-Les coefficients du modèle sont les suivants
+Les coefficients du modèle associés à un retard de 1 sont les suivants :
+
 ```{r}
 A1<-cbind(modele$varresult$MSESta$coefficients[1:4], 
           modele$varresult$PIBSta$coefficients[1:4], 
@@ -286,9 +302,83 @@ A1
 ```
 
 Dans cette fonction, nous ne disposons pas des erreurs standards associées aux coefficients. Les indicateurs de qualité du modèle sont présents ci-dessous.
+
 ```{r}
 selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
 selection$criteria[,4]
+```
+
+L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
+
+```{r}
+#ordre4 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const"))
+#EQM(ordre4$forecast$MSESta$mean)
+```
+
+##Ordre 3
+
+On s'intéresse ensuite au modèle d'ordre 3 :
+
+```{r, results="hide"}
+modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, type="const")
+```
+
+Les coefficients du modèle associés à un retard de 1 sont les suivants :
+
+```{r}
+A1<-cbind(modele$varresult$MSESta$coefficients[1:4], 
+          modele$varresult$PIBSta$coefficients[1:4], 
+          modele$varresult$SMICSta$coefficients[1:4],
+          modele$varresult$TCHOFSta$coefficients[1:4])
+colnames(A1)<-rownames(A1)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A1
+```
+
+Les indicateurs de qualité du modèle sont présents ci-dessous.
+
+```{r}
+selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
+selection$criteria[,3]
+```
+
+L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
+
+```{r}
+#ordre4 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, type="const"))
+#EQM(ordre4$forecast$MSESta$mean)
+```
+
+##Ordre 2
+
+On s'intéresse ensuite au modèle d'ordre 3 :
+
+```{r, results="hide"}
+modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=2, type="const")
+```
+
+Les coefficients du modèle associés à un retard de 1 sont les suivants :
+
+```{r}
+A1<-cbind(modele$varresult$MSESta$coefficients[1:4], 
+          modele$varresult$PIBSta$coefficients[1:4], 
+          modele$varresult$SMICSta$coefficients[1:4],
+          modele$varresult$TCHOFSta$coefficients[1:4])
+colnames(A1)<-rownames(A1)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A1
+```
+
+Les indicateurs de qualité du modèle sont présents ci-dessous.
+
+```{r}
+selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
+selection$criteria[,2]
+```
+
+L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
+
+```{r}
+#ordre4 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=2, type="const"))
+#EQM(ordre4$forecast$MSESta$mean)
 ```
 
 # Prévisions
