@@ -482,7 +482,7 @@ lines(VARCOMPLETSta$forecast$TCHOAnnStaTrain$mean, col = "red")
 #1 Variable
 #PIB
 VARselect(cbind(MSETrimStaTrain, PIBTrimStaTrain), lag.max=10)
-VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain), p=4, type="const")
+x<-VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain), p=4, type="const")
 VARPIBStaTrim <- forecast(VAR(cbind(MSETrimStaTrain, PIBTrimStaTrain), p=4, type="const"))
 plot(window(MSETrimTest, end=c(2016,4)))
 lines(VARPIBStaTrim$forecast$MSETrimStaTrain$mean*MSETrimSeasonalTest*MSETrimTrendTest, col = "red")
