@@ -164,6 +164,27 @@ Nous affichons la matrice des corrélations des différentes variables en Figure
 
 Une fois que nous avons analysé le comportement des différentes séries temporelles à notre disposition, nous souhaitons les modéliser afin de prédire les valeurs futures de ces différentes séries. En effet, si nous voulons prédire la MSE pour des valeurs futures, nous aurons également besoin des valeurs associées pour les variables explicatives, qui ne seront peut-être pas à notre disposition. Nous avons utilisé à la fois des modèles basés sur un lissage exponentiel et des processus ARMA.
 
+##Récupération de la valeur manquante du PIB trimestriel
+**A placer après la modélisation ARIMA du PIB.**
+Le PIB posséde une valeur en moins par rapport aux autres variables dans l'ensemble des données trimestrielles. Ceci nous impose de négliger la dernière valeur de toutes les autres séries pour que toutes les variables soient étudiées sur la même étendue temporelle. Pour éviter ce problème, nous décidons d'estimer la variable du PIB pour le 2e trimestre de 2017. Afin de faire cela, nous allons utiliser la valeur estimer par le modèle SARIMA correspondant à la variable PIB.
+
+```{r}
+ARIMAPIBTrimTrain <- auto.arima(PIBTrimTrain, stationary = F)
+plot(PIBTrimTrain, main="Comparaison entre le modèle SARIMA et les données 
+      d'apprentissage pour le PIB trimestriel")
+lines(ARIMAPIBTrimTrain$fitted, col="red")
+
+ARIMAPIBTrimTest <- forecast(ARIMAPIBTrimTrain, h = 6)
+plot(PIBTrimTest, main="Comparaison entre le modèle SARIMA et les données de 
+      validation pour le PIB trimestriel",
+     ylim=c(min(PIBTrimTest,ARIMAPIBTrimTest$mean),max(PIBTrimTest,ARIMAPIBTrimTest$mean)))
+lines(ARIMAPIBTrimTest$mean, col="red")
+
+new.value <- ARIMAPIBTrimTest$mean[6]
+ts(c(trim$PIB[1:109], new.value), start = 1990, end = c(2017, 2), frequency=4)
+```
+
+
 ##Découpage des séries
 
 Pour chacune des séries, nous allons créer un échantillon d'apprentissage, qui nous permettra de construire les différents modèles, ainsi qu'un échantillon de test, qui nous permettra de comparer les prédictions des modèles construits avec des vraies valeurs. L'échantillon d'apprentissage sera composé de toutes les valeurs du premier trimestre 1990 jusqu'au 4e trimestre 2015, tandis que celui de test comprendra toutes les valeurs à partir du 1er trimestre 2016.

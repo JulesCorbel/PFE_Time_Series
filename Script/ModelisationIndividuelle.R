@@ -173,7 +173,7 @@ plot(PIBAnnTest, type='l',
       valeurs réelles pour le PIB annuel")
 lines(PIBAnnPred$mean, col="red")
 
-PIBTrimPred<-lissage_exponentiel(PIBTrimTrain, 1990, 2015, 1, 5)
+PIBTrimPred<-lissage_exponentiel(PIBTrimTrain, 1990, 2015, 1, 6)
 
 plot(PIBTrimTest, type='l', 
      ylim=c(min(PIBTrimTest,PIBTrimPred$mean),max(PIBTrimTest,PIBTrimPred$mean)),
