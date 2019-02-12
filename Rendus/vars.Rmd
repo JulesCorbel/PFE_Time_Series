@@ -381,6 +381,50 @@ L'erreur quadratique moyenne de ce modèle pour les données prédites est la su
 #EQM(ordre4$forecast$MSESta$mean)
 ```
 
+# Vérification des hypothèses
+
+## Test ARCH (homoscédasticité des résidus)
+
+```{r}
+a1 <- c()
+for(i in 1:18){
+a1[i] <- arch.test(modele, lags.multi = i)$arch.mul$p.value
+}
+plot(a1, type="l")
+abline(h=0.05, col="red")
+```
+
+## Test normalité (normalité des résidus)
+
+```{r}
+normality.test(modele)
+```
+
+## Test Portmanteau (corrélations des résidus)
+
+Les 3 premières p-value ne peuvent être calculées à cause de la valeur des degrés de liberté.
+
+```{r}
+a1 <- c()
+for(i in 1:3){
+  a1[i] <- 0
+} 
+for(i in 4:50){
+  a1[i] <- serial.test(modele, lags.pt=i, type="PT.asymptotic")$serial$p.value
+}
+plot(a1, type="l")
+abline(h=0.05, col="red")
+```
+
+### Verification de la Matrice $C_0$
+
+La statistique de Portmanteau est $Q_h = T \sum_{j=1}^h tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$. Pour qu'elle existe, il faut donc vérifier que la matrice $\hat{C}_0$ est inversible pour que la statistique puisse être définie. Les matrices $\hat{C}_i$ s'écrivent $\hat{C}_i = \frac{1}{T} \sum_{t=i+1}^T \hat{u}_t \hat{u}_{t-i}^T$, donc $\hat{C}_0$ s'écrit $\hat{C}_0 = \frac{1}{T} \sum_{t=1}^T \hat{u}_t \hat{u}_t^T$. Nous allons donc vérifier qu'elle existe pour le modèle complet que nous avons mis en place.
+
+```{r}
+for(i in 1:)
+residuals(modele)*residuals(modele)
+```
+
 # Prévisions
 
 Maintenant que nous avons estimé l'ordre des différents modèle VAR, et que nous avons explicité l'estimation des modèles, nous cherchons désormais à trouver celui dont les prédictions sont les plus proches de la réalité.
@@ -407,3 +451,24 @@ Nous nous intéressons donc à l'erreur quadratique moyenne de cette prévision.
 ```{r}
 #EQM(MSETest, recon)
 ```
+
+##Récupération de la valeur manquante du PIB trimestriel
+**A placer après la modélisation ARIMA du PIB.**
+Le PIB posséde une valeur en moins par rapport aux autres variables dans l'ensemble des données trimestrielles. Ceci nous impose de négliger la dernière valeur de toutes les autres séries pour que toutes les variables soient étudiées sur la même étendue temporelle. Pour éviter ce problème, nous décidons d'estimer la variable du PIB pour le 2e trimestre de 2017. Afin de faire cela, nous allons utiliser la valeur estimer par le modèle SARIMA correspondant à la variable PIB.
+
+```{r}
+ARIMAPIBTrimTrain <- auto.arima(PIBTrimTrain, stationary = F)
+plot(PIBTrimTrain, main="Comparaison entre le modèle SARIMA et les données 
+      d'apprentissage pour le PIB trimestriel")
+lines(ARIMAPIBTrimTrain$fitted, col="red")
+
+ARIMAPIBTrimTest <- forecast(ARIMAPIBTrimTrain, h = 6)
+plot(PIBTrimTest, main="Comparaison entre le modèle SARIMA et les données de 
+      validation pour le PIB trimestriel",
+     ylim=c(min(PIBTrimTest,ARIMAPIBTrimTest$mean),max(PIBTrimTest,ARIMAPIBTrimTest$mean)))
+lines(ARIMAPIBTrimTest$mean, col="red")
+
+new.value <- ARIMAPIBTrimTest$mean[6]
+ts(c(trim$PIB[1:109], new.value), start = 1990, end = c(2017, 2), frequency=4)
+```
+
