@@ -15,35 +15,35 @@ testTrim<-cbind(MSETrimStaTest, PIBTrimStaTest, SMICTrimStaTest, TCHOTrimStaTest
 cor(appTrim)
 MTSplot(appTrim)
 
-#Annuelle
-  #1 variable
-  VARorder(appAnn[,-c(3:4)], maxp=5)
-  MTSAnnPIB<-VAR(appAnn[,-c(3:4)], p=1, output=F)
-  PredAnnMTSPIB<-ts(VARpred(MTSAnnPIB, 2)$pred[,1], start=2016)
-  plot(MSEAnnStaTest, xlim=c(2015,2017), ylim=c(-1.5e+08, max(PredAnnMTSPIB)), col="blue", pch=20, cex=2)
-  points(PredAnnMTSPIB, col="red")
-  EQM(MSEAnnStaTest, PredAnnMTSPIB)
-  
-  VARorder(appAnn[,c(1:3)], maxp=5)
-  MTSAnnSMIC<-VAR(appAnn[,c(1:3)], p=1, output=F, include.mean = T)
-  PredAnnMTSSMIC<-ts(VARpred(MTSAnnSMIC, 2)$pred[,1], start=2016)
-  plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSSMIC), max(MSEAnnStaTest, PredAnnMTSSMIC)))
-  lines(PredAnnMTSSMIC, col="red")
-  EQM(MSEAnnStaTest, PredAnnMTSSMIC)
-  
-  VARorder(appAnn[,c(1:4)], maxp=5)
-  MTSAnnTCHO<-VAR(appAnn[,c(1:4)], p=1, output=F, include.mean = T)
-  PredAnnMTSTCHO<-ts(VARpred(MTSAnnTCHO, 2)$pred[,1], start=2016)
-  plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSTCHO), max(MSEAnnStaTest, PredAnnMTSTCHO)))
-  lines(PredMTSTCHO, col="red")
-  EQM(MSEAnnStaTest, PredAnnMTSTCHO)
-  
-  VARorder(appAnn[,c(1:5)], maxp=5)
-  MTSAnnAGED<-VAR(appAnn[,c(1:5)], p=1, output=F, include.mean = T)
-  PredAnnMTSAGED<-ts(VARpred(MTSAnnAGED, 2)$pred[,1], start=2016)
-  plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSAGED), max(MSEAnnStaTest, PredAnnMTSAGED)))
-  lines(PredMTSAGED, col="red")
-  EQM(MSEAnnStaTest, PredAnnMTSAGED)
+# #Annuelle
+#   #1 variable
+#   VARorder(appAnn[,-c(3:4)], maxp=5)
+#   MTSAnnPIB<-VAR(appAnn[,-c(3:4)], p=1, output=F)
+#   PredAnnMTSPIB<-ts(VARpred(MTSAnnPIB, 2)$pred[,1], start=2016)
+#   plot(MSEAnnStaTest, xlim=c(2015,2017), ylim=c(-1.5e+08, max(PredAnnMTSPIB)), col="blue", pch=20, cex=2)
+#   points(PredAnnMTSPIB, col="red")
+#   EQM(MSEAnnStaTest, PredAnnMTSPIB)
+#   
+#   VARorder(appAnn[,c(1:3)], maxp=5)
+#   MTSAnnSMIC<-VAR(appAnn[,c(1:3)], p=1, output=F, include.mean = T)
+#   PredAnnMTSSMIC<-ts(VARpred(MTSAnnSMIC, 2)$pred[,1], start=2016)
+#   plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSSMIC), max(MSEAnnStaTest, PredAnnMTSSMIC)))
+#   lines(PredAnnMTSSMIC, col="red")
+#   EQM(MSEAnnStaTest, PredAnnMTSSMIC)
+#   
+#   VARorder(appAnn[,c(1:4)], maxp=5)
+#   MTSAnnTCHO<-VAR(appAnn[,c(1:4)], p=1, output=F, include.mean = T)
+#   PredAnnMTSTCHO<-ts(VARpred(MTSAnnTCHO, 2)$pred[,1], start=2016)
+#   plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSTCHO), max(MSEAnnStaTest, PredAnnMTSTCHO)))
+#   lines(PredMTSTCHO, col="red")
+#   EQM(MSEAnnStaTest, PredAnnMTSTCHO)
+#   
+#   VARorder(appAnn[,c(1:5)], maxp=5)
+#   MTSAnnAGED<-VAR(appAnn[,c(1:5)], p=1, output=F, include.mean = T)
+#   PredAnnMTSAGED<-ts(VARpred(MTSAnnAGED, 2)$pred[,1], start=2016)
+#   plot(MSEAnnStaTest, ylim=c(min(MSEAnnStaTest, PredAnnMTSAGED), max(MSEAnnStaTest, PredAnnMTSAGED)))
+#   lines(PredMTSAGED, col="red")
+#   EQM(MSEAnnStaTest, PredAnnMTSAGED)
 
 #Trimestrielle
 
