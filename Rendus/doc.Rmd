@@ -85,7 +85,7 @@ La masse salariale trimestrielle, représentée en Figure \ref{fig1} possède un
 
 Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la Figure \ref{fig2}, qui nous montre fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS (test de stationnarité) servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La série est dite stationnaire si ses propriétés statistiques (espérance, variance et auto-corrélation) sont fixes au cours du temps. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Nous mettons également en place un test de racines unitaires, le test de Dickey Fuller augmenté. Son hypothèse nulle est que la série a été générée par un processus présentant une racine unitaire, et donc que la série n'est pas stationnaire. Ici, avec un risque de premier espèce à 5%, on conserve l'hypothèse nulle est on conclut, à l'aide des deux tests effectués, que la série n'est pas stationnaire. 
 
-##PIB 
+##PIB  \label{PIB}
 
 ```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig3}"}
   PIB <- ts(trim$PIB, start = 1990, end = c(2017, 1), frequency=4)
@@ -125,7 +125,7 @@ La Figure \ref{fig3} nous montre le PIB trimestriel qui, comme pour la masse sal
 
 Au regard de la Figure \ref{fig5}, on s'aperçoit qu'il y a bien une tendance. Pour la saisonnalité, il est plus difficile de savoir s'il en existe une ou pas, puisque la série semble augmenter seulement à certains temps. Les tests de KPSS et de Dickey Fuller augmenté nous confirment que la série n'est pas stationnaire.
 
-##Taux de chômage des femmes
+##Taux de chômage des femmes \label{TCHOF}
 
 ```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig7}"}
   TCHOF <- ts(trim$TCHOF, start = c(1990,1), end = c(2017, 4), frequency = 4)
@@ -160,7 +160,7 @@ corr
 
 Nous affichons la matrice des corrélations des différentes variables en Figure \ref{fig9}. On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Le trio de variables PIB, masse salariale et SMIC sont extrêmement liées entre elles. En regardant le tableau des p-values associées au test de Student (H0 : La corrélation entre les deux variables est nulle), on s'aperçoit que toutes les variables prises deux à deux présentes une corrélation.
 
-#Modélisation individuelle
+#Modélisation individuelle \label{MI}
 
 Une fois que nous avons analysé le comportement des différentes séries temporelles à notre disposition, nous souhaitons les modéliser afin de prédire les valeurs futures de ces différentes séries. En effet, si nous voulons prédire la MSE pour des valeurs futures, nous aurons également besoin des valeurs associées pour les variables explicatives, qui ne seront peut-être pas à notre disposition. Nous avons utilisé à la fois des modèles basés sur un lissage exponentiel et des processus ARMA.
 
@@ -168,19 +168,20 @@ Une fois que nous avons analysé le comportement des différentes séries tempor
 
 Pour chacune des séries, nous allons créer un échantillon d'apprentissage, qui nous permettra de construire les différents modèles, ainsi qu'un échantillon de test, qui nous permettra de comparer les prédictions des modèles construits avec des vraies valeurs. L'échantillon d'apprentissage sera composé de toutes les valeurs du premier trimestre 1990 jusqu'au 4e trimestre 2015, tandis que celui de test comprendra toutes les valeurs à partir du 1er trimestre 2016.
 
-##Comparaison des différents modèles
-Afin de comparer les modèles construits pour chaque série avec les différentes méthodes, nous calculons l'erreur quadratique moyenne (EQM), soit les moyennes des différences au carré entre les valeurs de test et les valeurs prédites par le modèle.
-
 ```{r}
 MSETrain <- window(MSE, start=1990, end=c(2015,4))
-MSETest <- window(MSE, start=2016)
+MSETest <- window(MSE, start=2016, end=c(2017,2))
 PIBTrain <- window(PIB, start=1990, end=c(2015,4))
-PIBTest <- window(PIB, start=2016, end=c(2017,2))
+PIBTest <- window(PIB, start=2016, end=c(2017,1))
 SMICTrain <- window(SMIC, start=1990, end=c(2015,4))
 SMICTest <- window(SMIC, start=2016, end=c(2017,2))
 TCHOFTrain <- window(TCHOF, start=1990, end=c(2015,4))
 TCHOFTest <- window(TCHOF, start=2016, end=c(2017,2))
 ```
+
+##Comparaison des différents modèles
+Afin de comparer les modèles construits pour chaque série avec les différentes méthodes, nous calculons l'erreur quadratique moyenne (EQM), soit les moyennes des différences au carré entre les valeurs de test et les valeurs prédites par le modèle.
+
 
 ##Lissage exponentiel
 
@@ -188,20 +189,21 @@ TCHOFTest <- window(TCHOF, start=2016, end=c(2017,2))
 
 Le lissage exponentiel permet de prédire les valeurs d’une série temporelle en lissant successivement les données à partir d’une valeur initiale. Plus les observations sont éloignées dans le passé, moins leur poids est important lors du calcul. Pour une série stationnaire, la formule de calcul d’une valeur est la suivante :  $s_t =  \alpha y_t + (1-\alpha) s_{t-1}$, le paramètre $\alpha$ étant le facteur de lissage. Le nom de cette méthode est un lissage exponentiel **simple**. Afin de modéliser les séries possédant une tendance, nous introduisons un paramètre $\beta$ permettant de la prendre en compte, la méthode étant appelée lissage exponentiel **double**. Enfin, Holt et Winters ont également modifié la méthode pour qu’elle puisse modéliser les séries comportant une saisonnalité en introduisant un paramètre $\gamma$. Ils ont donné leur nom à cette méthode, qui est donc un lissage exponentiel de **Holt-Winters**.
 
-Dans notre cas, nous ne calculons pas nous-mêmes $\alpha$ $\beta$ et $\gamma$ Ces paramètres sont déterminés automatiquement par la fonction *ets* du package **forecast** de façon à optimiser la qualité de la prédiction. Cette fonction permet également de choisir la méthode à utiliser, grâce à l'argument model.
+Dans notre cas, nous ne calculons pas nous-mêmes $\alpha$ $\beta$ et $\gamma$ Ces paramètres sont déterminés automatiquement par la fonction *ets* du package **forecast** de façon à optimiser la qualité de la prédiction. Cette fonction permet également de choisir la méthode à utiliser, grâce à l'argument model. Afin de mesurer la qualité de notre modèle, nous avons choisi d'utiliser l’**AICc**(Akaike Information Criterion with correction). Le choix de l’AICc par rapport à l’AIC s’explique par le faible nombre de données que nous possédons par rapport au nombre de paramètres à estimer. C'est ce critère qui nous servira par la suite afin de comparer nos différents modèles. \label{AICc}
 
 Prenons l'exemple de la MSE. Nous avons vu dans la partie \ref{MSE} que la série possédait une tendance linéaire ainsi qu'une saisonnalité multiplicative. L'argument model de la fonction *ets** prendra donc la valeur "ZAM", (erreur sélectionnée automatiquement, tendance linéaire, saisonnalité multiplicative). On peut également remarquer que lorsque tous les paramètres sont automatiquement sélectionnés (valeur "ZZZ"), les paramètres retenus sont les mêmes que ceux que nous avions rentré.
-```{r}
+```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig10}"}
 LEMSE<-ets(MSETrain, "ZAM")
 print(LEMSE)
 PredLEMSE <- forecast(LEMSE, h = 6)
-plot(MSETest, main="Comparaison entre la prédiction du lissage exponentiel et
-     les valeurs réelles pour la masse salariale trimestrielle")
+plot(MSETest, main="Comparaison entre la prédiction du lissage 
+exponentiel et les valeurs réelles pour la masse salariale 
+trimestrielle")
 lines(PredLEMSE$mean, col="red")
 EQM(MSETest, PredLEMSE$mean)
 ets(MSETrain, "ZZZ")
 ```
-On obtient donc un AIC de 4031.536 pour le modèle ainsi qu'une erreur quadratique moyenne de $2.6*10^{14}$.
+On obtient donc un AICc de 4033.451 pour le modèle ainsi qu'une erreur quadratique moyenne de $2.6*10^{14}$. Le graphique obtenu en figure \ref{fig10} nous montrent que le modèle obtenu nous donne des prédictions très proches de la réalité.
 
 
 ###Résultats obtenus
@@ -209,7 +211,7 @@ On obtient donc un AIC de 4031.536 pour le modèle ainsi qu'une erreur quadratiq
 ```{r, include=F}
 LEPIB<-ets(PIBTrain, "ZAN")
 print(LEPIB)
-PredLEPIB <- forecast(LEPIB, h = 6)
+PredLEPIB <- forecast(LEPIB, h = 5)
 EQM(PIBTest, PredLEPIB$mean)
 
 LESMIC<-ets(SMICTrain, "ZAA")
@@ -222,28 +224,36 @@ print(LETCHOF)
 PredLETCHOF <- forecast(LETCHOF, h = 6)
 EQM(TCHOFTest, PredLETCHOF$mean)
 ```
-```{r}
-plot(PIBTest, ylim=c(min(PIBTest,PredLEPIB$mean),max(PIBTest,PredLEPIB$mean)), main="Comparaison entre la prédiction du lissage exponentiel 
-et les valeurs réelles pour le PIB trimestriel")
+```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig11}"}
+par(mfrow=c(2,2))
+plot(PIBTest, ylim=c(min(PIBTest,PredLEPIB$mean),max(PIBTest,PredLEPIB$mean)), main=
+"Comparaison entre la prédiction du lissage 
+exponentiel et les valeurs réelles pour le PIB 
+trimestriel", cex.main=0.8)
 lines(PredLEPIB$mean, col="red")
 
-plot(SMICTest, ylim=c(min(SMICTest,PredLESMIC$mean),max(SMICTest,PredLESMIC$mean)), main="Comparaison entre la prédiction du lissage exponentiel 
-et les valeurs réelles pour le SMIC trimestriel")
+plot(SMICTest, ylim=c(min(SMICTest,PredLESMIC$mean),max(SMICTest,PredLESMIC$mean)), 
+main="Comparaison entre la prédiction du lissage 
+exponentiel et les valeurs réelles pour le SMIC 
+trimestriel", cex.main=0.8)
 lines(PredLESMIC$mean, col="red")
 
-plot(TCHOFTest, ylim=c(min(TCHOFTest,PredLETCHOF$mean),max(TCHOFTest,PredLETCHOF$mean)), main="Comparaison entre la prédiction du lissage exponentiel 
-et les valeurs réelles pour le taux de chômage des femmes trimestriel")
+plot(TCHOFTest, ylim=c(min(TCHOFTest,PredLETCHOF$mean),max(TCHOFTest,PredLETCHOF$mean)), 
+main="Comparaison entre la prédiction du lissage 
+exponentiel et les valeurs réelles pour le taux 
+de chômage trimestriel", cex.main=0.8)
 lines(PredLETCHOF$mean, col="red")
 ```
-
+Les graphiques de la figure \ref{fig11} nous montrent des résultats mitigés. Pour le PIB et le SMIC, les prédictions suivent la forme de la série mais en sont éloignées. Pour le taux de chômage des femmes, la méthode de lissage utilisée est un lissage exponentiel simple, ce qui nous donne donc des prédictions constantes soit de mauvaise qualité. 
 
 Nous résumons dans le tableau suivant les résultats obtenus pour chaque série estimée par un lissage exponentiel.
 
-| Variable | Tendance | Saisonnalité | Argument model |   AIC   |
-| -------- | -------- | ------------ | -------------- | ------- |
-| PIB      | linéaire | absente      |      ZAN       | 2052.28 |
-| SMIC     | linéaire | additive     |      ZAA       | -84.58  |
-| TCHOF    | absente  | absente      |      ZNN       | 204.13  |
+| Variable | Tendance |  Saisonnalité  | Argument model |   AIC   |
+| -------- | -------- | -------------- | -------------- | ------- |
+| MSE      | linéaire | multiplicative |      ZAM       | 4033.45 |
+| PIB      | linéaire | absente        |      ZAN       | 2053.15 |
+| SMIC     | linéaire | additive       |      ZAA       | -84.96  |
+| TCHOF    | absente  | absente        |      ZNN       | 204.37  |
  
 ##Modèles ARMA
 
@@ -253,8 +263,77 @@ Les modèles **ARMA(p,q)** sont une autre famille de modèles permettant d’est
 
 L’une des propriétés des processus ARMA est qu’ils sont utilisés pour modéliser des séries stationnaires, donc par extension des séries qui ne possèdent ni tendance ni saisonnalité. Afin de modéliser des séries non stationnaires, on généralise les processus ARMA en processus **ARIMA(p,d,q)**, *d* représentant l’ordre de différenciation de la série. Les séries saisonnières sont elles modélisées par des processus **$SARIMA(p ,d, q)(P, D, Q)_s$** qui modélisent des séries avec une saisonnalité de période *s*.
 
-Comme pour le lissage exponentiel, nous ne calculons pas nous-mêmes les ordres des processus. Pour cela, la fonction *auto.arima* du package **forecast** nous a été très utile. Elle permet en effet de trouver les ordres du processus qui optimisent un critère défini à l’avance. Nous avons choisi d’optimiser l’**AICc**(Akaike Information Criterion with correction), qui permet donc de mesurer la qualité de prédiction d’un modèle. Le choix de l’AICc par rapport à l’AIC s’explique par le faible nombre de données que nous possédons par rapport au nombre de paramètres à estimer. C'est ce critère qui nous servira par la suite afin de comparer nos différents modèles.
+Comme pour le lissage exponentiel, nous ne calculons pas nous-mêmes les ordres des processus. Pour cela, la fonction *auto.arima* du package **forecast** nous a été très utile. Elle permet en effet de trouver les ordres du processus qui optimisent un critère défini à l’avance et de calculer un modèle avec ces coefficients. Nous avons choisi d’optimiser l’**AICc**(Akaike Information Criterion with correction), pour els raisons évoquées dans la partie \ref{AICc}
+```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig12}"}
+ARIMAMSE<-auto.arima(MSETrain, ic="aicc")
+print(ARIMAMSE)
+PredARIMAMSE<- forecast(ARIMAMSE, h=6)
+plot(MSETest, main="Comparaison entre le modèle SARIMA et les données de
+    validation pour la masse salariale trimestrielle")
+lines(PredARIMAMSE$mean, col="red")
+```
+
+Pour la MSE, on obtient par exemple un modèle $SARIMA(0,1,1)(0,1,1)_4$ ainsi qu'un AICc de 3896.01. La  figure \ref{fig12} nous donne des prédictions d'assez bonne qualité mais qui semblent moins bonnes que celles obtenues par lissage exponentiel.
 
 ###Résultats obtenus
+```{r, fig.cap="\\label{fig13}"}
+par(mfrow=c(2,2))
+ARIMAPIB<-auto.arima(PIBTrain, ic="aicc", seasonal=F)
+print(ARIMAPIB)
+PredARIMAPIB<- forecast(ARIMAPIB, h=5)
+plot(PIBTest, ylim=c(min(PIBTest,PredARIMAPIB$mean),max(PIBTest,PredARIMAPIB$mean)), main="Comparaison entre le modèle SARIMA et les données de
+    validation pour le PIB trimestriel", cex.main=0.8)
+lines(PredARIMAPIB$mean, col="red")
 
+ARIMASMIC<-auto.arima(SMICTrain, ic="aicc")
+print(ARIMASMIC)
+PredARIMASMIC<- forecast(ARIMASMIC, h=6)
+plot(SMICTest, ylim=c(min(SMICTest,PredARIMASMIC$mean),max(SMICTest,PredARIMASMIC$mean)), main="Comparaison entre le modèle SARIMA et les données de
+    validation pour le SMIC trimestriel", cex.main=0.8)
+lines(PredARIMASMIC$mean, col="red")
 
+ARIMATCHOF<-auto.arima(TCHOFTrain, ic="aicc", seasonal=F)
+print(ARIMATCHOF)
+PredARIMATCHOF<- forecast(ARIMATCHOF, h=6)
+plot(TCHOFTest, main="Comparaison entre le modèle SARIMA et les données de
+    validation pour le taux de chômage des femmes trimestriel", cex.main=0.8)
+lines(PredARIMATCHOF$mean, col="red")
+```
+
+Comme pour le lissage exponentiel, nous résumons les résultats obtenus dans un tableau pour plus de lisibilité. Le PIB et le taux de chômage des femmes ne comportent pas de partie saisonnière car comme vu dans les parties \ref{PIB} et \ref{TCHOF} on ne constate pas de saisonnalité dans l'analyse descriptive de la série. On peut également voir sur la figure \ref{fig13} que les prédictions du PIB semblent de bien meilleure qualité
+
+| Variable | Ordre du processus |  AICc   |
+| -------- | -------------------| ------- |
+| MSE      |   (0,1,1)(0,1,1)   | 3675.34 |
+| PIB      |       (2,1,0)      | 1839.36 |
+| SMIC     |   (1,0,0)(1,1,0)   | -261.47 |
+| TCHOF    |       (0,1,1)      |  9.76   |
+
+##Comparaison des différents modèles
+
+Une fois que nous avons construit les deux types de modèles pour chacune des variables, nous souhaitons les comparer pour savoir quel modèle est le plus efficace pour prédire chacune des variables. Pour cela, les EQM, calculant l'erreur de prédiction, de chacun des modèles sont synthétisées dans le tableau suivant. L'AICc ne peut pas être utilsié ici car les méthodes à comparer sont différentes. Il n'est donc pas sûr que la méthode utilisée pour calculer la vraisemblance soit la même.
+
+```{r}
+resultats<-matrix(nrow=4, ncol=2, dimnames = list(c("MSE", "PIB", "SMIC", "TCHOF"), c("lissage", "ARMA")))
+resultats[1,1] = EQM(MSETest, PredLEMSE$mean)
+resultats[2,1] = EQM(PIBTest, PredLEPIB$mean)
+resultats[3,1] = EQM(SMICTest, PredLESMIC$mean)
+resultats[4,1] = EQM(TCHOFTest, PredLETCHOF$mean)
+resultats[1,2] = EQM(MSETest, PredARIMAMSE$mean)
+resultats[2,2] = EQM(PIBTest, PredARIMAPIB$mean)
+resultats[3,2] = EQM(SMICTest, PredARIMASMIC$mean)
+resultats[4,2] = EQM(TCHOFTest, PredARIMATCHOF$mean)
+resultats
+```
+
+Nous nous rendons compte que le lissage a une EQM plus faible pour la masse salariale (notre variable d’intérêt), ainsi que pour le SMIC et le taux de chômage des femmes. En ce qui concerne le PIB, le modèle ARIMA est plus performant. Cette analyse va nous servir par la suite, comme expliqué au début de la partie \ref{MI}
+
+##Estimation de la valeur manquante du PIB
+
+Contrairement aux autres variables, nous n'avons à notre disposition pour le PIB que les valeurs jusqu'au premier trimestre de 2017. Ceci nous impose de négliger la dernière valeur de toutes les autres séries pour que toutes les variables soient étudiées sur la même période. Pour éviter ce problème, nous décidons d'estimer la variable du PIB pour le 2e trimestre de 2017. Afin de faire cela, nous allons utiliser la valeur estimée par le modèle SARIMA correspondant à la variable PIB, étant donné que c'est celui qui donnait les meilleures prédictions.
+
+```{r}
+PredARIMAPIB<- forecast(ARIMAPIB, h=6)
+new.value <- PredARIMAPIB$mean[6]
+PIBTest<-ts(c(PredARIMAPIB$mean, new.value), start = 2016, end = c(2017, 2), frequency=4)
+```
