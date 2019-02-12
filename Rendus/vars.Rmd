@@ -383,31 +383,63 @@ L'erreur quadratique moyenne de ce modèle pour les données prédites est la su
 
 # Vérification des hypothèses
 
+Afin que le modèle soit valide, il faut vérifier les trois hypothèses suivantes : homoscédasticité des résidus (test multivarié de ARCH-LM), normalité des résidus (test Jarque-Bera) et absence de corrélations entre les résidus (test du Portmanteau multivarié). Nous allons donc appliquer ces trois tests.
+
 ## Test ARCH (homoscédasticité des résidus)
+
+Le test multivarié de ARCH-LM permet de tester l'homoscédasticité des résidus. La statistique de test est la suivante : $VARCH_{LM}(q) = \frac{1}{2}TK(K+1)R_m^2$, où $R_m^2 = 1 - \frac{2}{K(K+1)}tr(\hat{\Omega}\hat{\Omega}_O^{-1})$, et $\hat{\Omega}$ est la matrice de covariance de la régression suivante : $vech(\hat{u_t}\hat{u_t}^T) = \beta_0 + B_1 vech(\hat{u}_{t-1}\hat{u}_{t-1}^T) + ... + B_q vech(\hat{u}_{t-q}\hat{u}_{t-q}^T) + v_t$. La dimension de $\beta_O$ est $\frac{1}{2}K(K+1)$ et celle des matrices des coefficients $B_i$ est $\frac{1}{2}K(K+1) × \frac{1}{2}K(K+1)$. La statistique de test suit une loi de $\chi^2(qK^2(K+1)^2/4)$, donc dans notre cas $\chi^2(16q*25/4)$. L'hypothèse nulle de ce test est $H_0 : B_0 = B_1 = ... = B_q = 0$ (homoscédasticité).
 
 ```{r}
 a1 <- c()
 for(i in 1:18){
 a1[i] <- arch.test(modele, lags.multi = i)$arch.mul$p.value
 }
-plot(a1, type="l")
+plot(a1, type="l", main="Evolution de la p-value en fonction du lag", xlab="lag", ylab="p-value")
 abline(h=0.05, col="red")
 ```
 
+On s'aperçoit, avec un seuil de confiance de 5% (ligne rouge), qu'on rejette l'hypothèse nulle d'homoscédasticité pour un retard faible (inférieur à 7). Cependant, en augmentant le nombre de valeurs prises en compte pour calculer la nouvelle, on se rend compte qu'on conserve l'hypothèse d'homoscédasticité. On observe également que la valeur de la p-value converge vers 1 au fur et à mesure qu'on augmente le retard. Ainsi, en prenant l'ensemble des résidus, nous conservons l'hypothèse d'homoscédasticité.
+
 ## Test normalité (normalité des résidus)
 
+Le test de Jarque-Bera pour séries multivariées permet de tester la normalité des résidus. Il utilise les résidus standardisés à l'aide d'une décomposition de Cholesky de la matrice de variance-covariance des résidus centrés. Il est important noter que l'ordre dans lequel les variables sont stockées dans la matrice a une importance sur les résultats. La statistique de test est la suivante : $JB_{mv} = s_3^2 + s_4^2$, où $s_3^2$ et $s_4^2$ se calculent de la sorte : $s_3^2 = Tb_1^Tb_1/6$ et $s_4^2 = T(b_2 - 3_K)^T(b_2-3_K)/24$, avec $b_1$ et  $b_2$ qui sont respectivement les vecteurs des moments non-centrés d'ordre trois et quatre des résidus standardisés. La statistique de test suit une loi de $\chi^2(2K)$. Ce test compare en fait le coefficient kurtosis K (l'applatissement de la fonction de densité) et le coefficient skewness S (symétrie de la fonction de densité) d'une loi normale à ceux des résidus testés. L'hypothèse nulle est donc $H0 : S = 0$ et $K = 3$.
+
 ```{r}
-normality.test(modele)
+normality.test(modele)$jb.mul$JB
 ```
+
+Ici, on rejette l'hypothèse H0, avec un seuil de confiance de 5%. Les résidus obtenus ne suivent pas une loi normale.
 
 ## Test Portmanteau (corrélations des résidus)
 
-Les 3 premières p-value ne peuvent être calculées à cause de la valeur des degrés de liberté.
+Le test de Portmanteau multivarié permet de tester l'auto-corrélation (au sein d'une même série) et la corrélation croisée (entre les différentes séries) des résidus.
+
+### Verification de la Matrice $C_0$
+
+La statistique de Portmanteau est $Q_h = T \sum_{j=1}^h tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h - n^*)$, $n^*$ étant le nombre de coefficients à estimer. Pour qu'elle existe, il faut donc vérifier que la matrice $\hat{C}_0$ est inversible pour que la statistique puisse être définie. Les matrices $\hat{C}_i$ s'écrivent $\hat{C}_i = \frac{1}{T} \sum_{t=i+1}^T \hat{u}_t \hat{u}_{t-i}^T$, donc $\hat{C}_0$ s'écrit $\hat{C}_0 = \frac{1}{T} \sum_{t=1}^T \hat{u}_t \hat{u}_t^T$. Nous allons donc vérifier qu'elle est inversible pour le modèle complet que nous avons mis en place. 
+
+```{r}
+C0 <- matrix(nrow = 4, ncol=4, 0)
+for(i in 1:nrow(residuals(modele))){
+  C0 <- C0 + residuals(modele)[i,]%*%t(residuals(modele)[i,])
+}
+C0 <- (1/nrow(residuals(modele))) * C0
+C0
+d <- det(C0)
+names(d) <- "Déterminant de la matrice"
+d
+```
+
+Le déterminant de la matrice n'étant pas nul, la matrice $\hat{C}_0$ est donc inversible.
+
+### Application du test
+
+Les 3 premières p-value ne peuvent être calculées à cause de la valeur des degrés de liberté. En effet, comme nous l'avons expliqué plus haut, la statistique de test suit une loi de $\chi^2(K^2h - n^*)$. Or, avec un retard compris entre 1 et 3, les degrés de liberté sont négatifs et il n'est donc pas possible d'appliquer le test. L'hypothèse nulle de ce test est l'absence de corrélations croisées et d'auto-corrélations.
 
 ```{r}
 a1 <- c()
 for(i in 1:3){
-  a1[i] <- 0
+  a1[i] <- NA
 } 
 for(i in 4:50){
   a1[i] <- serial.test(modele, lags.pt=i, type="PT.asymptotic")$serial$p.value
@@ -416,14 +448,7 @@ plot(a1, type="l")
 abline(h=0.05, col="red")
 ```
 
-### Verification de la Matrice $C_0$
-
-La statistique de Portmanteau est $Q_h = T \sum_{j=1}^h tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$. Pour qu'elle existe, il faut donc vérifier que la matrice $\hat{C}_0$ est inversible pour que la statistique puisse être définie. Les matrices $\hat{C}_i$ s'écrivent $\hat{C}_i = \frac{1}{T} \sum_{t=i+1}^T \hat{u}_t \hat{u}_{t-i}^T$, donc $\hat{C}_0$ s'écrit $\hat{C}_0 = \frac{1}{T} \sum_{t=1}^T \hat{u}_t \hat{u}_t^T$. Nous allons donc vérifier qu'elle existe pour le modèle complet que nous avons mis en place.
-
-```{r}
-for(i in 1:)
-residuals(modele)*residuals(modele)
-```
+Comme pour le test ARCH, on rejette l'hypose nulle, avec un seuil de confiance à 5% (ligne rouge) pour un retard faible (5 ou moins). Cependant, pour un retard grand (supérieur à 5), on conserve l'hypothèse nulle d'absence d'auto-corrélations et de corrélations croisées. On observe également que la p-valeur converge vers 1 à mesure qu'on augmente le retard. Ainsi, en prenant en compte l'ensemble des résidus, on conserve l'hypothèse d'absence d'auto-corrélations et de corrélations croisées.
 
 # Prévisions
 
@@ -450,25 +475,5 @@ Nous nous intéressons donc à l'erreur quadratique moyenne de cette prévision.
 
 ```{r}
 #EQM(MSETest, recon)
-```
-
-##Récupération de la valeur manquante du PIB trimestriel
-**A placer après la modélisation ARIMA du PIB.**
-Le PIB posséde une valeur en moins par rapport aux autres variables dans l'ensemble des données trimestrielles. Ceci nous impose de négliger la dernière valeur de toutes les autres séries pour que toutes les variables soient étudiées sur la même étendue temporelle. Pour éviter ce problème, nous décidons d'estimer la variable du PIB pour le 2e trimestre de 2017. Afin de faire cela, nous allons utiliser la valeur estimer par le modèle SARIMA correspondant à la variable PIB.
-
-```{r}
-ARIMAPIBTrimTrain <- auto.arima(PIBTrimTrain, stationary = F)
-plot(PIBTrimTrain, main="Comparaison entre le modèle SARIMA et les données 
-      d'apprentissage pour le PIB trimestriel")
-lines(ARIMAPIBTrimTrain$fitted, col="red")
-
-ARIMAPIBTrimTest <- forecast(ARIMAPIBTrimTrain, h = 6)
-plot(PIBTrimTest, main="Comparaison entre le modèle SARIMA et les données de 
-      validation pour le PIB trimestriel",
-     ylim=c(min(PIBTrimTest,ARIMAPIBTrimTest$mean),max(PIBTrimTest,ARIMAPIBTrimTest$mean)))
-lines(ARIMAPIBTrimTest$mean, col="red")
-
-new.value <- ARIMAPIBTrimTest$mean[6]
-ts(c(trim$PIB[1:109], new.value), start = 1990, end = c(2017, 2), frequency=4)
 ```
 
