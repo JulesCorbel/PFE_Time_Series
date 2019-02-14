@@ -2,7 +2,10 @@
 title: "Package MTS"
 author: "Jules CORBEL & Paul GUILLOTTE"
 date: "05/02/2019"
-output: pdf_document
+output:
+  pdf_document:
+    fig_caption: yes
+  html_notebook: null
 ---
 
 ```{r setup, include=FALSE}
@@ -158,23 +161,28 @@ Même contenu que pour le package vars
 
 # Calcul de l'ordre p
 
-Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. L'ordre p correspond à l'ordre de l'opérateur de retard, c'est-à-dire le nombre de valeurs du passé qui ont un impact sur la valeur à un instant défini. Dans le package **MTS**, la fonction utilisée est VARorder, qui comme VARselect utilise les critères d'AIC, BIC et HQ afin de déterminer l'ordre du processus. Toutefois, le critère FPE n'est pas présent, ce qui nous conforte dans notre idée qu'il n'est pas très utile à notre étude. Les valeurs des différents indicateurs nous font retenir un ordre p=3.
+Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. L'ordre p correspond à l'ordre de l'opérateur de retard, c'est-à-dire le nombre de valeurs du passé qui ont un impact sur la valeur à un instant défini. Dans le package **MTS**, la fonction utilisée est VARorder, qui comme VARselect utilise les critères d'AIC, BIC et HQ afin de déterminer l'ordre du processus. Toutefois, le critère FPE n'est pas présent, ce qui nous conforte dans notre idée qu'il n'est pas très utile à notre étude. 
+
+Cependant, nous avons également en notre possession un autre critère, la statistique du test de Tiao-Box ainsi que sa p-value. Ce test évalue pour un ordre *i* la significativité des coefficients de la matrice $A_i$. Ce test permet donc de déterminer si le modèle d'ordre *i* est meilleur que celui d'ordre *i-1*. La statistique de test est la suivante : $M(i) = -(T-K-i-\frac{3}{2}) \ln(\frac{det(\hat{\Sigma}_1)}{det(\hat{\Sigma}_{i-1})})$, qui suit une loi du $\chi^2_{k^2}$. Dans l'exemple que nous prenons, la première p-value supérieure à 0.05 est celle pour la matrice $A_5$. L'ordre que nous devons retenir par rapport à ce test est donc 4.
 
 ```{r}
-selec <- VARorder(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), maxp=10)
+selec <- VARorder(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), maxp=8)
 ```
 
+Comme pour le package VARS, l'AIC associé aux différents modèles diminue en même temps que l'ordre augmente. Si l'on conserve un ordre raisonnable, le meilleur AIC est également pour un modèle d'ordre 4. Le BIC nous donne lui un modèle d'ordre 2. Cela correspond aux mêmes ordres que ceux données par le package **vars**.
+
+L'article de Ruey S. Tsay nous conseille d'utiliser en priorité le test de Tiao-Box pour déterminer l'ordre, nous retenons donc le modèle d'ordre 4.
 
 # Estimation du modèle
 
-Dans le package **MTS**, la fonction utilisée pour construire des modèles VAR est *VAR,* qui prend en entrée la série temporelle multivariée et l'ordre du processus. On affiche ci-dessous les résultats renvoyés par la fonction sur le modèle
+Dans le package **MTS**, la fonction utilisée pour construire des modèles VAR est *VAR*, qui prend en entrée la série temporelle multivariée et l'ordre du processus. On affiche ci-dessous les résultats renvoyés par la fonction sur le modèle d'ordre 4
 ```{r}
-modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=3, output=F)
-print("Coefficients du modèle")
+modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=4, output=F)
+print("Coefficients du modèle pour un retard d'ordre 1")
 coeff<-modele$coef[2:5,]
 colnames(coeff)<-rownames(coeff)<-c("MSE", "PIB", "SMIC", "TCHOF")
 coeff
-print("Erreurs standard des coefficients")
+print("Erreurs standard associées aux coefficients")
 se<-modele$secoef[2:5,]
 colnames(se)<-rownames(se)<-c("MSE", "PIB", "SMIC", "TCHOF")
 se
@@ -183,10 +191,150 @@ se
 ```{r}
 matrix(data=c(modele$aic, modele$bic, modele$hq), nrow=1, byrow=T, dimnames=list(NULL, c("AIC", "BIC", "HQ")))
 ```
-Afin de vérifier que les résidus du modèle ne présentent ni d'auto-corrélation (corrélation dans une série entre deux temps différents), ni de corrélation croisée (corrélation entre deux séries différentes).
+
+#Vérification des hypothèses
+
+## Vérification de la stabilité
+
+Comme pour le package **vars**, nous vérifions que les modules des valeurs propres de la matrice A sont tous inférieurs à 1 . R. Tsay définit cependant la matrice A différemment de B. Pfaff, soit en la retournant
+
+$$A = \begin{bmatrix}
+0 & I & 0 & \cdots & 0 \\
+0 & 0 & I & \cdots & 0 \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & 0 \cdots & 0 & I \\
+A_p & A_{p-1} & A_{p-2} & \cdots  & A_1 
+\end{bmatrix}$$
 
 ```{r}
-LjungBox(modele$residuals, 1:10)
+A <- matrix(0,nrow=16, ncol=16)
+    A[1:4,5:8] = diag(4)
+    A[5:8,9:12] = diag(4)
+    A[9:12,13:16] = diag(4)
+    A[13:16,1:4] = modele$coef[2:5,]
+    A[13:16,5:8] = modele$coef[6:9,]
+    A[13:16,9:12] = modele$coef[10:13,]
+    A[13:16,13:16] = modele$coef[14:17,]
+    vp<-eigen(A)$values
+    Mod(vp)
+plot(seq(1,16), Mod(vp), xlab="",
+     ylab="Modules des valeurs propres", ylim=c(0,1.5))
+abline(h=1, col="red")
+```
+
+**Pas stable ????????????????????????????**
+
+
+Nous vérifions ensuite que les résidus ne comportent ni d'autocorrélation, ni de corrélation croisée. Pour cela, on utilise la fonction *ccm*, qui vérifie les matrices de corrélation croisée pour un lag donné. On définit la matrice de variance-covariance pour un lag *p* comme $\hat{\Gamma}_p = \frac{1}{T}\sum_{i=p+1}^{T} (r_t - \bar{r})(r_{t-p} - \bar{r})$. La matrice de corrélation associée vaut donc $\rho_p = \hat{D}^{-1}\hat{\Gamma}_p\hat{D}^{-1}$.
+```{r, include=F}
+ccm<-function (x, lags = 12, level = FALSE, output = T) 
+{
+    if (!is.matrix(x)) 
+        x = as.matrix(x)
+    nT = dim(x)[1]
+    k = dim(x)[2]
+    if (lags < 1) 
+        lags = 1
+    y = scale(x, center = TRUE, scale = FALSE)
+    V1 = cov(y)
+    if (output) {
+        print("Covariance matrix:")
+        print(V1, digits = 3)
+    }
+    se = sqrt(diag(V1))
+    SD = diag(1/se)
+    S0 = SD %*% V1 %*% SD
+    ksq = k * k
+    wk = matrix(0, ksq, (lags + 1))
+    wk[, 1] = c(S0)
+    j = 0
+    if (output) {
+        cat("CCM at lag: ", j, "\n")
+        print(S0, digits = 3)
+        cat("Simplified matrix:", "\n")
+    }
+    y = y %*% SD
+    crit = 2/sqrt(nT)
+    for (j in 1:lags) {
+        y1 = y[1:(nT - j), ]
+        y2 = y[(j + 1):nT, ]
+        Sj = t(y2) %*% y1/nT
+        Smtx = matrix(".", k, k)
+        for (ii in 1:k) {
+            for (jj in 1:k) {
+                if (Sj[ii, jj] > crit) 
+                  Smtx[ii, jj] = "+"
+                if (Sj[ii, jj] < -crit) 
+                  Smtx[ii, jj] = "-"
+            }
+        }
+        cat("CCM at lag: ", j, "\n")
+        for (ii in 1:k) {
+            cat(Smtx[ii, ], "\n")
+        }
+        if (level) {
+            cat("Correlations:", "\n")
+            print(Sj, digits = 3)
+        }
+        wk[, (j + 1)] = c(Sj)
+    }
+    if (output) {
+        par(mfcol = c(k, k))
+        k0 = 4
+        if (k > k0) 
+            par(mfcol = c(k0, k0))
+        tdx = c(0, 1:lags)
+        jcnt = 0
+        if (k > 10) {
+            print("Skip the plots due to high dimension!")
+        }
+        else {
+            for (j in 1:ksq) {
+                plot(tdx, wk[j, ], type = "h", xlab = "lag", 
+                  ylab = "ccf", ylim = c(-1, 1))
+                abline(h = c(0))
+                crit = 2/sqrt(nT)
+                abline(h = c(crit), lty = 2)
+                abline(h = c(-crit), lty = 2)
+                jcnt = jcnt + 1
+                if ((jcnt == k0^2) && (k > k0)) {
+                  jcnt = 0
+                  cat("Hit Enter for more plots:", "\n")
+                  readline()
+                }
+            }
+        }
+        par(mfcol = c(1, 1))
+        cat("Hit Enter for p-value plot of individual ccm: ", 
+            "\n")
+        readline()
+    }
+    r0i = solve(S0)
+    R0 = kronecker(r0i, r0i)
+    pv = rep(0, lags)
+    for (i in 1:lags) {
+        tmp = matrix(wk[, (i + 1)], ksq, 1)
+        tmp1 = R0 %*% tmp
+        ci = crossprod(tmp, tmp1) * nT * nT/(nT - i)
+        pv[i] = 1 - pchisq(ci, ksq)
+    }
+    if (output) {
+        plot(pv, xlab = "lag", ylab = "p-value", ylim = c(0, 
+            1))
+        abline(h = c(0))
+        abline(h = c(0.05), col = "blue")
+        title(main = "Significance plot of CCM")
+    }
+    ccm <- list(ccm = wk, pvalue = pv)
+}
+```
+
+```{r}
+crossCorr<-ccm(modele$residuals, lag=10, output=F)
+plot(crossCorr$pvalue, xlab = "lag", ylab = "p-value", ylim = c(0,1), main="Significance plot of CCM")
+abline(h = c(0))
+crit = 2/sqrt(length(modele$residuals))
+abline(h = c(crit), lty = 2, col="red")
 ```
 
 L'hypothèse nulle d'indépendance des résidus est conservée, ce qui nous permet de valider notre modèle.

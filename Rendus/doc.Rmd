@@ -281,14 +281,16 @@ par(mfrow=c(2,2))
 ARIMAPIB<-auto.arima(PIBTrain, ic="aicc", seasonal=F)
 print(ARIMAPIB)
 PredARIMAPIB<- forecast(ARIMAPIB, h=5)
-plot(PIBTest, ylim=c(min(PIBTest,PredARIMAPIB$mean),max(PIBTest,PredARIMAPIB$mean)), main="Comparaison entre le modèle SARIMA et les données de
+plot(PIBTest, ylim=c(min(PIBTest,PredARIMAPIB$mean),max(PIBTest,PredARIMAPIB$mean)), 
+main="Comparaison entre le modèle SARIMA et les données de
     validation pour le PIB trimestriel", cex.main=0.8)
 lines(PredARIMAPIB$mean, col="red")
 
 ARIMASMIC<-auto.arima(SMICTrain, ic="aicc")
 print(ARIMASMIC)
 PredARIMASMIC<- forecast(ARIMASMIC, h=6)
-plot(SMICTest, ylim=c(min(SMICTest,PredARIMASMIC$mean),max(SMICTest,PredARIMASMIC$mean)), main="Comparaison entre le modèle SARIMA et les données de
+plot(SMICTest, ylim=c(min(SMICTest,PredARIMASMIC$mean),max(SMICTest,PredARIMASMIC$mean)), 
+main="Comparaison entre le modèle SARIMA et les données de
     validation pour le SMIC trimestriel", cex.main=0.8)
 lines(PredARIMASMIC$mean, col="red")
 
@@ -314,7 +316,8 @@ Comme pour le lissage exponentiel, nous résumons les résultats obtenus dans un
 Une fois que nous avons construit les deux types de modèles pour chacune des variables, nous souhaitons les comparer pour savoir quel modèle est le plus efficace pour prédire chacune des variables. Pour cela, les EQM, calculant l'erreur de prédiction, de chacun des modèles sont synthétisées dans le tableau suivant. L'AICc ne peut pas être utilsié ici car les méthodes à comparer sont différentes. Il n'est donc pas sûr que la méthode utilisée pour calculer la vraisemblance soit la même.
 
 ```{r}
-resultats<-matrix(nrow=4, ncol=2, dimnames = list(c("MSE", "PIB", "SMIC", "TCHOF"), c("lissage", "ARMA")))
+resultats<-matrix(nrow=4, ncol=2, dimnames = list(c("MSE", "PIB", "SMIC", "TCHOF"), 
+                                                  c("lissage", "ARMA")))
 resultats[1,1] = EQM(MSETest, PredLEMSE$mean)
 resultats[2,1] = EQM(PIBTest, PredLEPIB$mean)
 resultats[3,1] = EQM(SMICTest, PredLESMIC$mean)
