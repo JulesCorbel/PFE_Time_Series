@@ -1,6 +1,5 @@
 t <- auto.arima(MSETrain, stationary = F)
 t$residuals
-diff(MSETrain, differences=4)
 par(mfrow=c(2,1))
 plot(MSETrain)
 lines(t$fitted, col="red")

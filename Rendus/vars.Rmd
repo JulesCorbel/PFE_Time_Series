@@ -389,11 +389,17 @@ Afin que le modèle soit valide, il faut vérifier les trois hypothèses suivant
 
 ## Verification de la stabilité
 
-Pour que le processus VAR soit stable, c'est-à-dire qu'il génère des séries stationnaires, nous devons calculer les valeurs propres de la matrice des coefficients  : 
+Pour vérifier si le processus VAR est stable, c'est-à-dire qu'il génère des séries stationnaires, nous devons calculer les valeurs propres de la matrice des coefficients  : 
 
-$A $
+$$A = \begin{bmatrix}
+A_1 & A_2 & \cdots & A_{p-1} & A_p \\
+I & 0 & \cdots & 0 & 0 \\
+0 & I & \cdots & 0 & 0 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & I & 0 
+\end{bmatrix}$$
 
-et s'assurer que la solution de cette équation a des racines pour $z = 1$
+Si les modules des valeurs propres de A sont inférieures à 1, alors le processus VAR est stable. Nous allons donc vérifier que le processus VAR(4) créé précédemment avec toutes les variables à notre disposition est bien stable.
 
 ```{r, include=FALSE}
 A2<-cbind(modele$varresult$MSESta$coefficients[5:8], 
@@ -416,9 +422,8 @@ colnames(A4)<-rownames(A4)<-c("MSE", "PIB", "SMIC", "TCHOF")
 A4
 ```
 
-Construction de la matrice A
-
 ```{r}
+#Construction de la matrice A
 A <- matrix(0,nrow=16, ncol=16)
 A[1:4,1:4] = A1
 A[1:4,5:8] = A2
@@ -427,11 +432,15 @@ A[1:4,13:16] = A4
 A[5:8,1:4] = diag(1,4,4)
 A[9:12,5:8] = diag(1,4,4)
 A[13:16,9:12] = diag(1,4,4)
+#Calcul des valeurs propres
 vp <- eigen(A)
 Mod(vp$values)
-plot(seq(1,16), Mod(vp$values), xlab="Valeurs propres", ylab="Modules", ylim=c(0,1.5))
+plot(seq(1,16), Mod(vp$values), xlab="",
+     ylab="Modules des valeurs propres", ylim=c(0,1.5))
 abline(h=1, col="red")
 ```
+
+On s'aperçoit que tous les modules sont inférieurs à 1, le processus VAR(4) est donc stable.
 
 ## Test ARCH (homoscédasticité des résidus)
 
@@ -498,6 +507,31 @@ abline(h=0.05, col="red")
 
 Au regarde la figure \ref{fig2} Comme pour le test ARCH, on rejette l'hypothèse nulle, avec un seuil de confiance à 5% (ligne rouge) pour un retard faible (5 ou moins). Cependant, pour un retard grand (supérieur à 5), on conserve l'hypothèse nulle d'absence d'auto-corrélations et de corrélations croisées. On observe également que la p-value converge vers 1 à mesure qu'on augmente le retard. Ainsi, en prenant en compte l'ensemble des résidus, on conserve l'hypothèse d'absence d'auto-corrélations et de corrélations croisées.
 
+# Nouvelle stationnarisation
+
+```{r}
+t <- auto.arima(MSETrain, stationary = F)
+t$residuals
+par(mfrow=c(2,1))
+plot(MSETrain)
+lines(t$fitted, col="red")
+plot(t$residuals)
+abline(h=0, col="red")
+par(mfrow=c(1,1))
+
+PredSAR <- forecast(t, h=10)
+
+tPIB <- auto.arima(PIBTrain, stationary = F)
+tPIB$residuals
+diff(PIBTrain, differences=4)
+par(mfrow=c(2,1))
+plot(PIBTrain)
+lines(tPIB$fitted, col="red")
+plot(tPIB$residuals)
+abline(h=0, col="red")
+par(mfrow=c(1,1))
+```
+
 # Prévisions
 
 Maintenant que nous avons estimé l'ordre des différents modèle VAR, et que nous avons explicité l'estimation des modèles, nous cherchons désormais à trouver celui dont les prédictions sont les plus proches de la réalité.
@@ -506,17 +540,17 @@ Après avoir comparé tous les modèles possibles (7 : 3 modèles avec deux vari
 
 ```{r}
 #SMIC
-VARselect(cbind(MSESta, SMICSta), lag.max=10)
-VAR(cbind(MSESta, SMICSta), p=3, type="const")
-VARSMICSta <- forecast(VAR(cbind(MSESta, SMICSta), p=3, type="const"))
+VARselect(cbind(t$residuals, tPIB$residuals), lag.max=10)
+VAR(cbind(t$residuals, tPIB$residuals), p=1, type="const")
+VARSMICSta <- forecast(VAR(cbind(t$residuals, tPIB$residuals), p=1, type="const"))
 plot(MSETest, xlim=c(2016,2017.25), main="Différences entre les véritables
      valeurs de 2016 et les prédictions du modèle pour la masse salariale", xaxt="n")
 axis(side=1, at=seq(2016,2017.25,0.25), labels=c("2016Q1", "2016Q2", "2016Q3", "2016Q4", "2017Q1", "2017Q2"))
 #Reconstruction de la variable stationnaire
-#recon <- VARSMICSta$forecast$MSESta$mean * MSETrendTest * MSESeasonalTest
-#lines(recon, col = "red")
-#legend('bottomleft', legend = c('Vraies valeurs', 'Prévisions du modèle'),
-#       col=c('black', 'red'), lty=1, cex=0.8)
+recon <- PredSAR$mean + VARSMICSta$forecast$t.residuals$mean
+lines(recon, col = "red")
+legend('bottomleft', legend = c('Vraies valeurs', 'Prévisions du modèle'),
+       col=c('black', 'red'), lty=1, cex=0.8)
 ```
 
 Nous nous intéressons donc à l'erreur quadratique moyenne de cette prévision.
