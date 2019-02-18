@@ -52,3 +52,67 @@ pacf(MSESta, main="Auto-Corrélation partielle de la Masse
 par(mfrow=c(1,1))
 kpss.test(MSESta)
 adf.test(MSESta)
+
+##Création de la matrice des résidus
+
+U <- matrix(0, 100,4)
+U[1:4,] <- NA
+for(i in 5:100){
+  U[i,] <- modele$y[i,] - A1 %*% modele$y[i-1,] - A2 %*% modele$y[i-2,] - A3 %*% modele$y[i-3,] - A4 %*% modele$y[i-4,]
+}
+U
+mean(U[,1])
+comp <- 0
+matnum <- 0
+for(i in 1:100){
+  temp <- U[i,] %*% t(U[i,])
+  if(abs(det(temp)) > comp){
+    comp <- det(temp)
+    matnum <- i
+  }
+}
+
+# Nouvelle stationnarisation
+
+```{r}
+t <- auto.arima(MSETrain, stationary = F)
+t$residuals
+par(mfrow=c(2,1))
+plot(MSETrain)
+lines(t$fitted, col="red")
+plot(t$residuals)
+abline(h=0, col="red")
+par(mfrow=c(1,1))
+
+tPIB <- auto.arima(PIBTrain, stationary = F)
+tPIB$residuals
+par(mfrow=c(2,1))
+plot(PIBTrain)
+lines(tPIB$fitted, col="red")
+plot(tPIB$residuals)
+abline(h=0, col="red")
+par(mfrow=c(1,1))
+
+tSMIC <- auto.arima(SMICTrain, stationary = F)
+tSMIC$residuals
+par(mfrow=c(2,1))
+plot(SMICTrain)
+lines(tSMIC$fitted, col="red")
+plot(tSMIC$residuals)
+abline(h=0, col="red")
+par(mfrow=c(1,1))
+
+tTCHO <- auto.arima(TCHOFTrain, stationary = F)
+tTCHO$residuals
+par(mfrow=c(2,1))
+plot(TCHOFTrain)
+lines(tTCHO$fitted, col="red")
+plot(tTCHO$residuals)
+abline(h=0, col="red")
+par(mfrow=c(1,1))
+
+MSESta <- t$residuals
+PIBSta <- tPIB$residuals
+SMICSta <- tSMIC$residuals
+TCHOFSta <- tTCHO$residuals
+```

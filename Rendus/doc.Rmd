@@ -340,3 +340,29 @@ PredARIMAPIB<- forecast(ARIMAPIB, h=6)
 new.value <- PredARIMAPIB$mean[6]
 PIBTest<-ts(c(PredARIMAPIB$mean, new.value), start = 2016, end = c(2017, 2), frequency=4)
 ```
+
+# Modélisation ARMA avec variables exogènes
+
+## Définition
+
+Maintenant que nous avons modélisé chaque série individuellement, nous souhaitons savoir s’il est possible d’améliorer la qualité de prédiction des séries MSE annuelle et trimestrielle à l’aide des autres variables à notre disposition. Pour ce faire, nous allons construire des lissages et des modèles SARIMA prenant en compte des variables exogènes. 
+
+$Y_{t} = \beta_{0} +\beta_{1}X_{1t} + ... + \beta_{k}X_{kt} + \epsilon_{t}$
+
+$Y_{t}$ est la variable à modéliser. $X_{i}$ pour $i = 1, ..., k$ correspond à la $i$ème variable exogène. $\beta_{i}$ pour i allant de $i = 0, ..., k$ correspond aux coefficients d'une régression linéaire. Enfin, le résidu $\epsilon_{t}$ suit un processus de type ARMA.
+
+## Résultats obtenus
+
+```{r}
+#PIB & SMIC & TCHO
+SARIMAPIBSMICTCHO <- auto.arima(MSETrimTrain, xreg = cbind(PIBTrimTrain, SMICTrimTrain, TCHOTrimTrain))
+PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBTest, SMICTest, TCHOFTest))
+plot(PredPIBSMICTCHO$mean, col="red",
+     ylim=c(min(MSETest,PredPIBSMICTCHO$mean), max(MSETrimTest,PredPIBSMICTCHO$mean)),
+     main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
+lines(MSETest)
+EQM(PredPIBSMICTCHO$mean, MSETrimTest)
+```
+
+Ici, les résidus suivent un SARIMA(0,0,0)(0,1,0)[4], et le modèle possède 3 variables exogènes : le coefficient correspondant à la variable PIB est $\beta_1 = 706.0045$, celui correspondant à la variable SMIC est $\beta_2 = 209266766$ et enfin celui correspondant au taux de chômage est $\beta_3 = -1644706$
+
