@@ -401,17 +401,17 @@ I & 0 & \cdots & 0 & 0 \\
 
 Si les modules des valeurs propres de A sont inférieures à 1, alors le processus VAR est stable. Nous allons donc vérifier que le processus VAR(4) créé précédemment avec toutes les variables à notre disposition est bien stable.
 
-```{r, include=FALSE}
-A2<-cbind(modele$varresult$MSESta$coefficients[5:8], 
-          modele$varresult$PIBSta$coefficients[5:8], 
-          modele$varresult$SMICSta$coefficients[5:8],
-          modele$varresult$TCHOFSta$coefficients[5:8])
+```{r}
+A2<-cbind(modele2$varresult$MSESta$coefficients[5:8], 
+          modele2$varresult$PIBSta$coefficients[5:8], 
+          modele2$varresult$SMICSta$coefficients[5:8],
+          modele2$varresult$TCHOFSta$coefficients[5:8])
 colnames(A2)<-rownames(A2)<-c("MSE", "PIB", "SMIC", "TCHOF")
 A2
-A3<-cbind(modele$varresult$MSESta$coefficients[9:12], 
-          modele$varresult$PIBSta$coefficients[9:12], 
-          modele$varresult$SMICSta$coefficients[9:12],
-          modele$varresult$TCHOFSta$coefficients[9:12])
+A3<-cbind(modele2$varresult$MSESta$coefficients[9:12], 
+          modele2$varresult$PIBSta$coefficients[9:12], 
+          modele2$varresult$SMICSta$coefficients[9:12],
+          modele2$varresult$TCHOFSta$coefficients[9:12])
 colnames(A3)<-rownames(A3)<-c("MSE", "PIB", "SMIC", "TCHOF")
 A3
 A4<-cbind(modele$varresult$MSESta$coefficients[13:16],
@@ -420,6 +420,12 @@ A4<-cbind(modele$varresult$MSESta$coefficients[13:16],
           modele$varresult$TCHOFSta$coefficients[13:16])
 colnames(A4)<-rownames(A4)<-c("MSE", "PIB", "SMIC", "TCHOF")
 A4
+
+A0<-c(modele$varresult$MSESta$coefficients[17], 
+          modele$varresult$PIBSta$coefficients[17], 
+          modele$varresult$SMICSta$coefficients[17],
+          modele$varresult$TCHOFSta$coefficients[17])
+names(A0)<-c("MSE", "PIB", "SMIC", "TCHOF")
 ```
 
 ```{r}
