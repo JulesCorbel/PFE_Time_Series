@@ -355,13 +355,13 @@ $Y_{t}$ est la variable à modéliser. $X_{i}$ pour $i = 1, ..., k$ correspond �
 
 ```{r}
 #PIB & SMIC & TCHO
-SARIMAPIBSMICTCHO <- auto.arima(MSETrimTrain, xreg = cbind(PIBTrimTrain, SMICTrimTrain, TCHOTrimTrain))
+SARIMAPIBSMICTCHO <- auto.arima(MSETrain, xreg = cbind(PIBTrain, SMICTrain, TCHOFTrain))
 PredPIBSMICTCHO <- forecast(SARIMAPIBSMICTCHO, xreg = cbind(PIBTest, SMICTest, TCHOFTest))
 plot(PredPIBSMICTCHO$mean, col="red",
-     ylim=c(min(MSETest,PredPIBSMICTCHO$mean), max(MSETrimTest,PredPIBSMICTCHO$mean)),
+     ylim=c(min(MSETest,PredPIBSMICTCHO$mean), max(MSETest,PredPIBSMICTCHO$mean)),
      main = "Lissage exponentiel expliqué par le PIB, le SMIC et le taux de chômage vs Vraies valeurs")
 lines(MSETest)
-EQM(PredPIBSMICTCHO$mean, MSETrimTest)
+EQM(PredPIBSMICTCHO$mean, MSETest)
 ```
 
 Ici, les résidus suivent un SARIMA(0,0,0)(0,1,0)[4], et le modèle possède 3 variables exogènes : le coefficient correspondant à la variable PIB est $\beta_1 = 706.0045$, celui correspondant à la variable SMIC est $\beta_2 = 209266766$ et enfin celui correspondant au taux de chômage est $\beta_3 = -1644706$
