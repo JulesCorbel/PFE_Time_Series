@@ -367,6 +367,8 @@ Ici, les résidus suivent un SARIMA(0,0,0)(0,1,0)[4], et le modèle possède 3 v
 
 ## Résultats obtenus
 
+Nous allons désormais nous intéresser à la construction des différents modèles prenant en compte 1 variable exogène (3 modèles), 2 variables exogènes (3 modèles) et 3 variables exogènes (1 modèle). La qualité de ces 7 modèles est representée dans le tableau ci-dessous.
+
 | Variable     | Ordre du processus |  AICc   |
 | ------------ | -------------------| ------- |
 | PIB          |   (1,0,0)(2,1,0)   | 3715.99 |
@@ -377,11 +379,11 @@ Ici, les résidus suivent un SARIMA(0,0,0)(0,1,0)[4], et le modèle possède 3 v
 | SMIC & TCHOF |   (0,1,0)(0,1,0)   | 3690.57 |
 | COMPLET      |   (0,0,0)(0,1,0)   | 3809.5  |
 
-On se rend compte que le modèle avec l'AIC corrigé le plus faible est le modèle prenant en compte le SMIC.
+On se rend compte que le modèle avec l'AIC corrigé le plus faible est le modèle prenant en compte le SMIC. Nous nous intéressons donc à la prédiction de ce modèle (dans la \ref{fig14}).
 
-```{r}
+```{r, fig.cap="\\label{fig14}"}
 #SMIC
-SARIMASMIC <- auto.arima(MSETrimTrain, xreg = SMICTrimTrain)
+SARIMASMIC <- auto.arima(MSETrain, xreg = SMICTrain)
 PredSMIC <- forecast(SARIMASMIC, xreg = SMICTest)
 plot(PredSMIC$mean, col="red",
      ylim=c(min(MSETest,PredSMIC$mean), max(MSETest,PredSMIC$mean)),
@@ -389,3 +391,4 @@ plot(PredSMIC$mean, col="red",
 lines(MSETest)
 EQM(PredSMIC$mean, MSETest)
 ```
+
