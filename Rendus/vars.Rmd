@@ -481,7 +481,7 @@ Le test de Portmanteau multivarié permet de tester l'auto-corrélation (au sein
 
 ### Verification de la Matrice $C_0$
 
-La statistique de Portmanteau est $Q_h = T \sum_{j=1}^h tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h - n^*)$, $n^*$ étant le nombre de coefficients à estimer. Pour qu'elle existe, il faut donc vérifier que la matrice $\hat{C}_0$ est inversible pour que la statistique puisse être définie. Les matrices $\hat{C}_i$ s'écrivent $\hat{C}_i = \frac{1}{T} \sum_{t=i+1}^T \hat{u}_t \hat{u}_{t-i}^T$, donc $\hat{C}_0$ s'écrit $\hat{C}_0 = \frac{1}{T} \sum_{t=1}^T \hat{u}_t \hat{u}_t^T$. Nous allons donc vérifier qu'elle est inversible pour le modèle complet que nous avons mis en place. 
+La statistique de Portmanteau est $Q_h = T \sum_{j=1}^h tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h - n^*)$, $n^*$ étant le nombre de coefficients à estimer. Pour qu'elle existe, il faut donc vérifier que la matrice $\hat{C}_0$ est inversible pour que la statistique puisse être définie. Les matrices $\hat{C}_i$ s'écrivent $\hat{C}_i = \frac{1}{T} \sum_{t=i+1}^T \hat{u}_t \hat{u}_{t-i}^T$, donc $\hat{C}_0$ s'écrit $\hat{C}_0 = \frac{1}{T} \sum_{t=1}^T \hat{u}_t \hat{u}_t^T$. Nous allons donc vérifier qu'elle est inversible pour le modèle complet que nous avons mis en place. $tr()$ correspond à la trace de la matrice, soit la somme des éléments diagonaux de la matrice.
 
 ```{r}
 C0 <- matrix(nrow = 4, ncol=4, 0)

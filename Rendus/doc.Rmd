@@ -345,7 +345,7 @@ PIBTest<-ts(c(PredARIMAPIB$mean, new.value), start = 2016, end = c(2017, 2), fre
 
 ## Définition
 
-Maintenant que nous avons modélisé chaque série individuellement, nous souhaitons savoir s’il est possible d’améliorer la qualité de prédiction des séries MSE annuelle et trimestrielle à l’aide des autres variables à notre disposition. Pour ce faire, nous allons construire des modèles SARIMA prenant en compte des variables exogènes. 
+Maintenant que nous avons modélisé chaque série individuellement, nous souhaitons savoir s’il est possible d’améliorer la qualité de prédiction de la série MSE trimestrielle à l’aide des autres variables à notre disposition. Pour ce faire, nous allons construire des modèles SARIMA prenant en compte des variables exogènes. 
 
 $Y_{t} = \beta_{0} +\beta_{1}X_{1t} + ... + \beta_{k}X_{kt} + \epsilon_{t}$
 
@@ -393,3 +393,133 @@ lines(MSETest)
 EQM(PredSMIC$mean, MSETest)
 ```
 
+# Modélisation VAR
+
+## Définition des modèles
+
+### Ecriture
+
+Dans la partie précédente, nous avons mis en place des modèles permettant de modéliser et prédire la valeur de la masse salariale uniquement. Cependant, il pourrait être pertinent de tenter de modéliser toutes les variables en même temps. C'est ce que les modèles VAR nous permettent de faire.
+
+Un modèle VAR s'écrit sous la forme suivante : 
+
+  $y_t = \sum_{i = 1}^{p} {A_iy_{t-i}} + u_t$
+  
+$A_i$ représentent les matrices de coefficients du modèle pour un ordre $i$ et $u_t$ une matrice K-dimensionnelle composée des résidus du modèle (indépendants et identiquement distribués). Enfin, $p$ correspond à l'ordre du modèle, qui est en fait le nombre de valeurs du passé prises en compte pour calculer la valeur présente.
+
+### Hypothèses
+
+#### Stabilité du modèle
+
+Pour que le modèle soit valide, nous devons vérifier que l'hypothèse de stabilité est bien respecté. Cette dernière permet d'assurer que les différentes séries générées par le modèle sont stationnaires. Pour vérifier si un processus VAR est stable, nous devons calculer les valeurs propres de la matrice des coefficients suivantes : 
+
+$$A = \begin{bmatrix}
+A_1 & A_2 & \cdots & A_{p-1} & A_p \\
+I & 0 & \cdots & 0 & 0 \\
+0 & I & \cdots & 0 & 0 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & I & 0 
+\end{bmatrix}$$
+
+Si les modules des valeurs propres de A sont inférieures à 1, alors le processus VAR est stable.
+
+#### Hypothèses sur les résidus
+
+Pour que le modèle soit valide, certaines conditions sur les résidus doivent également être validées. Il s'agit des suivantes :
+
+* Homoscédasticité
+* Normalité
+* Absence d'auto-corrélations et de corrélations croisées
+
+## Transformation des séries
+
+Nous allons maintenant transformer les séries pour les rendre stationnaires, afin de pouvoir appliquer les modèles VAR ensuite. Afin de stationnariser les séries, nous utiliserons la fonction decompose qui permet de découper la série en trois : la tendance, la saisonnalité et les résidus, afin de pouvoir ensuite travailler avec les résidus. Nous ne stationnariserons que les échantillons d'apprentissage.
+
+### Masse salariale
+
+```{r}
+  MSETrain <- window(MSE, end=c(2015,4))
+  MSETest <- window(MSE, start=2016)
+  plot(decompose(MSETrain, "multiplicative"))
+  MSESta <- na.omit(decompose(MSETrain, "multiplicative")$random)
+  MSETrendTest<-window(decompose(MSETrain, "multiplicative")$trend)
+  MSESeasonalTest<-window(decompose(MSETrain, "multiplicative")$seasonal)
+  plot(MSESta, main="Masse salariale trimestrielle stationnarisée", xaxt="n")
+  axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
+  par(mfrow=c(1,2))
+  acf(MSESta, main="Auto-Corrélation de la Masse
+      salariale trimestrielle stationnarisée")
+  pacf(MSESta, main="Auto-Corrélation partielle de la Masse
+       salariale trimestrielle stationnarisée")
+  par(mfrow=c(1,1))
+  kpss.test(MSESta)
+  adf.test(MSESta)
+```
+
+Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value des tests de KPSS et Dickey Fuller augmenté nous amène à confirmer que notre série est désormais stationnarisée (avec un seuil de confiance à 5% pour les deux tests effectués).
+
+### PIB
+
+```{r}
+  PIBTrain <- window(PIB, end=c(2015,4))
+  PIBTest <- window(PIB, start=2016)
+  PIBSta <- na.omit(decompose(PIBTrain, "multiplicative")$random)
+  plot(PIBSta, main="PIB trimestriel stationnarisé", xaxt="n")
+  axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
+  par(mfrow=c(1,2))
+  acf(PIBSta, main="Auto-Corrélation du PIB
+      trimestrielle stationnarisée")
+  pacf(PIBSta, main="Auto-Corrélation partielle du PIB
+      trimestrielle stationnarisée")
+  par(mfrow=c(1,1))
+  kpss.test(PIBSta)
+  adf.test(PIBSta)
+```
+
+Nous nous intéressons aux ACF, PACF, test de KPSS et test de Dickey Fuller augmenté afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
+
+### SMIC
+
+```{r}
+  SMICTrain <- window(SMIC, end=c(2015,4))
+  SMICTest <- window(SMIC, start=2016)
+  SMICSta <- na.omit(decompose(SMICTrain)$random)
+  plot(SMICSta, main="SMIC trimestriel stationnarisé", xaxt="n")
+  axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
+  par(mfrow=c(1,2))
+  acf(SMICSta, main="Auto-Corrélation du SMIC
+      trimestrielle stationnarisée")
+  pacf(SMICSta, main="Auto-Corrélation partielle du SMIC
+      trimestrielle stationnarisée")
+  par(mfrow=c(1,1))
+  kpss.test(SMICSta)
+  adf.test(SMICSta)
+```
+
+Comme pour la masse salariale, les ACF et PACF semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS ainsi que le test de Dickey Fuller augmenté nous permettent de conclure à la stationnarité des résidus.
+
+### Taux de chômage des femmes
+
+```{r}
+  TCHOFTrain <- window(TCHOF, end=c(2015,4))
+  TCHOFTest <- window(TCHOF, start=2016)
+  TCHOFSta <- na.omit(decompose(TCHOFTrain)$random)
+  plot(TCHOFSta, main="Taux de chômage trimestriel des femmes stationnarisé", xaxt="n")
+  axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
+  par(mfrow=c(1,2))
+  acf(TCHOFSta, main="Auto-Corrélation du Taux de
+      chômage des femmes
+      trimestrielle stationnarisée")
+  pacf(TCHOFSta, main="Auto-Corrélation partielle
+      du Taux de chômage des femmes
+      trimestrielle stationnarisée")
+  par(mfrow=c(1,1))
+  kpss.test(TCHOFSta)
+  adf.test(TCHOFSta)
+```
+
+En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF, le test de KPSS et le test de Dickey Fuller augmenté, on peut conclure que la série résiduelle est stationnaire.
+
+Maintenant que toutes les séries ont été stationnarisées, nous allons pouvoir construire des modèles VAR.
+
+## Mise en place de modèles VAR avec le package vars
