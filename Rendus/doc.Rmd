@@ -345,7 +345,7 @@ PIBTest<-ts(c(PredARIMAPIB$mean, new.value), start = 2016, end = c(2017, 2), fre
 
 ## Définition
 
-Maintenant que nous avons modélisé chaque série individuellement, nous souhaitons savoir s’il est possible d’améliorer la qualité de prédiction des séries MSE annuelle et trimestrielle à l’aide des autres variables à notre disposition. Pour ce faire, nous allons construire modèles SARIMA prenant en compte des variables exogènes. 
+Maintenant que nous avons modélisé chaque série individuellement, nous souhaitons savoir s’il est possible d’améliorer la qualité de prédiction des séries MSE annuelle et trimestrielle à l’aide des autres variables à notre disposition. Pour ce faire, nous allons construire des modèles SARIMA prenant en compte des variables exogènes. 
 
 $Y_{t} = \beta_{0} +\beta_{1}X_{1t} + ... + \beta_{k}X_{kt} + \epsilon_{t}$
 
@@ -371,6 +371,7 @@ Nous allons désormais nous intéresser à la construction des différents modè
 
 | Variable     | Ordre du processus |  AICc   |
 | ------------ | -------------------| ------- |
+| Aucune       |   (0,1,1)(0,1,1)   | 3675.34 |
 | PIB          |   (1,0,0)(2,1,0)   | 3715.99 |
 | SMIC         |   (0,1,0)(0,1,0)   | 3688.92 |
 | TCHOF        |   (0,0,0)(1,1,0)   | 3809.82 |
@@ -379,7 +380,7 @@ Nous allons désormais nous intéresser à la construction des différents modè
 | SMIC & TCHOF |   (0,1,0)(0,1,0)   | 3690.57 |
 | COMPLET      |   (0,0,0)(0,1,0)   | 3809.5  |
 
-On se rend compte que le modèle avec l'AIC corrigé le plus faible est le modèle prenant en compte le SMIC. Nous nous intéressons donc à la prédiction de ce modèle (dans la \ref{fig14}).
+On se rend compte qu'aucun modèle ARIMA ne prenant en compte des variables exogènes n'a une qualité meilleure que celui ne prenant en compte aucune variable exogène (en comparant les AIC corrigés). Si on omet le modèle sans variable exogène, le meilleur modèle prenant en compte au moins une variable exogène est celui prenant en compte le SMIC (dans la \ref{fig14}).
 
 ```{r, fig.cap="\\label{fig14}"}
 #SMIC
