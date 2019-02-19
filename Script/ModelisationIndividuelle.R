@@ -6,8 +6,8 @@ library(tseries)
 library(forecast)
 library(corrplot)
 
-annuelle <- read.csv("Data/Data_Annuel.csv", sep=";", dec=",", nrows=30)
-trim <- read.csv("Data/Data_Trim.csv", sep=";", dec=",")
+annuelle <- read.csv("~/Cygwin/app/home/Jules/PFE_Time_Series/Data/Data_Annuel.csv", sep=";", dec=",", nrows=30)
+trim <- read.csv("~/Cygwin/app/home/Jules/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 
 cor.mtest <- function(mat, conf.level = 0.95){
   mat <- as.matrix(mat)

@@ -37,6 +37,9 @@ cor.mtest <- function(mat, conf.level = 0.95){
 EQM<-function(serie, prediction){
   return(sum((serie - prediction)^2)/length(serie))
 }
+
+#trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
+trim <- read.csv("~/Cygwin/app/home/Jules/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 ```
 
 Nous nous intéresserons dans ce document à la mise en place de modèles VAR à l'aide du package **MTS** afin de prédire la masse salariale trimestrielle. Un modèle VAR, pour  Vecteur AutoRégressif, a pour objectif de capturer les interdépendances entre les différentes séries temporelles à notre disposition. Ainsi, chaque variable est expliquée par ses propres valeurs passées ainsi que par les valeurs passées des autres variables du modèle.
@@ -46,7 +49,6 @@ Nous nous intéresserons dans ce document à la mise en place de modèles VAR à
 Même contenu que pour le package vars
 
 ```{r, include=FALSE}
-trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 corrplot(cor(trim[1:109,-1]), method = "number", type="lower",
          p.mat=cor.mtest(trim[1:109,-1], 0.95)[[1]], insig="pch",
          col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
@@ -177,19 +179,7 @@ L'article de Ruey S. Tsay nous conseille d'utiliser en priorité le test de Tiao
 
 Dans le package **MTS**, la fonction utilisée pour construire des modèles VAR est *VAR*, qui prend en entrée la série temporelle multivariée et l'ordre du processus. On affiche ci-dessous les résultats renvoyés par la fonction sur le modèle d'ordre 4
 ```{r}
-modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=4, output=F)
-print("Coefficients du modèle pour un retard d'ordre 1")
-coeff<-modele$coef[2:5,]
-colnames(coeff)<-rownames(coeff)<-c("MSE", "PIB", "SMIC", "TCHOF")
-coeff
-print("Erreurs standard associées aux coefficients")
-se<-modele$secoef[2:5,]
-colnames(se)<-rownames(se)<-c("MSE", "PIB", "SMIC", "TCHOF")
-se
-```
-
-```{r}
-matrix(data=c(modele$aic, modele$bic, modele$hq), nrow=1, byrow=T, dimnames=list(NULL, c("AIC", "BIC", "HQ")))
+modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=4)
 ```
 
 #Vérification des hypothèses
@@ -208,15 +198,15 @@ A_p & A_{p-1} & A_{p-2} & \cdots  & A_1
 
 ```{r}
 A <- matrix(0,nrow=16, ncol=16)
-    A[1:4,5:8] = diag(4)
-    A[5:8,9:12] = diag(4)
-    A[9:12,13:16] = diag(4)
-    A[13:16,1:4] = modele$coef[2:5,]
-    A[13:16,5:8] = modele$coef[6:9,]
-    A[13:16,9:12] = modele$coef[10:13,]
-    A[13:16,13:16] = modele$coef[14:17,]
-    vp<-eigen(A)$values
-    Mod(vp)
+A[1:4,5:8] = diag(4)
+A[5:8,9:12] = diag(4)
+A[9:12,13:16] = diag(4)
+A[13:16,1:4] = t(modele$coef[2:5,])
+A[13:16,5:8] = t(modele$coef[6:9,])
+A[13:16,9:12] = t(modele$coef[10:13,])
+A[13:16,13:16] = t(modele$coef[14:17,])
+vp<-eigen(A)$values
+Mod(vp)
 plot(seq(1,16), Mod(vp), xlab="",
      ylab="Modules des valeurs propres", ylim=c(0,1.5))
 abline(h=1, col="red")
@@ -236,10 +226,12 @@ abline(h = crit, lty = 2, col="red")
 
 Le graphique ci-dessus représente le résultat du test d'égalité de la matrice $\hat{\Gamma}_p$ à 0. On ne rejette pas l'hypothèse nulle peu importe le lag, ce qui nous indique que les résidus ne comporte pas de corrélation croisée.
 
-Nous effectuns ensuite le test de Ljung-Box multivariée, qui teste à la fois l'autocorrélation et la corrélation croisée.
+Nous effectuons ensuite le test de Ljung-Box multivariée, qui teste à la fois l'autocorrélation et la corrélation croisée. 
 ```{r}
 mq(modele$residuals, lag=10)
 ```
+
+Le résultat de ce test permet également de conclure que les résidus suivent un bruit blanc. 
 
 # Prévisions
 
