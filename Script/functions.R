@@ -27,3 +27,22 @@ best_model<-function(serie_test, LEpredictions, SARIMApredictions){
 EQM<-function(serie, prediction){
   return(sum((serie - prediction)^2)/length(serie))
 }
+
+stabilityMTS<-function(modele){
+  p<-modele$order
+  A <- matrix(0,nrow=p*4, ncol=p*4)
+  deb<-nrow(A)-3
+  for(i in seq(1,(nrow(A)-7),4)){
+    A[i:(i+3),(i+4):(i+7)] = diag(4)
+  }
+  j = ncol(A)
+  for(i in seq(1,deb,4)){
+    A[deb:nrow(A),(j-3):j] = t(modele$coef[(i+1):(i+4),])
+    j = j-4
+  }
+  vp<-eigen(A)$values
+  print(Mod(vp))
+  plot(seq(1,nrow(A)), Mod(vp), xlab="",
+       ylab="Modules des valeurs propres", ylim=c(0,1.5))
+  abline(h=1, col="red")
+}

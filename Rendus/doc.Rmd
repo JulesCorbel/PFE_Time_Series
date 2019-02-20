@@ -41,7 +41,8 @@ EQM<-function(serie, prediction){
   return(sum((serie - prediction)^2)/length(serie))
 }
 
-trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
+#trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
+trim <- read.csv("~/Cygwin/app/home/Jules/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 ```
 
 #Introduction {-}
@@ -405,13 +406,13 @@ Un modèle VAR s'écrit sous la forme suivante :
 
   $y_t = \sum_{i = 1}^{p} {A_iy_{t-i}} + u_t$
   
-$A_i$ représentent les matrices de coefficients du modèle pour un ordre $i$ et $u_t$ une matrice K-dimensionnelle composée des résidus du modèle (indépendants et identiquement distribués). Enfin, $p$ correspond à l'ordre du modèle, qui est en fait le nombre de valeurs du passé prises en compte pour calculer la valeur présente.
+$A_i$ représentent les matrices de coefficients du modèle pour un ordre $i$ et $u_t$ un vecteur K-dimensionnel composée des résidus du modèle (indépendants et identiquement distribués). Enfin, $p$ correspond à l'ordre du modèle, qui est en fait le nombre de valeurs du passé prises en compte pour calculer la valeur présente.
 
 ### Hypothèses
 
 #### Stabilité du modèle
 
-Pour que le modèle soit valide, nous devons vérifier que l'hypothèse de stabilité est bien respecté. Cette dernière permet d'assurer que les différentes séries générées par le modèle sont stationnaires. Pour vérifier si un processus VAR est stable, nous devons calculer les valeurs propres de la matrice des coefficients suivantes : 
+Pour que le modèle soit valide, nous devons vérifier que l'hypothèse de stabilité est bien respectée. Cette dernière permet d'assurer que les différentes séries du modèle sont stationnaires. Pour vérifier si un processus VAR est stable, nous devons calculer les valeurs propres de la matrice des coefficients : 
 
 $$A = \begin{bmatrix}
 A_1 & A_2 & \cdots & A_{p-1} & A_p \\
@@ -421,7 +422,7 @@ I & 0 & \cdots & 0 & 0 \\
 0 & 0 & \cdots & I & 0 
 \end{bmatrix}$$
 
-Si les modules des valeurs propres de A sont inférieures à 1, alors le processus VAR est stable.
+Si les modules des valeurs propres de A sont inférieurs à 1, alors le processus VAR est stable.
 
 #### Hypothèses sur les résidus
 
@@ -433,7 +434,7 @@ Pour que le modèle soit valide, certaines conditions sur les résidus doivent �
 
 ## Transformation des séries
 
-Nous allons maintenant transformer les séries pour les rendre stationnaires, afin de pouvoir appliquer les modèles VAR ensuite. Afin de stationnariser les séries, nous utiliserons la fonction decompose qui permet de découper la série en trois : la tendance, la saisonnalité et les résidus, afin de pouvoir ensuite travailler avec les résidus. Nous ne stationnariserons que les échantillons d'apprentissage.
+Nous allons maintenant transformer les séries pour les rendre stationnaires, afin de pouvoir appliquer les modèles VAR ensuite. Afin de stationnariser les séries, nous utiliserons la fonction *decompose* qui permet de découper la série en trois : la tendance, la saisonnalité et les résidus, afin de pouvoir ensuite travailler avec les résidus. Nous ne stationnariserons que les échantillons d'apprentissage.
 
 ### Masse salariale
 

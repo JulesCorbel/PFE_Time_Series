@@ -215,12 +215,12 @@ best_model(PIBTrimTest, PIBTrimPred$mean, ARIMAPIBTrimTest$mean)
 ###Taux de chômage
 
 TCHOAnn<-visualisation(annuelle$TCHO, 1990, 2019, 1, "du taux de chômage annuel")
-TCHOTrim<-visualisation(trim$TCHO, 1990, 2017, 4, "du taux de chômage trimestriel")
+TCHOFTrim<-visualisation(trim$TCHO, 1990, 2017, 4, "du taux de chômage trimestriel")
 
 TCHOAnnTrain <- window(TCHOAnn, start=1990, end=2015)
-TCHOTrimTrain <- window(TCHOTrim, start=1990, end=c(2015,4))
+TCHOFTrimTrain <- window(TCHOFTrim, start=1990, end=c(2015,4))
 TCHOAnnTest <- window(TCHOAnn, start=2016)
-TCHOTrimTest <- window(TCHOTrim, start=2016)
+TCHOFTrimTest <- window(TCHOFTrim, start=2016)
 
 ##Lissage Exponentiel
 
@@ -232,19 +232,19 @@ plot(TCHOAnnTest, type='l',
       valeurs réelles pour le taux de chômage annuel")
 lines(TCHOAnnPred$mean, col="red")
 
-TCHOTrimPred<-lissage_exponentiel(TCHOTrimTrain, 1990, 2016, 1, 8)
+TCHOFTrimPred<-lissage_exponentiel(TCHOFTrimTrain, 1990, 2016, 1, 8)
 
-plot(TCHOTrimTest, type='l',
+plot(TCHOFTrimTest, type='l',
      main="Comparaison entre la prédiction du lissage exponentiel et les 
       valeurs réelles pour le taux de chômage trimestriel")
-lines(TCHOTrimPred$mean, col='red')
+lines(TCHOFTrimPred$mean, col='red')
 ##Modèles SARIMA
 
 #Train
-ARIMATCHOTrimTrain <- auto.arima(TCHOTrimTrain, stationary = F)
-plot(TCHOTrimTrain, main="Comparaison entre le modèle ARIMA et les données 
+ARIMATCHOFTrimTrain <- auto.arima(TCHOFTrimTrain, stationary = F)
+plot(TCHOFTrimTrain, main="Comparaison entre le modèle ARIMA et les données 
       d'apprentissage pour le taux de chômage trimestriel")
-lines(ARIMATCHOTrimTrain$fitted, col="red")
+lines(ARIMATCHOFTrimTrain$fitted, col="red")
 
 ARIMATCHOAnnTrain <- auto.arima(TCHOAnnTrain, stationary = F)
 plot(TCHOAnnTrain, main="Comparaison entre le modèle ARMA et les données 
@@ -252,10 +252,10 @@ plot(TCHOAnnTrain, main="Comparaison entre le modèle ARMA et les données
 lines(ARIMATCHOAnnTrain$fitted, col="red")
 
 #Test
-ARIMATCHOTrimTest <- forecast(ARIMATCHOTrimTrain, h = 8)
-plot(TCHOTrimTest, main="Comparaison entre le modèle ARIMA et les données de 
+ARIMATCHOFTrimTest <- forecast(ARIMATCHOFTrimTrain, h = 8)
+plot(TCHOFTrimTest, main="Comparaison entre le modèle ARIMA et les données de 
       validation pour le taux de chômage trimestriel")
-lines(ARIMATCHOTrimTest$mean, col="red")
+lines(ARIMATCHOFTrimTest$mean, col="red")
 
 ARIMATCHOAnnTest <- forecast(ARIMATCHOAnnTrain, h = 4)
 plot(TCHOAnnTest, main="Comparaison entre le modèle ARMA et les données de 
@@ -265,7 +265,7 @@ lines(ARIMATCHOAnnTest$mean, col="red")
 ##Choix du modèle
 best_model(TCHOAnnTest, TCHOAnnPred$mean, ARIMATCHOAnnTest$mean)
 #-> Lissage Exponentiel
-best_model(TCHOTrimTest, TCHOTrimPred$mean, ARIMATCHOTrimTest$mean)
+best_model(TCHOFTrimTest, TCHOFTrimPred$mean, ARIMATCHOFTrimTest$mean)
 #-> Modèle ARIMA
 
 ###Aged

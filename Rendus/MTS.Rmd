@@ -5,7 +5,6 @@ date: "05/02/2019"
 output:
   pdf_document:
     fig_caption: yes
-  html_notebook: null
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +13,6 @@ require(forecast)
 require(corrplot)
 require(fUnitRoots)
 require(MTS)
-require(portes)
 
 #Code permettant la mise en place de la représentation visuelle de la matrice des corrélations
 cor.mtest <- function(mat, conf.level = 0.95){
@@ -36,6 +34,25 @@ cor.mtest <- function(mat, conf.level = 0.95){
 
 EQM<-function(serie, prediction){
   return(sum((serie - prediction)^2)/length(serie))
+}
+
+stabilityMTS<-function(modele){
+  p<-modele$order
+  A <- matrix(0,nrow=p*4, ncol=p*4)
+  deb<-nrow(A)-3
+  for(i in seq(1,(nrow(A)-7),4)){
+    A[i:(i+3),(i+4):(i+7)] = diag(4)
+  }
+  j = ncol(A)
+  for(i in seq(1,deb,4)){
+    A[deb:nrow(A),(j-3):j] = t(modele$coef[(i+1):(i+4),])
+    j = j-4
+  }
+  vp<-eigen(A)$values
+  print(Mod(vp))
+  plot(seq(1,nrow(A)), Mod(vp), xlab="",
+       ylab="Modules des valeurs propres", ylim=c(0,1.5))
+  abline(h=1, col="red")
 }
 
 #trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
@@ -177,12 +194,12 @@ L'article de Ruey S. Tsay nous conseille d'utiliser en priorité le test de Tiao
 
 # Estimation du modèle
 
+##Ordre 4
+
 Dans le package **MTS**, la fonction utilisée pour construire des modèles VAR est *VAR*, qui prend en entrée la série temporelle multivariée et l'ordre du processus. On affiche ci-dessous les résultats renvoyés par la fonction sur le modèle d'ordre 4
 ```{r}
 modele<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=4)
 ```
-
-#Vérification des hypothèses
 
 ## Vérification de la stabilité
 
@@ -197,38 +214,51 @@ A_p & A_{p-1} & A_{p-2} & \cdots  & A_1
 \end{bmatrix}$$
 
 ```{r}
-A <- matrix(0,nrow=16, ncol=16)
-A[1:4,5:8] = diag(4)
-A[5:8,9:12] = diag(4)
-A[9:12,13:16] = diag(4)
-A[13:16,1:4] = t(modele$coef[2:5,])
-A[13:16,5:8] = t(modele$coef[6:9,])
-A[13:16,9:12] = t(modele$coef[10:13,])
-A[13:16,13:16] = t(modele$coef[14:17,])
-vp<-eigen(A)$values
-Mod(vp)
-plot(seq(1,16), Mod(vp), xlab="",
-     ylab="Modules des valeurs propres", ylim=c(0,1.5))
-abline(h=1, col="red")
+stabilityMTS(modele)
 ```
+
+Ici, deux des valeurs propres de la matrice sont supérieures à 1 en module. Cela nous indique donc que le modèle construit n'est pas stable. Nous allons tester les autres ordres afin de vérifier si les modèles obtenus sont plus stables.
+
+##Ordre 3
+
+Le modèle suivant est d'ordre 3, soit le meilleur selon le critère d'Hannan-Quinn.
+```{r}
+modele2<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=3)
+```
+
+Nous vérifions donc que ce modèle est stable en construisant la matrice A.
+```{r}
+stabilityMTS(modele2)
+```
+Contrairement au modèle d'ordre 4, celui d'ordre 3 est stable, soit toutes les valeurs propres de la matrice A sont inférieures à 1.
+
+##Ordre 2
+
+Nous construisons finalement le modèle d'ordre 2, le meilleur en terme de BIC, en suivant la même démarche que pour les deux précédents.
+```{r}
+modele3<-VAR(cbind(MSEStaTrain, PIBStaTrain, SMICStaTrain, TCHOFStaTrain), p=2)
+stabilityMTS(modele3)
+```
+
+
+#Vérification des hypothèses
 
 ##Corrélation croisée
 
 Nous vérifions ensuite que les résidus ne comportent ni d'autocorrélation, ni de corrélation croisée. Pour cela, on utilise la fonction *ccm*, qui vérifie les matrices de corrélation croisée pour un lag donné. On définit la matrice de variance-covariance pour un lag *p* comme $\hat{\Gamma}_p = \frac{1}{T}\sum_{i=p+1}^{T} (r_t - \bar{r})(r_{t-p} - \bar{r})$. La matrice de corrélation associée vaut donc $\rho_p = \hat{D}^{-1}\hat{\Gamma}_p\hat{D}^{-1}$.
-
 ```{r}
-crossCorr<-ccm(modele$residuals, lag=10, output=F)
+crossCorr<-ccm(modele2$residuals, lag=10, output=F)
 plot(crossCorr$pvalue, xlab = "lag", ylab = "p-value", ylim = c(0,1), main="Significance plot of CCM")
 abline(h = 0)
 crit = 2/sqrt(length(modele$residuals))
 abline(h = crit, lty = 2, col="red")
 ```
 
-Le graphique ci-dessus représente le résultat du test d'égalité de la matrice $\hat{\Gamma}_p$ à 0. On ne rejette pas l'hypothèse nulle peu importe le lag, ce qui nous indique que les résidus ne comporte pas de corrélation croisée.
+Le graphique ci-dessus représente le résultat du test d'égalité de la matrice $\hat{\Gamma}_p$ à 0. On considère que la corrélation est significative si elle dépasse le seuil de $2/\sqrt{T}$ avec T la longueur de la série. On ne rejette pas l'hypothèse nulle peu importe le lag, ce qui nous indique que les résidus ne comporte pas de corrélation croisée. 
 
-Nous effectuons ensuite le test de Ljung-Box multivariée, qui teste à la fois l'autocorrélation et la corrélation croisée. 
+Nous effectuons ensuite le test de Ljung-Box multivarié, qui teste à la fois l'autocorrélation et la corrélation croisée. La statistique de ce test est $Q_h = T^2 \sum_{j=1}^h \frac{1}{t-l} tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h)$. C'est donc la même statistique que pour le package **vars** à un coefficient près.
 ```{r}
-mq(modele$residuals, lag=10)
+mq(modele2$residuals, lag=10)
 ```
 
 Le résultat de ce test permet également de conclure que les résidus suivent un bruit blanc. 

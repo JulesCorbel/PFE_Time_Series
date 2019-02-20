@@ -2,16 +2,15 @@
 library(MTS)
 library(Matrix)
 
-appAnn<-cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain, AGEDAnnStaTrain)
-testAnn<-cbind(MSEAnnStaTest, PIBAnnStaTest, SMICAnnStaTest, TCHOAnnStaTest, AGEDAnnStaTest)
-cor(appAnn)
-MTSplot(appAnn)
+# appAnn<-cbind(MSEAnnStaTrain, PIBAnnStaTrain, SMICAnnStaTrain, TCHOAnnStaTrain, AGEDAnnStaTrain)
+# testAnn<-cbind(MSEAnnStaTest, PIBAnnStaTest, SMICAnnStaTest, TCHOAnnStaTest, AGEDAnnStaTest)
+# cor(appAnn)
+# MTSplot(appAnn)
+# 
+# x<-t(appAnn[,-c(3:4)]) %*% appAnn[,-c(3:4)]
+# rankMatrix(x)
 
-x<-t(appAnn[,-c(3:4)]) %*% appAnn[,-c(3:4)]
-rankMatrix(x)
-
-appTrim<-cbind(MSETrimStaTrain, PIBTrimStaTrain, SMICTrimStaTrain, TCHOTrimStaTrain)
-testTrim<-cbind(MSETrimStaTest, PIBTrimStaTest, SMICTrimStaTest, TCHOTrimStaTest)
+appTrim<-cbind(MSETrimSta, PIBTrimSta, SMICTrimSta, TCHOFTrimSta)
 cor(appTrim)
 MTSplot(appTrim)
 
@@ -50,6 +49,7 @@ MTSplot(appTrim)
   #1 variable
     VARorder(appTrim[,c(1:2)], maxp=10)
     MTSTrimPIB<-VAR(appTrim[,c(1:2)], p=4, output=F)
+    MTSTrimPIB2<-VAR(appTrim[,c(1:2)], p=3, output=F)
     PredTrimMTSPIB<-ts(VARpred(MTSTrimPIB, 4)$pred[,1], start=2016, frequency=4)
     plot(window(MSETrimTest, end=c(2016,4)),
          ylim=c(min(MSETrimTest, PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest),
@@ -127,7 +127,7 @@ MTSplot(appTrim)
     VARorder(appTrim[,c(1:4)], maxp=10)
     MTSTrimCOMPLET<-VAR(appTrim[,c(1:4)], p=3, output=F)
     PredTrimMTSCOMPLET<-ts(VARpred(MTSTrimCOMPLET, 4)$pred[,1], start=2016, frequency=4)
-    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSCOMPLET*MSETrimSeasonalTest*MSETrimTrendTest)
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSCOMPLET+auto.arima(MSETrimTrain))
     
     plot(window(MSETrimTest, end=c(2016,4)))
     lines(PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
