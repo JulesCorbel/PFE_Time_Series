@@ -455,7 +455,8 @@ Nous allons maintenant transformer les séries pour les rendre stationnaires, af
   par(mfrow=c(1,1))
   kpss.test(MSESta)
   adf.test(MSESta)
-  MSETrendTest <- forecast(auto.arima(MSETrend), h=15)
+  MSETrendTest <- forecast(auto.arima(MSETrend), h=14)
+  MSESeasonalTest<-ts(c(MSESeasonal[103:104], rep(MSESeasonal[1:4],3)), start=c(2015,3),frequency=4)
 ```
 
 Nous nous intéressons aux ACF, PACF et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value des tests de KPSS et Dickey Fuller augmenté nous amène à confirmer que notre série est désormais stationnarisée (avec un seuil de confiance à 5% pour les deux tests effectués).
