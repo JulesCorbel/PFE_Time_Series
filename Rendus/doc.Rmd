@@ -53,7 +53,7 @@ EQM<-function(serie, prediction){
 
 Avant de commencer à analyser les séries, nous rappelons des bases sur des notions dont nous aurons besoin par la suite.
 
-Dans de nombreux modèles de séries temporelles, la série en entrée doit satisfaire une hypothèse de stationnarité. Les conditions de la stationnarité du second ordre.
+Dans de nombreux modèles de séries temporelles, la série en entrée doit satisfaire une hypothèse de stationnarité. Les conditions de la stationnarité du second ordre sont les suivantes :
 
 $E[y_{t}]=\mu \forall t=1...T$
 
@@ -61,7 +61,7 @@ $Var[y_{t}]=\sigma ^{2}\neq \infty \forall t=1...t Var[y_{t}]=\sigma ^{2}\neq \i
 
 $Cov[y_{i},Z_{i-k}]=f(k) \forall i=1...t, \forall k=1...t$
 
-Nous nous intéressons dans cette partie aux différentes séries trimestrielles à notre disposition. Dans un premier temps, nous nous intéressons aux corrélations entre les variables deux à deux afin de nous faire une première idée du lien qu'il existe entre les variables.
+Nous nous intéressons dans ce rapport aux différentes séries trimestrielles à notre disposition. Dans un premier temps, nous nous intéressons aux corrélations entre les variables deux à deux afin de nous faire une première idée du lien qu'il existe entre les variables.
 
 ##Masse salariale \label{MSE}
 
@@ -84,7 +84,7 @@ Nous nous intéressons dans cette partie aux différentes séries trimestrielles
 
 La masse salariale trimestrielle, représentée en Figure \ref{fig1} possède une composante de tendance de 1990 à 2010. La série tend par la suite à stagner. Nous remarquons également une saisonnalité sur cette série, qui est de plus en plus marquée à mesure que le temps passe. 
 
-Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la Figure \ref{fig2}, qui nous montre fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS (test de stationnarité) servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La série est dite stationnaire si ses propriétés statistiques (espérance, variance et auto-corrélation) sont fixes au cours du temps. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Nous mettons également en place un test de racines unitaires, le test de Dickey Fuller augmenté. Son hypothèse nulle est que la série a été générée par un processus présentant une racine unitaire, et donc que la série n'est pas stationnaire. Ici, avec un risque de premier espèce à 5%, on conserve l'hypothèse nulle est on conclut, à l'aide des deux tests effectués, que la série n'est pas stationnaire. 
+Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la Figure \ref{fig2}, qui nous montre fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS (test de stationnarité) servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La série est dite stationnaire si ses propriétés statistiques (espérance, variance et auto-corrélation) sont fixes au cours du temps. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Nous mettons également en place un test de racines unitaires, le test de Dickey Fuller augmenté. Son hypothèse nulle est que la série a été générée par un processus présentant une racine unitaire, et donc que la série n'est pas stationnaire. Ici, avec un risque de première espèce à 5%, on conserve l'hypothèse nulle et on conclut, à l'aide des deux tests effectués, que la série n'est pas stationnaire. 
 
 ##PIB  \label{PIB}
 
@@ -105,7 +105,7 @@ Comme la série comporte une tendance et une saisonnalité, elle ne correspond p
   adf.test(PIB)
 ```
 
-La Figure \ref{fig3} nous montre le PIB trimestriel qui, comme pour la masse salarialepossède une tendance. Cependant, il ne semble pas posséder de saisonnalité. Cette série ne semble donc pas non plus stationnaire. Nous effectuons à nouveau un test de KPSS. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Même conclusion au regard du test augmenté de Dickey Fuller.
+La Figure \ref{fig3} nous montre l'évolution trimestriel du PIB qui, comme pour la masse salariale possède une tendance. Cependant, elle ne semble pas posséder de saisonnalité. Cette série ne semble donc pas non plus stationnaire. Nous effectuons à nouveau un test de KPSS. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Même conclusion au regard du test augmenté de Dickey Fuller.
 
 ##SMIC
 ```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig5}"}
@@ -159,7 +159,7 @@ colnames(corr) <- c("MSE","PIB","SMIC","TCHOF")
 corr
 ```
 
-Nous affichons la matrice des corrélations des différentes variables en Figure \ref{fig9}. On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Le trio de variables PIB, masse salariale et SMIC sont extrêmement liées entre elles. En regardant le tableau des p-values associées au test de Student (H0 : La corrélation entre les deux variables est nulle), on s'aperçoit que toutes les variables prises deux à deux présentes une corrélation.
+Nous affichons la matrice des corrélations des différentes variables en Figure \ref{fig9}. On se rend compte que le taux de chômage des femmes est corrélé négativement avec toutes les autres variables. Les variables PIB, masse salariale et SMIC sont extrêmement liées entre elles. En regardant le tableau des p-values associées au test de Student (H0 : La corrélation entre les deux variables est nulle), on s'aperçoit que toutes les variables prises deux à deux présentes une corrélation.
 
 #Modélisation individuelle \label{MI}
 
@@ -181,8 +181,7 @@ TCHOFTest <- window(TCHOF, start=2016, end=c(2017,2))
 ```
 
 ##Comparaison des différents modèles
-Afin de comparer les modèles construits pour chaque série avec les différentes méthodes, nous calculons l'erreur quadratique moyenne (EQM), soit les moyennes des différences au carré entre les valeurs de test et les valeurs prédites par le modèle.
-
+Afin de comparer les modèles construits pour chaque série avec les différentes méthodes, nous calculons l'Erreur Quadratique Moyenne (EQM), soit les moyennes des différences au carré entre les valeurs de test et les valeurs prédites par le modèle.
 
 ##Lissage exponentiel
 
@@ -190,9 +189,10 @@ Afin de comparer les modèles construits pour chaque série avec les différente
 
 Le lissage exponentiel permet de prédire les valeurs d’une série temporelle en lissant successivement les données à partir d’une valeur initiale. Plus les observations sont éloignées dans le passé, moins leur poids est important lors du calcul. Pour une série stationnaire, la formule de calcul d’une valeur est la suivante :  $s_t =  \alpha y_t + (1-\alpha) s_{t-1}$, le paramètre $\alpha$ étant le facteur de lissage. Le nom de cette méthode est un lissage exponentiel **simple**. Afin de modéliser les séries possédant une tendance, nous introduisons un paramètre $\beta$ permettant de la prendre en compte, la méthode étant appelée lissage exponentiel **double**. Enfin, Holt et Winters ont également modifié la méthode pour qu’elle puisse modéliser les séries comportant une saisonnalité en introduisant un paramètre $\gamma$. Ils ont donné leur nom à cette méthode, qui est donc un lissage exponentiel de **Holt-Winters**.
 
-Dans notre cas, nous ne calculons pas nous-mêmes $\alpha$ $\beta$ et $\gamma$ Ces paramètres sont déterminés automatiquement par la fonction *ets* du package **forecast** de façon à optimiser la qualité de la prédiction. Cette fonction permet également de choisir la méthode à utiliser, grâce à l'argument model. Afin de mesurer la qualité de notre modèle, nous avons choisi d'utiliser l’**AICc**(Akaike Information Criterion with correction). Le choix de l’AICc par rapport à l’AIC s’explique par le faible nombre de données que nous possédons par rapport au nombre de paramètres à estimer. C'est ce critère qui nous servira par la suite afin de comparer nos différents modèles. \label{AICc}
+Dans notre cas, nous ne calculons pas nous-mêmes $\alpha$, $\beta$ et $\gamma$ Ces paramètres sont déterminés automatiquement par la fonction **ets* du package **forecast** de façon à optimiser la qualité de la prédiction. Cette fonction permet également de choisir la méthode à utiliser, grâce à l'argument model. Afin de mesurer la qualité de notre modèle, nous avons choisi d'utiliser l’**AICc** (Akaike Information Criterion with correction). Le choix de l’AICc par rapport à l’AIC s’explique par le faible nombre de données que nous possédons par rapport au nombre de paramètres à estimer. C'est ce critère qui nous servira par la suite afin de comparer nos différents modèles. \label{AICc}
 
 Prenons l'exemple de la MSE. Nous avons vu dans la partie \ref{MSE} que la série possédait une tendance linéaire ainsi qu'une saisonnalité multiplicative. L'argument model de la fonction *ets** prendra donc la valeur "ZAM", (erreur sélectionnée automatiquement, tendance linéaire, saisonnalité multiplicative). On peut également remarquer que lorsque tous les paramètres sont automatiquement sélectionnés (valeur "ZZZ"), les paramètres retenus sont les mêmes que ceux que nous avions rentré.
+
 ```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig10}"}
 LEMSE<-ets(MSETrain, "ZAM")
 print(LEMSE)
@@ -202,7 +202,6 @@ exponentiel et les valeurs réelles pour la masse salariale
 trimestrielle")
 lines(PredLEMSE$mean, col="red")
 EQM(MSETest, PredLEMSE$mean)
-ets(MSETrain, "ZZZ")
 ```
 On obtient donc un AICc de 4033.451 pour le modèle ainsi qu'une erreur quadratique moyenne de $2.6*10^{14}$. Le graphique obtenu en figure \ref{fig10} nous montrent que le modèle obtenu nous donne des prédictions très proches de la réalité.
 
@@ -264,7 +263,8 @@ Les modèles **ARMA(p,q)** sont une autre famille de modèles permettant d’est
 
 L’une des propriétés des processus ARMA est qu’ils sont utilisés pour modéliser des séries stationnaires, donc par extension des séries qui ne possèdent ni tendance ni saisonnalité. Afin de modéliser des séries non stationnaires, on généralise les processus ARMA en processus **ARIMA(p,d,q)**, *d* représentant l’ordre de différenciation de la série. Les séries saisonnières sont elles modélisées par des processus **$SARIMA(p ,d, q)(P, D, Q)_s$** qui modélisent des séries avec une saisonnalité de période *s*.
 
-Comme pour le lissage exponentiel, nous ne calculons pas nous-mêmes les ordres des processus. Pour cela, la fonction *auto.arima* du package **forecast** nous a été très utile. Elle permet en effet de trouver les ordres du processus qui optimisent un critère défini à l’avance et de calculer un modèle avec ces coefficients. Nous avons choisi d’optimiser l’**AICc**(Akaike Information Criterion with correction), pour els raisons évoquées dans la partie \ref{AICc}
+Comme pour le lissage exponentiel, nous ne calculons pas nous-mêmes les ordres des processus. Pour cela, la fonction *auto.arima* du package **forecast** nous a été très utile. Elle permet en effet de trouver les ordres du processus qui optimisent un critère défini à l’avance et de calculer un modèle avec ces coefficients. Nous avons choisi d’optimiser l’**AICc**(Akaike Information Criterion with correction), pour les raisons évoquées dans la partie \ref{AICc}
+
 ```{r, fig.width=5, fig.height=4, fig.align='center', fig.cap="\\label{fig12}"}
 ARIMAMSE<-auto.arima(MSETrain, ic="aicc")
 print(ARIMAMSE)
@@ -381,7 +381,7 @@ Nous allons désormais nous intéresser à la construction des différents modè
 | SMIC & TCHOF |   (0,1,0)(0,1,0)   | 3690.57 |
 | COMPLET      |   (0,0,0)(0,1,0)   | 3809.5  |
 
-On se rend compte qu'aucun modèle ARIMA ne prenant en compte des variables exogènes n'a une qualité meilleure que celui ne prenant en compte aucune variable exogène (en comparant les AIC corrigés). Si on omet le modèle sans variable exogène, le meilleur modèle prenant en compte au moins une variable exogène est celui prenant en compte le SMIC (dans la \ref{fig14}).
+On se rend compte qu'aucun modèle ARIMA ne prenant en compte des variables exogènes n'a une qualité meilleure que celui ne prenant en compte aucune variable exogène (en comparant les AIC corrigés). Si on omet le modèle sans variable exogène, le meilleur modèle prenant en compte au moins une variable exogène est celui prenant en compte le SMIC (dans la figure \ref{fig14}).
 
 ```{r, fig.cap="\\label{fig14}"}
 #SMIC
@@ -750,6 +750,39 @@ abline(h=1, col="red")
 ```
 
 On s'aperçoit que tous les modules sont inférieurs à 1, le processus VAR(4) est donc stable.
+
+```{r, echo=FALSE}
+#Calcul des erreurs standards associées aux matrices A1, A2, A3 et A4
+A1stand<-cbind(summary(modele$varresult$MSESta)$coefficients[1:4,2], 
+          summary(modele$varresult$PIBSta)$coefficients[1:4,2], 
+          summary(modele$varresult$SMICSta)$coefficients[1:4,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[1:4,2])
+colnames(A1stand)<-rownames(A1stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A2stand<-cbind(summary(modele$varresult$MSESta)$coefficients[5:8,2], 
+          summary(modele$varresult$PIBSta)$coefficients[5:8,2], 
+          summary(modele$varresult$SMICSta)$coefficients[5:8,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[5:8,2])
+colnames(A2stand)<-rownames(A2stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A2
+A3stand<-cbind(summary(modele$varresult$MSESta)$coefficients[9:12,2], 
+          summary(modele$varresult$PIBSta)$coefficients[9:12,2], 
+          summary(modele$varresult$SMICSta)$coefficients[9:12,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[9:12,2])
+colnames(A3stand)<-rownames(A3stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A3
+A4stand<-cbind(summary(modele$varresult$MSESta)$coefficients[13:16,2], 
+          summary(modele$varresult$PIBSta)$coefficients[13:16,2], 
+          summary(modele$varresult$SMICSta)$coefficients[13:16,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[13:16,2])
+colnames(A4stand)<-rownames(A4stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A4
+
+A0stand<-c(summary(modele$varresult$MSESta)$coefficients[17,2], 
+          summary(modele$varresult$PIBSta)$coefficients[17,2], 
+          summary(modele$varresult$SMICSta)$coefficients[17,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[17,2])
+names(A0stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+```
 
 ### Test ARCH (homoscédasticité des résidus)
 
