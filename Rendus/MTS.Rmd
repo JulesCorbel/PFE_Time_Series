@@ -256,7 +256,7 @@ abline(h = crit, lty = 2, col="red")
 
 Le graphique ci-dessus représente le résultat du test d'égalité de la matrice $\hat{\Gamma}_p$ à 0. On considère que la corrélation est significative si elle dépasse le seuil de $2/\sqrt{T}$ avec T la longueur de la série. On ne rejette pas l'hypothèse nulle peu importe le lag, ce qui nous indique que les résidus ne comporte pas de corrélation croisée. 
 
-Nous effectuons ensuite le test de Ljung-Box multivarié, qui teste à la fois l'autocorrélation et la corrélation croisée. La statistique de ce test est $Q_h = T^2 \sum_{j=1}^h \frac{1}{t-l} tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h)$. C'est donc la même statistique que pour le package **vars** à un coefficient près.
+Nous effectuons ensuite le test de Ljung-Box multivarié, qui teste à la fois l'autocorrélation et la corrélation croisée. La statistique de ce test est $Q_h = T^2 \sum_{j=1}^h \frac{1}{t-j} tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h)$. C'est donc la même statistique que pour le package **vars** à un coefficient près.
 ```{r}
 mq(modele2$residuals, lag=10)
 ```

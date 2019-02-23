@@ -48,13 +48,17 @@ MTSplot(appTrim)
 
   #1 variable
     VARorder(appTrim[,c(1:2)], maxp=10)
-    MTSTrimPIB<-VAR(appTrim[,c(1:2)], p=4, output=F)
-    MTSTrimPIB2<-VAR(appTrim[,c(1:2)], p=3, output=F)
-    PredTrimMTSPIB<-ts(VARpred(MTSTrimPIB, 4)$pred[,1], start=2016, frequency=4)
-    plot(window(MSETrimTest, end=c(2016,4)),
-         ylim=c(min(MSETrimTest, PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest),
-                max(MSETrimTest, PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest)))
-    lines(PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
+    MTSTrimPIB<-VAR(appTrim[,c(1:2)], p=3, output=F)
+    MTSTrimPIB2<-VAR(appTrim[,c(1:2)], p=4, output=F)
+    
+    stabilityMTS(MTSTrimPIB)
+    stabilityMTS(MTSTrimPIB2)
+    
+    PredTrimMTSPIB<-ts(VARpred(MTSTrimPIB, 6)$pred[,1], start=2016, frequency=4)
+    PredTrimMTSPIB2<-ts(VARpred(MTSTrimPIB2, 6)$pred[,1], start=2016, frequency=4)
+    
+    plot(window(MSETrimTest, end=c(2016,4)))
+    lines(PredTrimMTSPIB*MSESeasonalTest*MSETrendTest, col="red")
     EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest)
     
     VARorder(appTrim[,c(1,3)], maxp=10)
@@ -121,13 +125,10 @@ MTSplot(appTrim)
     
     #Modèle complet
     
-    
-    
-    
     VARorder(appTrim[,c(1:4)], maxp=10)
-    MTSTrimCOMPLET<-VAR(appTrim[,c(1:4)], p=3, output=F)
+    MTSTrimCOMPLET<-VAR(appTrim[,c(1:4)], p=4)
     PredTrimMTSCOMPLET<-ts(VARpred(MTSTrimCOMPLET, 4)$pred[,1], start=2016, frequency=4)
-    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSCOMPLET+auto.arima(MSETrimTrain))
+    EQM(window(MSETrimTest, end=c(2016,4)), PredTrimMTSCOMPLET+MSETrimFitted)
     
     plot(window(MSETrimTest, end=c(2016,4)))
     lines(PredTrimMTSPIB*MSETrimSeasonalTest*MSETrimTrendTest, col="red")
