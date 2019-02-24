@@ -3,6 +3,7 @@ title: "Rapport final"
 author: "Paul GUILLOTTE & Jules CORBEL"
 date: "01/02/2019"
 fontsize : 11pt
+keep_tex: true
 output: 
   pdf_document:
     toc: yes
@@ -11,6 +12,8 @@ output:
 header-includes:
  \usepackage{float}
  \floatplacement{figure}{H}
+bibliography : bibliography.bib
+nocite: '@*'
 ---
 ```{r setup, include=FALSE}
 require(tseries)
@@ -76,7 +79,7 @@ Notre mission pour ce projet est donc de modéliser cette masse salariale et d�
 \newpage
 #Description des jeux de données
 
-Les données que nous a fourni l’IRCEM sont comprises dans deux jeux de données représentant deux ensembles de variables distincts : l’un contient des variables annuelles et l’autre des variables trimestrielles, dans les deux cas à partir de 1990. Afin d’aider à la prédiction des valeurs de la masse salariale, nous devrons nous appuyer sur plusieurs variables auxiliaires. Pour les données annuelles, nous disposons de 4 variables : le SMIC horaire brut, le PIB, le taux de chômage et le montant de l’Allocation pour la Garde des Enfants à Domicile. La masse salariale annuelle est connue jusqu’en 2017, et on possède les informations sur les autres variables jusqu’à 2019. En ce qui concerne le modèle trimestriel, nous disposons de 3 variables : le SMIC, le PIB et le taux de chômage des femmes. La masse salariale trimestrielle est connue jusqu’au 2e trimestre de 2017. Le PIB trimestriel est lui connu jusqu’au 1er trimestre 2017. Pour les deux autres variables, les informations que nous possédons vont jusqu’au dernier trimestre de 2017. Le faible nombre de données (surtout pour les variables annuelles) pourra cependant être un obstacle. En effet, dans le jeu annuel, il n’y a 28 années, ce qui représente peu de valeurs pour créer des modèles pertinents. 
+Les données que nous a fourni l’IRCEM sont comprises dans deux jeux de données représentant deux ensembles de variables distincts : l’un contient des variables annuelles et l’autre des variables trimestrielles, dans les deux cas à partir de 1990. Afin d’aider à la prédiction des valeurs de la masse salariale, nous devrons nous appuyer sur plusieurs variables auxiliaires. Pour les données annuelles, nous disposons de 4 variables : le SMIC horaire brut, le PIB, le taux de chômage et le montant de l’Allocation pour la Garde des Enfants à Domicile. La masse salariale annuelle est connue jusqu’en 2017, et on possède les informations sur les autres variables jusqu’à 2019. En ce qui concerne le modèle trimestriel, nous disposons de 3 variables : le SMIC, le PIB et le taux de chômage des femmes. La masse salariale trimestrielle est connue jusqu’au 2e trimestre de 2017. Le PIB trimestriel est lui connu jusqu’au 1er trimestre 2017. Pour les deux autres variables, les informations que nous possédons vont jusqu’au dernier trimestre de 2017. Le faible nombre de données (surtout pour les variables annuelles) a cependant été un obstacle. En effet, dans le jeu annuel, il n’y a 28 années, ce qui représente peu de valeurs pour créer des modèles pertinents. Nous nous sommes donc concentrés uniquement sur le jeu de données trimestriel.
 
 \newpage
 #Analyse descriptive des séries
@@ -93,7 +96,7 @@ $Var[y_{t}]=\sigma ^{2}\neq \infty \forall t=1...t$
 
 $Cov[y_{i},Z_{i-k}]=f(k) \forall i=1...t, \forall k=1...t$
 
-Nous nous intéressons dans ce rapport aux différentes séries trimestrielles à notre disposition. Dans un premier temps, nous nous intéressons aux corrélations entre les variables deux à deux afin de nous faire une première idée du lien qu'il existe entre les variables.
+Nous nous intéressons dans ce rapport aux différentes séries trimestrielles à notre disposition. Dans un premier temps, nous visualiserons chacune de séries. Nous vérifierons ensuite les corrélations entre les variables deux à deux afin de nous faire une idée du lien qu'il existe entre les variables.
 
 ##Masse salariale \label{MSE}
 
@@ -116,7 +119,7 @@ La masse salariale trimestrielle, représentée en Figure \ref{fig1} possède un
   adf.test(MSE)
 ```
 
-Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la Figure \ref{fig2}, qui nous montre fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS (test de stationnarité) servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La série est dite stationnaire si ses propriétés statistiques (espérance, variance et auto-corrélation) sont fixes au cours du temps. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Nous mettons également en place un test de racines unitaires, le test de Dickey Fuller augmenté. Son hypothèse nulle est que la série a été générée par un processus présentant une racine unitaire, et donc que la série n'est pas stationnaire. Ici, avec un risque de première espèce à 5%, on conserve l'hypothèse nulle et on conclut, à l'aide des deux tests effectués, que la série n'est pas stationnaire. 
+Comme la série comporte une tendance et une saisonnalité, elle ne correspond pas aux deux premières conditions de la stationnarité du second ordre, soit que la série possède une moyenne et un écart-type constants. Cela est confirmé par la Figure \ref{fig2}, qui nous montre la fonction ACF qui décroît régulièrement. Nous effectuons également un test de KPSS (test de stationnarité) servant à vérifier si la série est stationnaire ou non (sous l'hypothèse $H_{0}$ la série est stationnaire, et sous l'hypothèse $H_{1}$ elle ne l'est pas). La série est dite stationnaire si ses propriétés statistiques (espérance, variance et auto-corrélation) sont fixes au cours du temps. La p-value est de 0.01 ce qui nous confirme que la série n'est pas stationnaire avec un risque de première espèce de 5%. Nous mettons également en place un test de racines unitaires, le test de Dickey Fuller augmenté. Son hypothèse nulle est que la série a été générée par un processus présentant une racine unitaire, et donc que la série n'est pas stationnaire. Ici, avec un risque de première espèce à 5%, on conserve l'hypothèse nulle et on conclut, à l'aide des deux tests effectués, que la série n'est pas stationnaire. 
 
 ##PIB  \label{PIB}
 
@@ -220,9 +223,9 @@ PIBTest<-ts(c(PredARIMAPIB$mean, new.value), start = 2016, end = c(2017, 2), fre
 \newpage
 # Modélisation vectorielle
 
-Dans la première partie du projet, nous avons modélisé les différentes séries séparément, à l'aide de modèles de lissage exponentiel ou des processus ARMA, dont les résultats sont présents en \ref{Annexe1}. Nous avons ensuite effectué d'autres modèles ARMA sur la masse salariale en uilisant les autres variables pour l'expliquer. Ces modèles sont présents en \ref{Annexe2}. Cependant, ce type de modélisation ne nous donne pas de résultats plus performants en terme de prédictions.
+Dans la première partie du projet, nous avons modélisé les différentes séries séparément, à l'aide de modèles de lissage exponentiel ou des processus ARMA, dont les résultats sont présents en Annexe \ref{Annexe1}. Nous avons ensuite effectué d'autres modèles ARMA sur la masse salariale en uilisant les autres variables pour l'expliquer. Ces modèles sont présents en Annexe \ref{Annexe2}. Cependant, ce type de modélisation ne nous donne pas de résultats plus performants en terme de prédictions.
 
-Pendant la deuxième partie du projet, nous nous sommes donc attachés à utiliser d'autres méthodes de modélisation. Nous nous sommes concentrés sur les modèles de type vectoriels, qui permettent donc de prédire plusieurs séries temporelles simultanément. La plus grande partie de nos travaux portent sur des modèles Vector Auto-Regressive (VAR) plus quelques tests avec l'ajout d'une partie Moving Average(MA) ce qui nous donne des modèles VARMA.
+Pendant la deuxième partie du projet, nous nous sommes donc attachés à utiliser d'autres méthodes de modélisation. Nous nous sommes concentrés sur les modèles de type vectoriels, qui permettent donc de prédire plusieurs séries temporelles simultanément. La plus grande partie de nos travaux portent sur des modèles Vector Auto-Regressive (VAR) plus quelques tests avec l'ajout d'une partie Moving Average (MA) ce qui nous donne des modèles VARMA.
 
 ## Définition des modèles
 
@@ -387,7 +390,7 @@ Maintenant que toutes les séries ont été stationnarisées, elles peuvent êtr
 
 ## Mise en place de modèles VAR avec le package vars
 
-Le package **vars** a été construit par Bernhard Pfaff. Il permet de construire des modèles vectoriels (VAR), et dispose également des différentes fonctions de diagnostics permettant de vérifier que les hypothèses du modèle sont bien remplies. La version utilisée est la version 1.5-3 et date du 6 Août 2018.
+Le package **vars** a été construit par Bernhard Pfaff [@vars]. Il permet de construire des modèles vectoriels (VAR), et dispose également des différentes fonctions de diagnostics permettant de vérifier que les hypothèses du modèle sont bien remplies. La version utilisée est la version 1.5-3 et date du 6 Août 2018.
 
 ### Calcul de l'ordre p
 
@@ -440,7 +443,7 @@ Dans le package **vars**, la fonction utilisée pour construire des modèles VAR
 modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const")
 ```
 
-Les coefficients du modèle sont les suivants. Les erreurs standards associées sont présentes en \ref{Annexe3}.
+Les coefficients du modèle sont les suivants. Les erreurs standards associées sont présentes en Annexe \ref{Annexe3}.
 
 ```{r, echo=F}
 A1<-rbind(modele$varresult$MSESta$coefficients[1:4], 
@@ -649,7 +652,7 @@ names(d) <- "Déterminant de la matrice"
 d
 ```
 
-Le déterminant de la matrice n'étant pas nul, la matrice $\hat{C}_0$ est donc inversible.
+Même si le déterminant est très faible, il n'est pas nul. La matrice $\hat{C}_0$ est donc inversible.
 
 #### Application du test
 
@@ -691,13 +694,13 @@ Après avoir comparé tous les modèles possibles (7 : 3 modèles avec deux vari
 require(MTS)
 ```
 
-Le package **MTS** a été créé par **Ruey S. Tsay** and **David Wood**, professeurs à l'université de Chicago. Contrairement au package **vars**, il ne se limite pas aux modèles VAR et propose également d'autre types de modèles multivariés, tels que des modèles de type VMA (Vector Moving Average), VARMA et même quelques modèles de fonctions de transfert, que nous n'avons pas eu l'occasion d'étudier. Ce package est très récent, sa première version datant du 8 octobre 2018.
+Le package **MTS** a été créé par **Ruey S. Tsay** and **David Wood**, professeurs à l'université de Chicago [@MTS]. Contrairement au package **vars**, il ne se limite pas aux modèles VAR et propose également d'autre types de modèles multivariés, tels que des modèles de type VMA (Vector Moving Average), VARMA et même quelques modèles de fonctions de transfert, que nous n'avons pas eu l'occasion d'étudier. Ce package est très récent, sa première version datant du 8 octobre 2018.
 
 Pour nous aider à comprendre l'utilisation de ce package, nous nous somme beaucoup inspirés de l'article *Multivariate Time Series Analysis with R and Financial Applications* de **Ruey S.Tsay**
 
 ### Calcul de l'ordre p
 
-Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. Dans le package **MTS**, la fonction utilisée est VARorder, qui comme VARselect utilise les critères d'AIC, BIC et HQ afin de déterminer l'ordre du processus. Toutefois, le critère FPE n'est pas présent, ce qui nous conforte dans notre idée qu'il n'est pas très utile à notre étude. 
+Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. Dans le package **MTS**, la fonction utilisée est VARorder, qui comme VARselect utilise les critères d'AIC, BIC et HQ afin de déterminer l'ordre du processus.
 
 Cependant, nous avons également en notre possession un autre critère, la statistique du test de Tiao-Box ainsi que sa p-value. Ce test évalue pour un ordre *i* la significativité des coefficients de la matrice $A_i$. Ce test permet donc de déterminer si le modèle d'ordre *i* est meilleur que celui d'ordre *i-1*. La statistique de test est la suivante : $M(i) = -(T-K-i-\frac{3}{2}) \ln(\frac{det(\hat{\Sigma}_1)}{det(\hat{\Sigma}_{i-1})})$, qui suit une loi du $\chi^2_{k^2}$. Dans l'exemple que nous prenons, la première p-value supérieure à 0.05 est celle pour la matrice $A_5$. L'ordre que nous devons retenir par rapport à ce test est donc 4.
 
@@ -714,7 +717,7 @@ Dans le package **MTS**, la fonction utilisée pour construire des modèles VAR 
 modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4)
 ```
 
-Les résultats associés aux modèles d'ordre 3 et 2 sont eux présents en \ref{Annexe4} et en \ref{Annexe5}. Comme pour le package **vars**, il nous faut maintenant vérifier les hypothèses du modèle.
+Les résultats associés aux modèles d'ordre 3 et 2 sont eux présents en Annexe \ref{Annexe4} et en Annexe \ref{Annexe5}. Comme pour le package **vars**, il nous faut maintenant vérifier les hypothèses du modèle.
 
 ### Vérification des hypothèses
 
@@ -798,8 +801,8 @@ Cependant, les résultats obtenus, présents en Annexe \ref{Annexe6} du rapport,
 \newpage
 #Prévisions sur les années suivantes
 
-Maintenant que nous avons réalisé nos modèles, vérifié qu'ils satisfaisaient toutes les hypothèses de construction et comparé les prédictions de ces modèles aux valeurs de notre échantillon de test, nous effectuons quelques prédictions pour les années 2018, 2019, 2020 et 2021. Nous utilisons le modèle complet étant donné que c'est celui qui donnait les meilleurs résultats.
-```{r, fig.width=6, fig.height==4, fig.cap="\\label{fig30} Prévisions du modèle VAR pour les années de 2016 à 2021", echo=F}
+Maintenant que nous avons réalisé nos modèles, vérifié qu'ils satisfaisaient toutes les hypothèses de construction et comparé les prédictions de ces modèles aux valeurs de notre échantillon de test, nous effectuons quelques prédictions pour les années 2018, 2019, 2020 et 2021. Nous utilisons le modèle complet avec un ordre p=4 étant donné que c'est celui qui donnait les meilleurs résultats.
+```{r, fig.width=6, fig.height=4, fig.cap="\\label{fig30} Prévisions du modèle VAR pour les années de 2016 à 2021", echo=F}
 detach("package:MTS", unload=TRUE)
 modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const")
 MSETrendTest <- window(forecast(na.omit(MSETrend), h=26)$mean, start=2016)
@@ -827,7 +830,7 @@ Afin de vérifier si la modélisatio vectorielle est la plus adapté pour les do
 
 #Annexe 1 : Modélisation univariée des séries \label{Annexe1}
 
-Une fois que nous avons analysé le comportement des différentes séries temporelles à notre disposition, nous souhaitons les modéliser afin de prédire les valeurs futures de ces différentes séries. En effet, si nous voulons prédire la MSE pour des valeurs futures, nous aurons également besoin des valeurs associées pour les variables explicatives, qui ne seront peut-être pas à notre disposition. Nous avons utilisé à la fois des modèles basés sur un lissage exponentiel et des processus ARMA.
+Une fois que nous avons analysé le comportement des différentes séries temporelles à notre disposition, nous souhaitons les modéliser afin de prédire les valeurs futures de ces différentes séries. En effet, si nous voulons prédire la MSE pour des valeurs futures, nous aurons également besoin des valeurs associées pour les variables explicatives, qui ne seront peut-être pas à notre disposition. Nous avons utilisé à la fois des modèles basés sur un lissage exponentiel et des processus ARMA. Nous nous sommes aidés pour ce faire des travaux de Nicolas Devignes [@Nicolas] lors d'un stage au laboratoire Paul Painlevé sur ce sujet.
 
 ##Comparaison des différents modèles
 Afin de comparer les modèles construits pour chaque série avec les différentes méthodes, nous calculons l'Erreur Quadratique Moyenne (EQM), soit les moyennes des différences au carré entre les valeurs de test et les valeurs prédites par le modèle.
@@ -1089,7 +1092,7 @@ VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=2)
 
 #Annexe 6 : Résultats obtenus pour un modèle VARMA(3,1) pour le modèle complet \label{Annexe6}
 ```{r, echo=F}
-# VARMA(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, q=1)
+VARMA(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, q=1)
 ```
 
 #Annexe 7 : Code R du projet
@@ -2158,3 +2161,6 @@ modele<-refVARMA(modele)
 ###########################################################################################
 ```
 
+\newpage
+
+#References {-}
