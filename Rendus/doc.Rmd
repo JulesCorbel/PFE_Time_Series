@@ -3,7 +3,6 @@ title: "Rapport final"
 author: "Paul GUILLOTTE & Jules CORBEL"
 date: "01/02/2019"
 fontsize : 11pt
-abstract: "bbbbb"
 output: 
   pdf_document:
     toc: yes
@@ -43,12 +42,21 @@ EQM<-function(serie, prediction){
   return(sum((serie - prediction)^2)/length(serie))
 }
 
-trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
-#trim <- read.csv("~/Cygwin/app/home/Jules/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
+#trim <- read.csv("~/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
+trim <- read.csv("~/Cygwin/app/home/Jules/PFE_Time_Series/Data/Data_Trim.csv", sep=";", dec=",")
 ```
 
 #Introduction {-}
 Dans le cadre de la formation Génie Informatique et Statistique (GIS), l’un des modules qui nous est proposé est la réalisation d’un projet de fin d’études (PFE) en lien avec une entreprise ou un laboratoire. Notre PFE s’effectue en lien avec l’Institut des Retraites Complémentaires des Employés de Maison (IRCEM) et a pour but de construire des modèles statistiques afin de prédire la masse salariale du secteur d’activité des services à la personne pour les années à venir. 
+
+L’IRCEM a été créée en 1973. Cet organisme à but non lucratif s’occupe de la protection sociale des employés du secteur du service à la personne. Dans ce but, il doit verser des compléments de salaire aux employés à l’aide à la personne. Il effectue alors régulièrement des prévisions de la masse salariale de ce secteur d’activités, afin d’estimer l’argent  qu’il devra verser.
+
+Notre mission pour ce projet est donc de modéliser cette masse salariale et d’effectuer des prévisions pour les années 2018 et 2019, qui seront effectuées en utilisant différentes méthodes de prédiction. La première partie du projet nous a vus nous concentrer sur des méthodes de prédiction univariées, tel que le lissage exponentiel et des modélisations basées sur des processus ARMA. Nous avions également commencé à modéliser la masse salariale à l'aide des variables auxiliaires. Ici, nous présentons nos travaux sur les modèles vectoriels (modèles VAR plus des essais sur les modèles VARMA). L’intégralité du projet s’est effectuée sur le logiciel R.
+
+\newpage
+#Description des jeux de données
+
+Les données que nous a fourni l’IRCEM sont comprises dans deux jeux de données représentant deux ensembles de variables distincts : l’un contient des variables annuelles et l’autre des variables trimestrielles, dans les deux cas à partir de 1990. Afin d’aider à la prédiction des valeurs de la masse salariale, nous devrons nous appuyer sur plusieurs variables auxiliaires. Pour les données annuelles, nous disposons de 4 variables : le SMIC horaire brut, le PIB, le taux de chômage et le montant de l’Allocation pour la Garde des Enfants à Domicile. La masse salariale annuelle est connue jusqu’en 2017, et on possède les informations sur les autres variables jusqu’à 2019. En ce qui concerne le modèle trimestriel, nous disposons de 3 variables : le SMIC, le PIB et le taux de chômage des femmes. La masse salariale trimestrielle est connue jusqu’au 2e trimestre de 2017. Le PIB trimestriel est lui connu jusqu’au 1er trimestre 2017. Pour les deux autres variables, les informations que nous possédons vont jusqu’au dernier trimestre de 2017. Le faible nombre de données (surtout pour les variables annuelles) pourra cependant être un obstacle. En effet, dans le jeu annuel, il n’y a 28 années, ce qui représente peu de valeurs pour créer des modèles pertinents. 
 
 \newpage
 #Analyse descriptive des séries
@@ -77,6 +85,7 @@ Nous nous intéressons dans ce rapport aux différentes séries trimestrielles �
 ```
 
 La masse salariale trimestrielle, représentée en Figure \ref{fig1} possède une composante de tendance de 1990 à 2010. La série tend par la suite à stagner. Nous remarquons également une saisonnalité sur cette série, qui est de plus en plus marquée à mesure que le temps passe. 
+
 ```{r, fig.height=3, fig.cap="\\label{fig2} Fonctions d'autocorrélation de la masse salariale trimestrielle", echo=F}
   par(mfrow=c(1,2), cex.main=0.8)
   acf(MSE, main="Auto-corrélation de la
@@ -183,17 +192,17 @@ TCHOFTest <- window(TCHOF, start=2016, end=c(2017,2))
 Contrairement aux autres variables, nous n'avons à notre disposition pour le PIB que les valeurs jusqu'au premier trimestre de 2017. Ceci nous impose de négliger la dernière valeur de toutes les autres séries pour que toutes les variables soient étudiées sur la même période. Pour éviter ce problème, nous décidons d'estimer la variable du PIB pour le 2e trimestre de 2017. Afin de faire cela, nous allons utiliser la valeur estimée par un modèle SARIMA correspondant à la variable PIB, étant donné que c'est celui qui donnait les meilleures prédictions (voir \ref{Annexe1}).
 
 ```{r, echo=F}
-PredARIMAPIB<- forecast(ARIMAPIB, h=6)
+PredARIMAPIB<- forecast(auto.arima(PIBTrain), h=6)
 new.value <- PredARIMAPIB$mean[6]
 PIBTest<-ts(c(PredARIMAPIB$mean, new.value), start = 2016, end = c(2017, 2), frequency=4)
 ```
 
-
-# Modélisation VAR
+\newpage
+# Modélisation vectorielle
 
 Dans la première partie du projet, nous avons modélisé les différentes séries séparément, à l'aide de modèles de lissage exponentiel ou des processus ARMA, dont les résultats sont présents en \ref{Annexe1}. Nous avons ensuite effectué d'autres modèles ARMA sur la masse salariale en uilisant les autres variables pour l'expliquer. Ces modèles sont présents en \ref{Annexe2}. Cependant, ce type de modélisation ne nous donne pas de résultats plus performants en terme de prédictions.
 
-Pendant la deuxième partie du projet, nous nous sommes donc attachés à utiliser d'autres méthodes de modélisation. La plus grande partie de nos travaux portent sur les modèles de type vectoriels, qui permettent donc de prédire plusieurs séries temporelles simultanément
+Pendant la deuxième partie du projet, nous nous sommes donc attachés à utiliser d'autres méthodes de modélisation. Nous nous sommes concentrés sur les modèles de type vectoriels, qui permettent donc de prédire plusieurs séries temporelles simultanément. La plus grande partie de nos travaux portent sur des modèles Vector Auto-Regressive (VAR) plus quelques tests avec l'ajout d'une partie Moving Average(MA) ce qui nous donne des modèles VARMA.
 
 ## Définition des modèles
 
@@ -235,7 +244,7 @@ Nous allons maintenant transformer les séries pour les rendre stationnaires, af
 
 ### Masse salariale
 
-```{r, fig.width=3.5, fig.height=3, fig.cap="\\label{fig10} Décomposition de la masse salariale", echo=F}
+```{r, fig.width=4.5, fig.height=4, fig.cap="\\label{fig10} Décomposition de la masse salariale", echo=F}
 par(cex.main=0.8)
   plot(decompose(MSETrain, "multiplicative"))
   MSESta <- na.omit(decompose(MSETrain, "multiplicative")$random)
@@ -243,13 +252,9 @@ par(cex.main=0.8)
   MSESeasonal<-window(decompose(MSETrain, "multiplicative")$seasonal)
 ```
 
-```{r, fig.width=4, fig.height=3.5, fig.cap="\\label{fig11} Masse salariale trimestrielle stationnarisée", echo=F}
-  plot(MSESta, xaxt="n")
-  axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
-```
+Nous nous intéressons aux ACF, PACF (visibles en Figure \ref{fig11}) et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction *decompose* sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value des tests de KPSS et Dickey Fuller augmenté nous amène à confirmer que notre série est désormais stationnarisée (avec un seuil de confiance à 5% pour les deux tests effectués).
 
-Nous nous intéressons aux ACF, PACF (visibles en Figure \ref{fig12}) et test de KPSS afin de vérifier si les résidus obtenus à l'aide de la fonction *decompose* sont stationnaires. Bien que l'ACF et la PACF nous mettent en garde d'une possible non stationnarité de la série, la p-value des tests de KPSS et Dickey Fuller augmenté nous amène à confirmer que notre série est désormais stationnarisée (avec un seuil de confiance à 5% pour les deux tests effectués).
-```{r, fig.height=2.5, fig.cap="\\label{fig12} Fonctions d'autocorrélation de la masse salariale stationnarisée", echo=F}
+```{r, fig.height=2.5, fig.cap="\\label{fig11} Fonctions d'autocorrélation de la masse salariale stationnarisée", echo=F}
   par(mfrow=c(1,2), cex.main=0.8)
   acf(MSESta, main="ACF de la masse
       salariale stationnarisée")
@@ -261,10 +266,15 @@ Nous nous intéressons aux ACF, PACF (visibles en Figure \ref{fig12}) et test de
   MSETrendTest <- window(forecast(na.omit(MSETrend), h=8)$mean, start=2016)
   MSESeasonalTest<-ts(c(MSESeasonal[103:104], rep(MSESeasonal[1:4],3)), start=c(2015,3),frequency=4)
 ```
+```{r, fig.width=3.5, fig.height=3, fig.cap="\\label{fig12} Masse salariale trimestrielle stationnarisée", echo=F}
+  plot(MSESta, xaxt="n")
+  axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
+```
 
+\newpage
 ### PIB
 
-```{r, fig.width=4, fig.height=3.5, fig.cap="\\label{fig13} PIB trimestriel stationnarisé", echo=F}
+```{r, fig.width=5, fig.height=4.5, fig.cap="\\label{fig13} PIB trimestriel stationnarisé", echo=F}
   PIBSta <- na.omit(decompose(PIBTrain, "multiplicative")$random)
   plot(PIBSta, main="PIB trimestriel stationnarisé", xaxt="n")
   axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
@@ -277,37 +287,53 @@ Nous nous intéressons aux ACF, PACF (visibles en Figure \ref{fig12}) et test de
   pacf(PIBSta, main="Auto-Corrélation partielle du PIB
       trimestriel stationnarisé")
   par(mfrow=c(1,1))
+```
+
+```{r, echo=F}
   kpss.test(PIBSta)
   adf.test(PIBSta)
 ```
 
-Nous nous intéressons aux ACF, PACF, test de KPSS et test de Dickey Fuller augmenté afin de vérifier si les résidus obtenus à l'aide de la fonction decompose sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
+
+Nous nous intéressons aux ACF, PACF, test de KPSS et test de Dickey Fuller augmenté (Figure \ref{fig12}) afin de vérifier si les résidus obtenus à l'aide de la fonction *decompose* sont stationnaires. Au regard de ces différentes informations, nous pouvons conclure à la stationnarité des résidus.
 
 ### SMIC
 
-```{r}
+```{r, fig.width=3.5, fig.height=3, fig.cap="\\label{fig15} SMIC trimestriel stationnarisé", echo=F}
   SMICSta <- na.omit(decompose(SMICTrain)$random)
   plot(SMICSta, main="SMIC trimestriel stationnarisé", xaxt="n")
   axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
+```
+
+Comme pour la masse salariale, les ACF et PACF de la Figure \ref{fig16} semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS ainsi que le test de Dickey Fuller augmenté nous permettent de conclure à la stationnarité des résidus.
+
+```{r, fig.height=2.5, fig.cap="\\label{fig16} Fonctions d'autocorrélation du SMIC stationnarisé", echo=F}
   par(mfrow=c(1,2))
   acf(SMICSta, main="Auto-Corrélation du SMIC
       trimestriel stationnarisé")
   pacf(SMICSta, main="Auto-Corrélation partielle du SMIC
       trimestriel stationnarisé")
   par(mfrow=c(1,1))
+```
+
+```{r, echo=F}
   kpss.test(SMICSta)
   adf.test(SMICSta)
 ```
-
-Comme pour la masse salariale, les ACF et PACF semblent montrer que la série résiduelle pourrait ne pas être stationnaire. Cependant le test de KPSS ainsi que le test de Dickey Fuller augmenté nous permettent de conclure à la stationnarité des résidus.
-
+\newpage
 ### Taux de chômage des femmes
 
-```{r}
+```{r, fig.width=5, fig.height=4, fig.cap="\\label{fig17} Taux de chômage trimestriel stationnarisé", echo=F}
   TCHOFSta <- na.omit(decompose(TCHOFTrain)$random)
-  plot(TCHOFSta, main="Taux de chômage trimestriel des femmes stationnarisé", xaxt="n")
+  plot(TCHOFSta, main="Taux de chômage des femmes 
+       trimestriel stationnarisé", xaxt="n", cex.main=0.8)
   axis(side=1, at=seq(1990,2015,5), labels=c("1990Q1", "1995Q1", "2000Q1", "2005Q1", "2010Q1", "2015Q1"))
-  par(mfrow=c(1,2))
+```
+
+En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF, le test de KPSS et le test de Dickey Fuller augmenté présents en Figure \ref{fig18}, on peut conclure que la série résiduelle est stationnaire.
+
+```{r, fig.height=2.5, fig.cap="\\label{fig18} Fonctions d'autocorrélation du taux de chômage stationnarisé", echo=F}
+  par(mfrow=c(1,2), cex.main=0.8)
   acf(TCHOFSta, main="Auto-Corrélation du Taux de
       chômage des femmes
       trimestriel stationnarisé")
@@ -318,43 +344,40 @@ Comme pour la masse salariale, les ACF et PACF semblent montrer que la série r�
   kpss.test(TCHOFSta)
   adf.test(TCHOFSta)
 ```
-
-En ce qui concerne le taux de chômage des femmes, en regardant l'ACF, PACF, le test de KPSS et le test de Dickey Fuller augmenté, on peut conclure que la série résiduelle est stationnaire.
-
+\newpage
 ##Corrélation entre les variables stationnarisées
 
-```{r}
+```{r, fig.width=4, fig.height=3, fig.cap="\\label{fig19} Corrélations entre les variables trimestrielles stationnarisées", echo=F}
 corrplot(cor(cbind(MSESta, PIBSta, SMICSta, TCHOFSta)), method = "number", type="lower",
          p.mat=cor.mtest(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), 0.95)[[1]], insig="n",
          col=colorRampPalette(c("blue", "light blue", "red"))(50), title = "
          Corrélations entre les variables trimestrielles")
+```
+
+```{r, echo=F}
 corr <- cor.mtest(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), 0.95)[[1]]
 rownames(corr) <- c("MSE","PIB","SMIC","TCHOF")
 colnames(corr) <- c("MSE","PIB","SMIC","TCHOF")
 corr
 ```
 
-On s'aperçoit que la transformation de nos séries a permis de supprimer les corrélations entre elles. En effet, en regardant le tableau des p-value, l'hypothèse nulle d'absence de corrélations n'est rejeté pour aucun couple de varaiables (avec un seuil de 5%).
+On s'aperçoit que la transformation de nos séries a permis de supprimer les corrélations entre elles. En effet, la matrice des corrélations présentes en Figure \ref{fig19} nous montre que la corrélation la plus élevée vaut 0.14 ce qui reste très faible. De plus, en regardant le tableau des p-values, l'hypothèse nulle de non significativité du coefficient de corrélation n'est rejetée pour aucun couple de variables (avec un seuil de 5%).
 
-Maintenant que toutes les séries ont été stationnarisées, nous allons pouvoir construire des modèles VAR.
+Maintenant que toutes les séries ont été stationnarisées, elles peuvent être utilisées pour construire un modèle VAR.
 
 ## Mise en place de modèles VAR avec le package vars
 
+Le package vars a été construit par Bernhard Pfaff. Il permet de construire des modèles vectoriels (VAR), et dispose également des différentes fonctions de diagnostics permettant de vérifier que les hypothèses du modèle sont bien remplies. La version utilisée est la version 1.5-3 et date du 6 Août 2018.
+
 ### Calcul de l'ordre p
 
-Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. L'ordre p correspond à l'ordre de l'opérateur de retard, c'est-à-dire le nombre de valeurs du passé qui ont un impact sur la valeur à un instant défini. Dans le package **vars**, la fonction VARselect permet de déterminer les l'ordre des modèles VAR à selectionner en fonction de 4 critères (AIC, HQ, SC et FPE).
+Afin de mettre en place une modélisation VAR, nous devons dans un premier temps nous intéresser à l'ordre p du modèle VAR. L'ordre p correspond à l'ordre de l'opérateur de retard, c'est-à-dire le nombre de valeurs du passé qui ont un impact sur la valeur à un instant t. Dans le package **vars**, la fonction *VARselect* permet de déterminer l'ordre des modèles VAR à selectionner en fonction de 4 critères (AIC, HQ, SC et FPE).
 
 Pour les critères suivants, p correspond à l'ordre du modèle VAR, T le nombre d'observations utilisées pour la phase d'apprentissage, K le nombre de variables et $\tilde{\Sigma}_u (p) = \frac{1}{T} \Sigma_{t=1}^T \hat{u}_t \hat{u}_t'$ (la matrice de covariance des résidus du modèle).
 
-Le critère AIC (Aikaike information criterion) se calcule, dans ce package, de la manière suivante : $AIC(p) = \ln \det(\tilde{\Sigma}_u(p)) + \frac{2}{T}p K^2 \quad$. L'objectif est de minimiser ce critère. Cela suppose donc que le déterminant de la matrice $\tilde{\Sigma}_u(p)$ soit strictement positif. Ce critère est asymptotiquement effiace : si le nombre d'observations tend vers l'infini, sa variance est aussi faible que possible.
-
-Le critère HQ (Hannan-Quinn criterion) se calcule, dans ce package, de la manière suivante : $HQ(p) = \ln \det(\tilde{\Sigma}_u(p)) + \frac{2 \ln(\ln(T))}{T}p K^2 \quad$. L'objectif est de minimiser ce critère. Encore une fois, cela suppose que le déterminant de la matrice $\tilde{\Sigma}_u(p)$ soit strictement positif.
-
-Le critère SC (Schwarz criterion) se calcule dans ce package de la manière suivante : $SC(p) = \ln \det(\tilde{\Sigma}_u(p)) + \frac{\ln(T)}{T}p K^2 \quad$. L'objectif est de minimiser ce critère. Ce critère est équivalent au BIC.`
-
 Dans cette partie, nous développerons le fonctionement de la méthodologie en l'appliquant uniquement au modèle complet, soit celui prenant en compte les variables PIB, SMIC et taux de chômage des femmes.
 
-```{r}
+```{r, fig.height=3.75, fig.cap="\\label{fig20} Critères associés au modèle complet", echo=F}
 selec <- VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), lag.max=10)
 par(mfrow=c(2,2))
 plot(seq(1:10),t(selec$criteria[1,]), type="l", main="Evolution de l'AIC en
@@ -371,7 +394,13 @@ plot(seq(1:10),t(selec$criteria[3,]), type="l", main="Evolution du SC en
 abline(v=which.min(selec$criteria[3,]), col="blue")
 ```
 
-On s'aperçoit que les différents critères à notre disposition nous donnent des ordres à choisir différents. Ainsi, le meilleur AIC correspond à un modèle d'ordre 10, le meilleur HQ à un modèle d'ordre 3 et le meilleur SC à un modèle d'ordre 2. L'ordre de l'AIC étant trop grand (car trop de coefficients à estimer par rapport au nombre d'observations à notre disposition), nous ne souhaitons pas conserver cet ordre. De plus, on se rend compte que l'AIC du modèle avec un ordre 10 est similaire à celle d'un modèle avec un ordre 4. Les modèles HQ et SC sont meilleurs avec respectivement un ordre 3 et 2. Nous allons donc, dans la suite de l'analyse, essayer les trois modèles définit par les différents critères : ici, nous allons donc nous intéresser aux modèles d'ordre 2, 3 et 4.
+Le critère AIC (Aikaike information criterion) se calcule, dans ce package, de la manière suivante : $AIC(p) = \ln \det(\tilde{\Sigma}_u(p)) + \frac{2}{T}p K^2 \quad$. L'objectif est de minimiser ce critère. Cela suppose donc que le déterminant de la matrice $\tilde{\Sigma}_u(p)$ soit strictement positif. Ce critère est asymptotiquement effiace : si le nombre d'observations tend vers l'infini, sa variance est aussi faible que possible.
+
+Le critère HQ (Hannan-Quinn criterion) se calcule, dans ce package, de la manière suivante : $HQ(p) = \ln \det(\tilde{\Sigma}_u(p)) + \frac{2 \ln(\ln(T))}{T}p K^2 \quad$. L'objectif est de minimiser ce critère. Encore une fois, cela suppose que le déterminant de la matrice $\tilde{\Sigma}_u(p)$ soit strictement positif.
+
+Le critère SC (Schwarz criterion) se calcule dans ce package de la manière suivante : $SC(p) = \ln \det(\tilde{\Sigma}_u(p)) + \frac{\ln(T)}{T}p K^2 \quad$. L'objectif est de minimiser ce critère. Ce critère est un autre nom du BIC.
+
+On s'aperçoit que les différents critères à notre disposition, visibles sur les graphiques de la Figure \ref{fig20}, nous donnent des ordres à choisir différents. Ainsi, le meilleur AIC correspond à un modèle d'ordre 10, le meilleur HQ à un modèle d'ordre 3 et le meilleur SC à un modèle d'ordre 2. L'ordre de l'AIC étant trop grand (car trop de coefficients à estimer par rapport au nombre d'observations à notre disposition), nous ne souhaitons pas conserver cet ordre. De plus, on se rend compte que l'AIC du modèle avec un ordre 10 est similaire à celle d'un modèle avec un ordre 4. Les modèles HQ et SC sont meilleurs avec respectivement un ordre 3 et 2. Nous allons donc, dans la suite de l'analyse, essayer les trois modèles définit par les différents critères : ici, nous allons donc nous intéresser aux modèles d'ordre 2, 3 et 4.
 
 ### Estimation du modèle VAR(p)
 
@@ -387,122 +416,19 @@ $A_i$ représentent les matrices de coefficients du modèle pour un ordre i, t l
 
 Dans le package **vars**, la fonction utilisée pour construire des modèles VAR est VAR, qui prend en entrée la série temporelle multivariée, l'ordre du processus et le type de régresseurs à inclure. Dans notre cas, *type* vaut *const* car la série est stationnarisée et donc centrée en une constante $\mu$. Ci-dessous, le modèle d'ordre 4.
 
-```{r, results="hide"}
+```{r, echo=F}
 modele<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const")
 ```
 
-Les coefficients du modèle associés à un retard de 1 sont les suivants :
+Les coefficients du modèle sont les suivants. Les erreurs standards associées sont présentes en \ref{Annexe3}.
 
-```{r}
+```{r, echo=F}
 A1<-rbind(modele$varresult$MSESta$coefficients[1:4], 
           modele$varresult$PIBSta$coefficients[1:4], 
           modele$varresult$SMICSta$coefficients[1:4],
           modele$varresult$TCHOFSta$coefficients[1:4])
 colnames(A1)<-rownames(A1)<-c("MSE", "PIB", "SMIC", "TCHOF")
 A1
-```
-
-Dans cette fonction, nous ne disposons pas des erreurs standards associées aux coefficients. Les indicateurs de qualité du modèle sont présents ci-dessous.
-
-```{r}
-selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
-selection$criteria[,4]
-```
-
-L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
-
-```{r}
-ordre4 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const"))
-EQM(MSETest, ordre4$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest)
-plot(MSETest)
-lines(window(ordre4$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest, start=2016, end=c(2017,2)), col="red")
-```
-
-####Ordre 3
-
-On s'intéresse ensuite au modèle d'ordre 3 :
-
-```{r, results="hide"}
-modele2<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, type="const")
-```
-
-Les coefficients du modèle associés à un retard de 1 sont les suivants :
-
-```{r}
-A1modele2<-rbind(modele2$varresult$MSESta$coefficients[1:4], 
-          modele2$varresult$PIBSta$coefficients[1:4], 
-          modele2$varresult$SMICSta$coefficients[1:4],
-          modele2$varresult$TCHOFSta$coefficients[1:4])
-colnames(A1modele2)<-rownames(A1modele2)<-c("MSE", "PIB", "SMIC", "TCHOF")
-A1modele2
-```
-
-Les indicateurs de qualité du modèle sont présents ci-dessous.
-
-```{r}
-selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
-selection$criteria[,3]
-```
-
-L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
-
-```{r}
-ordre3 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, type="const"))
-EQM(MSETest, ordre3$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest)
-plot(MSETest)
-lines(window(ordre3$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest, start=2016, end=c(2017,2)), col="red")
-```
-
-####Ordre 2
-
-On s'intéresse ensuite au modèle d'ordre 3 :
-
-```{r, results="hide"}
-modele3<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=2, type="const")
-```
-
-Les coefficients du modèle associés à un retard de 1 sont les suivants :
-
-```{r}
-A1modele3<-rbind(modele3$varresult$MSESta$coefficients[1:4], 
-          modele3$varresult$PIBSta$coefficients[1:4], 
-          modele3$varresult$SMICSta$coefficients[1:4],
-          modele3$varresult$TCHOFSta$coefficients[1:4])
-colnames(A1modele3)<-rownames(A1modele3)<-c("MSE", "PIB", "SMIC", "TCHOF")
-A1modele3
-```
-
-Les indicateurs de qualité du modèle sont présents ci-dessous.
-
-```{r}
-selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
-selection$criteria[,2]
-```
-
-L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
-
-```{r}
-ordre2 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=2, type="const"))
-EQM(MSETest, ordre2$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest)
-plot(MSETest)
-lines(window(ordre2$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest, start=2016, end=c(2017,2)), col="red")
-```
-
-### Verification de la stabilité
-
-Pour vérifier si le processus VAR est stable, c'est-à-dire qu'il génère des séries stationnaires, nous devons calculer les valeurs propres de la matrice des coefficients : 
-
-$$A = \begin{bmatrix}
-A_1 & A_2 & \cdots & A_{p-1} & A_p \\
-I & 0 & \cdots & 0 & 0 \\
-0 & I & \cdots & 0 & 0 \\
-\vdots & \vdots & \ddots & \vdots & \vdots \\
-0 & 0 & \cdots & I & 0 
-\end{bmatrix}$$
-
-Si les modules des valeurs propres de A sont inférieures à 1, alors le processus VAR est stable. Nous allons donc vérifier que le processus VAR(4) créé précédemment avec toutes les variables à notre disposition est bien stable.
-
-```{r, echo=FALSE}
 A2<-rbind(modele$varresult$MSESta$coefficients[5:8], 
           modele$varresult$PIBSta$coefficients[5:8], 
           modele$varresult$SMICSta$coefficients[5:8],
@@ -529,7 +455,116 @@ A0<-c(modele$varresult$MSESta$coefficients[17],
 names(A0)<-c("MSE", "PIB", "SMIC", "TCHOF")
 ```
 
-```{r}
+Les indicateurs de qualité du modèle sont présents ci-dessous.
+
+```{r, echo=F}
+selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
+selection$criteria[,4]
+```
+
+Enfin, l'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
+
+```{r, fig.width=4, fig.height=3.5, fig.cap="\\label{fig21} Comparaison entre les vraies valeur et le modèle complet pour un ordre 4", echo=F}
+ordre4 <- forecast(VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=4, type="const"))
+EQM(MSETest, ordre4$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest)
+plot(MSETest, xaxt="n")
+axis(side=1, at=seq(2016,2017.25,0.25), labels=c("2016Q1", "2016Q2", "2016Q3", "2016Q4", "2017Q1", "2017Q2"))
+lines(ordre4$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest, col="red")
+```
+
+La représentation graphique de la Figure \ref{fig21} nous montre des prédictions proches des vraies valeurs, à part pour le premier trimestre 2017.
+
+####Ordre 3
+
+On s'intéresse ensuite au modèle d'ordre 3, soit celui avec le meilleur critère HQ.
+
+```{r, include=F}
+modele2<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, type="const")
+```
+
+Les coefficients du modèle associés à un retard de 1 sont les suivants :
+
+```{r, echo=F}
+A1modele2<-rbind(modele2$varresult$MSESta$coefficients[1:4], 
+          modele2$varresult$PIBSta$coefficients[1:4], 
+          modele2$varresult$SMICSta$coefficients[1:4],
+          modele2$varresult$TCHOFSta$coefficients[1:4])
+colnames(A1modele2)<-rownames(A1modele2)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A1modele2
+```
+
+Les indicateurs de qualité du modèle sont présents ci-dessous.
+
+```{r, echo=F}
+selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
+selection$criteria[,3]
+```
+
+L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
+
+```{r, fig.width=4.5, fig.height=3.75, fig.cap="\\label{fig22} Comparaison entre les vraies valeur et le modèle complet pour un ordre 3", echo=F}
+ordre3 <- forecast(modele2, h=8)
+EQM(MSETest, ordre3$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest)
+plot(MSETest, xaxt='n')
+axis(side=1, at=seq(2016,2017.25,0.25), labels=c("2016Q1", "2016Q2", "2016Q3", "2016Q4", "2017Q1", "2017Q2"))
+lines(window(ordre3$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest, start=2016, end=c(2017,2)), col="red")
+```
+
+Graphiquement, la Figure \ref{fig22} associée à l'ordre 3 nous donne des prédictions semblant inférieures à celles du modèle d'ordre 4. L'apport d'un lag supplémentaire dans la construction du retard a donc bien une importance dans la qualité des prédictions.
+
+####Ordre 2
+
+Enfin, nous construisons le modèle avec le meilleur BIC, soit celui d'ordre 2.
+
+```{r, include=F}
+modele3<-VAR(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=2, type="const")
+```
+
+Les coefficients du modèle associés à un retard de 1 sont les suivants :
+
+```{r, echo=F}
+A1modele3<-rbind(modele3$varresult$MSESta$coefficients[1:4], 
+          modele3$varresult$PIBSta$coefficients[1:4], 
+          modele3$varresult$SMICSta$coefficients[1:4],
+          modele3$varresult$TCHOFSta$coefficients[1:4])
+colnames(A1modele3)<-rownames(A1modele3)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A1modele3
+```
+
+Les indicateurs de qualité du modèle sont présents ci-dessous.
+
+```{r, echo=F}
+selection<-VARselect(cbind(MSESta, PIBSta, SMICSta, TCHOFSta))
+selection$criteria[,2]
+```
+
+L'erreur quadratique moyenne de ce modèle pour les données prédites est la suivante :
+
+```{r, fig.width=5, fig.height=4, fig.cap="\\label{fig23} Comparaison entre les vraies valeur et le modèle complet pour un ordre 2", echo=F}
+ordre2 <- forecast(modele3, h=8)
+EQM(MSETest, ordre2$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest)
+plot(MSETest, xaxt="n")
+axis(side=1, at=seq(2016,2017.25,0.25), labels=c("2016Q1", "2016Q2", "2016Q3", "2016Q4", "2017Q1", "2017Q2"))
+lines(window(ordre2$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest, start=2016, end=c(2017,2)), col="red")
+```
+
+Lorsque l'on compare les erreurs quadratiques moyennes, nous remarquons que la plus faible est celle associée à un modèle d'ordre 4, soit celui avec le meilleur AIC. Il nous faut maintenant vérifier que les hypothèses associées à ce modèle soient bien vérifiées.
+
+### Verification de la stabilité
+
+Pour vérifier si le processus VAR est stable, c'est-à-dire qu'il génère des séries stationnaires, nous devons calculer les valeurs propres de la matrice des coefficients : 
+
+$$A = \begin{bmatrix}
+A_1 & A_2 & \cdots & A_{p-1} & A_p \\
+I & 0 & \cdots & 0 & 0 \\
+0 & I & \cdots & 0 & 0 \\
+\vdots & \vdots & \ddots & \vdots & \vdots \\
+0 & 0 & \cdots & I & 0 
+\end{bmatrix}$$
+
+Si les modules des valeurs propres de A sont inférieures à 1, alors le processus VAR est stable. Nous allons donc vérifier que le processus VAR(4) créé précédemment avec toutes les variables à notre disposition est bien stable.
+
+```{r, echo=F}
 #Construction de la matrice A
 A <- matrix(0,nrow=16, ncol=16)
 A[1:4,1:4] = A1
@@ -549,59 +584,26 @@ abline(h=1, col="red")
 
 On s'aperçoit que tous les modules sont inférieurs à 1, le processus VAR(4) est donc stable.
 
-```{r, echo=FALSE}
-#Calcul des erreurs standards associées aux matrices A1, A2, A3 et A4
-A1stand<-rbind(summary(modele$varresult$MSESta)$coefficients[1:4,2], 
-          summary(modele$varresult$PIBSta)$coefficients[1:4,2], 
-          summary(modele$varresult$SMICSta)$coefficients[1:4,2],
-          summary(modele$varresult$TCHOFSta)$coefficients[1:4,2])
-colnames(A1stand)<-rownames(A1stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
-A2stand<-rbind(summary(modele$varresult$MSESta)$coefficients[5:8,2], 
-          summary(modele$varresult$PIBSta)$coefficients[5:8,2], 
-          summary(modele$varresult$SMICSta)$coefficients[5:8,2],
-          summary(modele$varresult$TCHOFSta)$coefficients[5:8,2])
-colnames(A2stand)<-rownames(A2stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
-A2
-A3stand<-rbind(summary(modele$varresult$MSESta)$coefficients[9:12,2],
-          summary(modele$varresult$PIBSta)$coefficients[9:12,2],
-          summary(modele$varresult$SMICSta)$coefficients[9:12,2],
-          summary(modele$varresult$TCHOFSta)$coefficients[9:12,2])
-colnames(A3stand)<-rownames(A3stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
-A3
-A4stand<-rbind(summary(modele$varresult$MSESta)$coefficients[13:16,2],
-          summary(modele$varresult$PIBSta)$coefficients[13:16,2],
-          summary(modele$varresult$SMICSta)$coefficients[13:16,2],
-          summary(modele$varresult$TCHOFSta)$coefficients[13:16,2])
-colnames(A4stand)<-rownames(A4stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
-A4
-
-A0stand<-c(summary(modele$varresult$MSESta)$coefficients[17,2], 
-          summary(modele$varresult$PIBSta)$coefficients[17,2], 
-          summary(modele$varresult$SMICSta)$coefficients[17,2],
-          summary(modele$varresult$TCHOFSta)$coefficients[17,2])
-names(A0stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
-```
-
 ### Test ARCH (homoscédasticité des résidus)
 
 Le test multivarié de ARCH-LM permet de tester l'homoscédasticité des résidus. La statistique de test est la suivante : $VARCH_{LM}(q) = \frac{1}{2}TK(K+1)R_m^2$, où $R_m^2 = 1 - \frac{2}{K(K+1)}tr(\hat{\Omega}\hat{\Omega}_O^{-1})$, et $\hat{\Omega}$ est la matrice de covariance de la régression suivante : $vech(\hat{u_t}\hat{u_t}^T) = \beta_0 + B_1 vech(\hat{u}_{t-1}\hat{u}_{t-1}^T) + ... + B_q vech(\hat{u}_{t-q}\hat{u}_{t-q}^T) + v_t$. La dimension de $\beta_O$ est $\frac{1}{2}K(K+1)$ et celle des matrices des coefficients $B_i$ est $\frac{1}{2}K(K+1) × \frac{1}{2}K(K+1)$. La statistique de test suit une loi de $\chi^2(qK^2(K+1)^2/4)$, donc dans notre cas $\chi^2(16q*25/4)$. L'hypothèse nulle de ce test est $H_0 : B_0 = B_1 = ... = B_q = 0$ (homoscédasticité).
 
-```{r, fig.cap="\\label{fig20}"}
+```{r, fig.width=5, fig.height=4, fig.cap="\\label{fig24} Evolution de la p-value en fonction du lag", echo=F}
 a1 <- c()
 for(i in 1:18){
 a1[i] <- arch.test(modele, lags.multi = i)$arch.mul$p.value
 }
-plot(a1, type="l", main="Evolution de la p-value en fonction du lag", xlab="lag", ylab="p-value")
+plot(a1, type="l", xlab="lag", ylab="p-value")
 abline(h=0.05, col="red")
 ```
 
-On s'aperçoit au regard de la figure \ref{fig20}, avec un seuil de confiance de 5% (ligne rouge), qu'on rejette l'hypothèse nulle d'homoscédasticité pour un retard faible (inférieur à 7). Cependant, en augmentant le nombre de valeurs prises en compte pour calculer la nouvelle, on se rend compte qu'on conserve l'hypothèse d'homoscédasticité. On observe également que la valeur de la p-value converge vers 1 au fur et à mesure qu'on augmente le retard. Ainsi, en prenant l'ensemble des résidus, nous conservons l'hypothèse d'homoscédasticité.
+On s'aperçoit au regard de la figure \ref{fig24}, avec un seuil de confiance de 5% (ligne rouge), qu'on rejette l'hypothèse nulle d'homoscédasticité pour un retard faible (inférieur à 7). Cependant, en augmentant le nombre de valeurs prises en compte pour calculer la nouvelle, on se rend compte qu'on conserve l'hypothèse d'homoscédasticité. On observe également que la valeur de la p-value converge vers 1 au fur et à mesure qu'on augmente le retard. Ainsi, en prenant l'ensemble des résidus, nous conservons l'hypothèse d'homoscédasticité.
 
 ### Test normalité (normalité des résidus)
 
 Le test de Jarque-Bera pour séries multivariées permet de tester la normalité des résidus. Il utilise les résidus standardisés à l'aide d'une décomposition de Cholesky de la matrice de variance-covariance des résidus centrés. Il est important noter que l'ordre dans lequel les variables sont stockées dans la matrice a une importance sur les résultats. La statistique de test est la suivante : $JB_{mv} = s_3^2 + s_4^2$, où $s_3^2$ et $s_4^2$ se calculent de la sorte : $s_3^2 = Tb_1^Tb_1/6$ et $s_4^2 = T(b_2 - 3_K)^T(b_2-3_K)/24$, avec $b_1$ et  $b_2$ qui sont respectivement les vecteurs des moments non-centrés d'ordre trois et quatre des résidus standardisés. La statistique de test suit une loi de $\chi^2(2K)$. Ce test compare en fait le coefficient kurtosis K (l'aplatissement de la fonction de densité) et le coefficient skewness S (asymétrie de la fonction de densité) d'une loi normale à ceux des résidus testés. L'hypothèse nulle est donc $H0 : S = 0$ et $K = 3$.
 
-```{r}
+```{r, echo=F}
 normality.test(modele)$jb.mul$JB
 ```
 
@@ -615,7 +617,7 @@ Le test de Portmanteau multivarié permet de tester l'auto-corrélation (au sein
 
 La statistique de Portmanteau est $Q_h = T \sum_{j=1}^h tr(\hat{C}_j^T \hat{C}_0^{-1} \hat{C}_j \hat{C}_0^{-1})$, et elle suit une loi de $\chi^2(K^2h - n^*)$, $n^*$ étant le nombre de coefficients à estimer. Pour qu'elle existe, il faut donc vérifier que la matrice $\hat{C}_0$ est inversible pour que la statistique puisse être définie. Les matrices $\hat{C}_i$ s'écrivent $\hat{C}_i = \frac{1}{T} \sum_{t=i+1}^T \hat{u}_t \hat{u}_{t-i}^T$, donc $\hat{C}_0$ s'écrit $\hat{C}_0 = \frac{1}{T} \sum_{t=1}^T \hat{u}_t \hat{u}_t^T$. Nous allons donc vérifier qu'elle est inversible pour le modèle complet que nous avons mis en place. $tr()$ correspond à la trace de la matrice, soit la somme des éléments diagonaux de la matrice.
 
-```{r}
+```{r, echo=F}
 C0 <- matrix(nrow = 4, ncol=4, 0)
 for(i in 1:nrow(residuals(modele))){
   C0 <- C0 + residuals(modele)[i,]%*%t(residuals(modele)[i,])
@@ -633,7 +635,7 @@ Le déterminant de la matrice n'étant pas nul, la matrice $\hat{C}_0$ est donc 
 
 Les 3 premières p-values ne peuvent être calculées à cause de la valeur des degrés de liberté. En effet, comme nous l'avons expliqué plus haut, la statistique de test suit une loi de $\chi^2(K^2h - n^*)$. Or, avec un retard compris entre 1 et 3, les degrés de liberté sont négatifs et il n'est donc pas possible d'appliquer le test. L'hypothèse nulle de ce test est l'absence de corrélations croisées et d'auto-corrélations.
 
-```{r, fig.cap="\\label{fig21}"}
+```{r, , fig.width=5, fig.height=4, fig.cap="\\label{fig24} Evolution de la p-value en fonction du lag", echo=F}
 a1 <- c()
 for(i in 1:3){
   a1[i] <- NA
@@ -661,7 +663,7 @@ VARSMICSta <- forecast(VAR(cbind(MSESta, PIBSta), p=4, type="const"))
 plot(MSETest, xlim=c(2016,2017.25), main="Différences entre les véritables
      valeurs de 2016 et les prédictions du modèle pour la masse salariale", xaxt="n")
 axis(side=1, at=seq(2016,2017.25,0.25), labels=c("2016Q1", "2016Q2", "2016Q3", "2016Q4", "2017Q1", "2017Q2"))
-lines(window(VARSMICSta$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest, start=2016, end=c(2017,2)), col = "red")
+lines(window(VARSMICSta$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest, start=2016, end=c(2017,2)), col = "red")
 legend('bottomleft', legend = c('Vraies valeurs', 'Prévisions du modèle'),
        col=c('black', 'red'), lty=1, cex=0.8)
 ```
@@ -669,7 +671,7 @@ legend('bottomleft', legend = c('Vraies valeurs', 'Prévisions du modèle'),
 Nous nous intéressons donc à l'erreur quadratique moyenne de cette prévision.
 
 ```{r}
-EQM(MSETest, window(VARSMICSta$forecast$MSESta$mean*MSETrendTest$mean*MSESeasonalTest, start=2016, end=c(2017,2)))
+EQM(MSETest, window(VARSMICSta$forecast$MSESta$mean*MSETrendTest*MSESeasonalTest, start=2016, end=c(2017,2)))
 ```
 
 \appendix
@@ -878,4 +880,39 @@ plot(PredSMIC$mean, col="red",
      ylim=c(min(MSETest,PredSMIC$mean), max(MSETest,PredSMIC$mean)))
 lines(MSETest)
 EQM(PredSMIC$mean, MSETest)
+```
+
+#Annexe 3 : Erreurs standard associées aux coefficients du modèle VAR d'ordre 4 \label{Annexe3}
+
+```{r, echo=FALSE}
+#Calcul des erreurs standards associées aux matrices A1, A2, A3 et A4
+A1stand<-rbind(summary(modele$varresult$MSESta)$coefficients[1:4,2], 
+          summary(modele$varresult$PIBSta)$coefficients[1:4,2], 
+          summary(modele$varresult$SMICSta)$coefficients[1:4,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[1:4,2])
+colnames(A1stand)<-rownames(A1stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A2stand<-rbind(summary(modele$varresult$MSESta)$coefficients[5:8,2], 
+          summary(modele$varresult$PIBSta)$coefficients[5:8,2], 
+          summary(modele$varresult$SMICSta)$coefficients[5:8,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[5:8,2])
+colnames(A2stand)<-rownames(A2stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A2
+A3stand<-rbind(summary(modele$varresult$MSESta)$coefficients[9:12,2],
+          summary(modele$varresult$PIBSta)$coefficients[9:12,2],
+          summary(modele$varresult$SMICSta)$coefficients[9:12,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[9:12,2])
+colnames(A3stand)<-rownames(A3stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A3
+A4stand<-rbind(summary(modele$varresult$MSESta)$coefficients[13:16,2],
+          summary(modele$varresult$PIBSta)$coefficients[13:16,2],
+          summary(modele$varresult$SMICSta)$coefficients[13:16,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[13:16,2])
+colnames(A4stand)<-rownames(A4stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
+A4
+
+A0stand<-c(summary(modele$varresult$MSESta)$coefficients[17,2], 
+          summary(modele$varresult$PIBSta)$coefficients[17,2], 
+          summary(modele$varresult$SMICSta)$coefficients[17,2],
+          summary(modele$varresult$TCHOFSta)$coefficients[17,2])
+names(A0stand)<-c("MSE", "PIB", "SMIC", "TCHOF")
 ```
