@@ -3,9 +3,10 @@ title: "Rapport final"
 author: "Paul GUILLOTTE & Jules CORBEL"
 date: "01/02/2019"
 fontsize : 11pt
-keep_tex: true
+
 output: 
   pdf_document:
+    keep_tex: true
     toc: yes
     number_sections: yes 
     fig_caption: yes
