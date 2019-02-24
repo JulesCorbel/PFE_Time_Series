@@ -1051,5 +1051,11 @@ resultats
 
 ################################### Modèles VARMA avec MTS ######################################
 
+#Estimation de l'ordre du modèle
 Eccm(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), maxq=5)
-modele<-refVARMA(VARMA(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, q=1))
+#Réalisation d'un modèle d'ordre p=3 et q=1 avec toutes les variables
+modele<-VARMA(cbind(MSESta, PIBSta, SMICSta, TCHOFSta), p=3, q=1)
+#Elimination des paramètres non significatifs du modèle
+modele<-refVARMA(modele)
+
+##################################################################################################
