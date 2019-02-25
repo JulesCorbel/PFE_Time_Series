@@ -1,10 +1,12 @@
 #Ce script contient toutes les fonctions créées et utilisées au sein du projet
 rm(list=ls())
 
+#Erreur quadratique moyenne
 EQM<-function(serie, prediction){
   return(sum((serie - prediction)^2)/length(serie))
 }
 
+#Construction de la matrice A et calcul des valeurs propres pour un modèle du package vars
 stabilityvars<-function(modele){
   k<-modele$K
   p<-modele$p
@@ -32,6 +34,7 @@ getCoefMatrix<-function(modele, p){
   return(result)
 }
 
+#Construction de la matrice A et calcul des valeurs propres pour un modèle du package MTS
 stabilityMTS<-function(modele){
   k<-ncol(modele$data)
   p<-modele$order
@@ -52,6 +55,7 @@ stabilityMTS<-function(modele){
   abline(h=1, col="red")
 }
 
+#Calcul des p-values d'une matrice de corrélation
 cor.mtest <- function(mat, conf.level = 0.95){
   mat <- as.matrix(mat)
   n <- ncol(mat)
@@ -69,6 +73,7 @@ cor.mtest <- function(mat, conf.level = 0.95){
   return(list(p.mat, lowCI.mat, uppCI.mat))
 }
 
+#Visualisation des p-values d'un test de ARCH pour un lag de 1 à 18
 archTest<-function(modele){
   a1 <- c()
   for(i in 1:18){
@@ -78,6 +83,7 @@ archTest<-function(modele){
   abline(h=0.05, col="red")
 }
 
+#Construction de la matrice C0 et calcul de son déterminant
 calculC0<-function(modele){
   C0 <- matrix(nrow = modele$K, ncol=modele$K, 0)
   for(i in 1:nrow(residuals(modele))){
@@ -90,6 +96,7 @@ calculC0<-function(modele){
   d
 }
 
+#Visualisation des p-values d'un test de Portmanteau pour un lag de 1 à 50
 Portmanteau<-function(modele){
   a1 <- c()
   for(i in 1:3){
@@ -102,6 +109,7 @@ Portmanteau<-function(modele){
   abline(h=0.05, col="red")
 }
 
+#Visualisation de la significativité globale des corrélation croisées pour le package MTS
 crossCorr<-function(modele){
   crossCorr<-ccm(modele2$residuals, lag=10, output=F)
   plot(crossCorr$pvalue, xlab = "lag", ylab = "p-value", ylim = c(0,1), main="Significance plot of CCM")

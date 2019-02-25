@@ -1,7 +1,6 @@
 require(tseries)
 require(forecast)
 require(corrplot)
-require(fUnitRoots)
 require(vars)
 
 
